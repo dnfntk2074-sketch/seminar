@@ -1,9 +1,5 @@
-export default async function handler(req,res){
-  if(req.method !== 'POST') return res.status(405).json({ok:false});
-  const d = req.body || {};
-  if(!d.name || !d.phone || !d.referrer) return res.status(400).json({ok:false});
-  // Connect existing SOLAPI sender here with Vercel environment variables.
-  // Never place API secrets in index.html.
-  console.log('[SEMINAR APPLICATION]', d);
-  return res.status(200).json({ok:true});
-}
+const crypto=require('crypto');const https=require('https');
+function clean(v,n=100){return String(v||'').trim().replace(/[\r\n]+/g,' ').slice(0,n)}
+function auth(k,s){const date=new Date().toISOString(),salt=crypto.randomBytes(16).toString('hex'),signature=crypto.createHmac('sha256',s).update(date+salt).digest('hex');return `HMAC-SHA256 apiKey=${k}, date=${date}, salt=${salt}, signature=${signature}`}
+function send(k,s,p){return new Promise((resolve,reject)=>{const body=JSON.stringify(p);const r=https.request({hostname:'api.solapi.com',path:'/messages/v4/send-many/detail',method:'POST',headers:{Authorization:auth(k,s),'Content-Type':'application/json','Content-Length':Buffer.byteLength(body)},timeout:15000},x=>{let raw='';x.setEncoding('utf8');x.on('data',c=>raw+=c);x.on('end',()=>resolve({status:x.statusCode||500,raw}))});r.on('error',reject);r.on('timeout',()=>r.destroy(new Error('SOLAPI timeout')));r.write(body);r.end()})}
+module.exports=async function handler(req,res){res.setHeader('Content-Type','application/json; charset=utf-8');if(req.method!=='POST')return res.status(405).json({ok:false,error:'POST only'});try{const b=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});const name=clean(b.name,20),phone=String(b.phone||'').replace(/\D/g,''),referrer=clean(b.referrer,20);if(name.length<2||!/^01[016789]\d{7,8}$/.test(phone)||referrer.length<2)return res.status(400).json({ok:false,error:'입력값 오류'});const apiKey=process.env.SOLAPI_API_KEY,apiSecret=process.env.SOLAPI_API_SECRET,from=String(process.env.SOLAPI_FROM||'').replace(/\D/g,''),to=String(process.env.ADMIN_PHONE||process.env.SOLAPI_TO||'').replace(/\D/g,'');if(!apiKey||!apiSecret||!from||!to)return res.status(500).json({ok:false,error:'SOLAPI 환경변수 미설정'});const interests=Array.isArray(b.topics)?b.topics.join(' / '):'';const text=['[자산관리 세미나 참석 신청]',`고객명: ${name}`,`연락처: ${phone}`,`추천 설계사: ${referrer}`,`결과: ${clean(b.result,40)}`,`관심분야: ${clean(interests,100)}`,'행사: 2026.09.11 11:30~13:00'].join('\n');const result=await send(apiKey,apiSecret,{messages:[{to,from,text}]});let data={};try{data=JSON.parse(result.raw||'{}')}catch(_){}if(result.status<200||result.status>=300)return res.status(502).json({ok:false,error:data.errorMessage||data.message||'SOLAPI 발송 실패'});return res.status(200).json({ok:true})}catch(e){return res.status(500).json({ok:false,error:e.message||'server error'})}};
