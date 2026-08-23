@@ -354,6 +354,60 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
   .golden-poster .poster-bottom .approved-bottom-row{left:7%;right:6%}
 }
 
+/* Quiet luxury motion: soft entrance, slow hero breathing and a restrained CTA sheen. */
+.golden-photo{background:none}
+.golden-photo:before{
+  content:"";position:absolute;inset:-3%;
+  background:url('/api/hero-visual-v3?v=20260823-1') right center/cover no-repeat;
+  transform-origin:74% 43%;will-change:transform;
+  animation:goldenHeroBreath 14s ease-in-out infinite alternate;
+}
+.golden-brand,.golden-invitation,.golden-heading,.golden-subtitle,.golden-intro,
+.golden-helper,.golden-info,.golden-program-title,.golden-programs,.golden-poster .poster-bottom{
+  opacity:0;animation:goldenSoftRise .72s cubic-bezier(.22,.72,.28,1) forwards;
+}
+.golden-brand{animation-delay:.06s}.golden-invitation{animation-delay:.14s}
+.golden-heading{animation-delay:.22s}.golden-subtitle{animation-delay:.3s}.golden-intro{animation-delay:.38s}
+.golden-helper{animation-delay:.56s}.golden-info{animation-delay:.64s}
+.golden-program-title{animation-delay:.72s}.golden-programs{animation-delay:.8s}
+.golden-poster .poster-bottom{animation-delay:.88s}
+.golden-cta{animation:goldenCtaEnter .76s .48s cubic-bezier(.22,.72,.28,1) both,goldenCtaGlow 5.8s 1.7s ease-in-out infinite}
+.golden-cta:after{left:-25%;animation:goldenCtaSheen 5.8s 1.7s ease-in-out infinite}
+.golden-cta-arrow{animation:goldenArrowNudge 5.8s 1.7s ease-in-out infinite}
+.golden-cta:hover:after{animation:none;left:110%}
+@keyframes goldenSoftRise{
+  from{opacity:0;transform:translate3d(0,10px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+@keyframes goldenCtaEnter{
+  from{opacity:0;transform:translate3d(0,13px,0) scale(.985)}
+  to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
+@keyframes goldenHeroBreath{
+  from{transform:scale(1.015) translate3d(.4%,0,0)}
+  to{transform:scale(1.055) translate3d(-.65%,.3%,0)}
+}
+@keyframes goldenCtaGlow{
+  0%,68%,100%{box-shadow:0 10px 24px rgba(5,50,41,.28),0 2px 6px rgba(5,50,41,.18),inset 0 0 0 2px rgba(255,255,255,.08),inset 0 -8px 18px rgba(0,0,0,.12)}
+  80%{box-shadow:0 13px 29px rgba(5,50,41,.35),0 3px 9px rgba(198,157,75,.2),inset 0 0 0 2px rgba(255,255,255,.1),inset 0 -8px 18px rgba(0,0,0,.1)}
+}
+@keyframes goldenCtaSheen{
+  0%,70%{left:-25%;opacity:0}
+  74%{opacity:.75}
+  88%{left:112%;opacity:.2}
+  100%{left:112%;opacity:0}
+}
+@keyframes goldenArrowNudge{
+  0%,74%,90%,100%{transform:translateX(0)}
+  80%{transform:translateX(3px)}
+  85%{transform:translateX(0)}
+}
+@media(prefers-reduced-motion:reduce){
+  .golden-photo:before,.golden-brand,.golden-invitation,.golden-heading,.golden-subtitle,.golden-intro,
+  .golden-cta,.golden-cta:after,.golden-cta-arrow,.golden-helper,.golden-info,.golden-program-title,
+  .golden-programs,.golden-poster .poster-bottom{animation:none!important;opacity:1!important;transform:none!important}
+}
+
 
 /* v10 CLEAN: approved design remains intact; no crop/reconstruction. */
 .approved-wrap img{
