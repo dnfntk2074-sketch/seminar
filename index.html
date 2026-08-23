@@ -292,15 +292,29 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
 .golden-subtitle b{display:block;color:#9f6d28;font-weight:950}
 .golden-intro{margin-top:3.1%;max-width:80%;font-size:clamp(9px,1.85vw,14px);line-height:1.62;font-weight:700;color:#43534d;letter-spacing:-.03em}
 .golden-cta{
-  position:absolute;left:7%;right:7%;top:39.25%;height:7.2%;z-index:4;
-  display:flex;align-items:center;justify-content:center;gap:3%;
-  border:2px solid #c99c4b;border-radius:999px;background:linear-gradient(135deg,#0a4a3a,#063b31);
-  color:#fff;box-shadow:0 6px 15px rgba(7,63,51,.22),inset 0 0 0 2px rgba(255,255,255,.1);
-  font-size:clamp(17px,3.8vw,29px);font-weight:950;letter-spacing:-.035em;
+  position:absolute;left:6.5%;right:6.5%;top:39%;height:7.8%;z-index:4;
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:3%;
+  overflow:hidden;padding:0 3.2%;
+  border:1.5px solid #d8b766;border-radius:999px;
+  background:radial-gradient(circle at 52% -35%,rgba(226,193,123,.24),transparent 51%),linear-gradient(115deg,#052f28 0%,#0b5845 48%,#06392f 100%);
+  color:#fff;box-shadow:0 10px 24px rgba(5,50,41,.28),0 2px 6px rgba(5,50,41,.18),inset 0 0 0 2px rgba(255,255,255,.08),inset 0 -8px 18px rgba(0,0,0,.12);
+  font-size:clamp(16px,3.45vw,26px);font-weight:950;letter-spacing:-.03em;
+  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
 }
-.golden-cta-clock{width:clamp(27px,7vw,50px);height:clamp(27px,7vw,50px);display:grid;place-items:center;border-radius:50%;background:#e2c17b;color:#17463a;font-size:.8em}
-.golden-cta-arrow{color:#d8ae60;font-size:1.25em}
-.golden-helper{position:absolute;left:7%;right:7%;top:47.35%;text-align:center;font-size:clamp(8px,1.55vw,12px);font-weight:700;color:#4c5a54;letter-spacing:-.03em;white-space:nowrap}
+.golden-cta:before{content:"";position:absolute;inset:3px;border:1px solid rgba(238,211,151,.34);border-radius:inherit;pointer-events:none}
+.golden-cta:after{content:"";position:absolute;top:-90%;left:-22%;width:16%;height:280%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);transform:rotate(18deg);transition:left .55s ease;pointer-events:none}
+.golden-cta:hover{transform:translateY(-2px);filter:brightness(1.06);box-shadow:0 14px 30px rgba(5,50,41,.34),0 3px 8px rgba(5,50,41,.2),inset 0 0 0 2px rgba(255,255,255,.1)}
+.golden-cta:hover:after{left:110%}
+.golden-cta:active{transform:translateY(1px) scale(.995);box-shadow:0 5px 12px rgba(5,50,41,.24),inset 0 3px 10px rgba(0,0,0,.16)}
+.golden-cta:focus-visible{outline:3px solid rgba(216,183,102,.48);outline-offset:4px}
+.golden-cta-clock{width:clamp(34px,7vw,53px);height:clamp(34px,7vw,53px);display:grid;place-items:center;border-radius:50%;background:linear-gradient(145deg,#efd491,#c99c48);color:#073c31;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 3px 9px rgba(0,0,0,.2)}
+.golden-cta-clock svg{width:48%;height:48%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.golden-cta-copy{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;min-width:0}
+.golden-cta-copy small{display:block;margin-bottom:.18em;color:#e7cb89;font-family:Georgia,"Times New Roman",serif;font-size:.38em;font-weight:700;letter-spacing:.18em}
+.golden-cta-copy strong{display:block;color:#fff;font-size:1em;font-weight:950;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.golden-cta-arrow{position:relative;z-index:1;width:clamp(28px,5.5vw,42px);height:clamp(28px,5.5vw,42px);display:grid;place-items:center;border:1px solid rgba(226,193,123,.64);border-radius:50%;background:rgba(0,0,0,.1);color:#e8c979}
+.golden-cta-arrow svg{width:38%;height:38%;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.golden-helper{position:absolute;left:7%;right:7%;top:47.55%;text-align:center;font-size:clamp(8px,1.55vw,12px);font-weight:700;color:#4c5a54;letter-spacing:-.03em;white-space:nowrap}
 .golden-helper:before,.golden-helper:after{content:"";display:inline-block;vertical-align:middle;width:8%;height:1px;margin:0 2%;background:#c6a667}
 .golden-info{
   position:absolute;left:5.7%;right:5.7%;top:49.9%;height:9%;display:grid;grid-template-columns:1fr 1.08fr .92fr;
@@ -333,7 +347,7 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
 .golden-poster .poster-bottom .approved-bottom-quote b{font-size:clamp(18px,3.8vw,29px)}
 @media(max-width:420px){
   .golden-copy{left:5.5%;top:2.1%;width:68%}.golden-brand{gap:2%}.golden-invitation{margin-top:8%;width:72%}
-  .golden-intro{max-width:84%}.golden-cta{left:6%;right:6%;border-width:1.5px}
+  .golden-intro{max-width:84%}.golden-cta{left:4.5%;right:4.5%;padding-left:2.5%;padding-right:2.5%;gap:2%;border-width:1.5px;font-size:clamp(12px,3.9vw,17px)}
   .golden-info{left:4.5%;right:4.5%}.golden-info-item{gap:4%;padding:0 5%}
   .golden-programs{left:2.5%;right:2.5%}.golden-program{gap:5%}
   .golden-poster .poster-bottom{top:77.65%}
@@ -418,8 +432,10 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
         <div class="golden-subtitle">세금은 줄이고, 수익은 높이는<b>자산 포트폴리오 전략</b></div>
         <div class="golden-intro">불확실한 시대, 내 자산을 점검하고<br>더 나은 기회로 나아가는 시간에 초대합니다.</div>
       </div>
-      <button id="goldenHeroCta" class="golden-cta" type="button">
-        <span class="golden-cta-clock">◷</span><span>1분 자산관리 체크 시작하기</span><span class="golden-cta-arrow">›</span>
+      <button id="goldenHeroCta" class="golden-cta" type="button" aria-label="1분 자산관리 체크 시작하기">
+        <span class="golden-cta-clock" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5v5l3.4 2"></path></svg></span>
+        <span class="golden-cta-copy"><small>PERSONAL ASSET CHECK</small><strong>1분 자산관리 체크 시작하기</strong></span>
+        <span class="golden-cta-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"></path></svg></span>
       </button>
       <div class="golden-helper">간단한 질문으로 나의 자산 상태를 진단하고, 세미나에서 맞춤 인사이트를 받아보세요.</div>
       <div class="golden-info">
