@@ -128,16 +128,27 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
   color:#fff;line-height:1.2;pointer-events:none;
 }
 .approved-clean-shape{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.approved-clean-seam{
+  fill:none;stroke:#fbfaf6;stroke-width:30;stroke-linecap:round;
+  transform:translateY(-8px);vector-effect:non-scaling-stroke;
+}
 .approved-clean-fill{fill:url(#approvedFooterGreen)}
 .approved-clean-edge{
   fill:none;stroke:#c89a4d;stroke-width:2.2;stroke-linecap:round;
   opacity:.76;vector-effect:non-scaling-stroke;
 }
-.approved-clean-content{
-  position:absolute;left:6.5%;right:6.5%;bottom:4%;height:43%;
-  display:grid;grid-template-rows:auto 1fr;gap:8%;
+.approved-clean-deco-line{
+  fill:none;stroke:#c89a4d;stroke-width:1.4;stroke-linecap:round;
+  opacity:.82;vector-effect:non-scaling-stroke;
 }
-.approved-clean-top{display:flex;align-items:center;gap:3%;min-width:0}
+.approved-clean-deco-text{
+  fill:#d2a34f;font-family:Georgia,"Times New Roman",serif;
+  font-size:28px;font-style:italic;letter-spacing:.02em;
+}
+.approved-clean-content{
+  position:absolute;left:6.5%;right:6.5%;bottom:4%;height:23%;
+}
+.approved-clean-top{display:none}
 .approved-clean-line{height:1px;flex:1;background:rgba(190,145,66,.78)}
 .approved-clean-title{
   flex:0 0 auto;color:#c89a4d;font-family:Georgia,"Times New Roman",serif;
@@ -157,7 +168,7 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
 .approved-clean-quote b{color:#c89a4d;font-family:Georgia,"Times New Roman",serif;font-size:clamp(18px,4vw,30px)}
 @media(max-width:420px){
   .approved-clean-footer{height:17%}
-  .approved-clean-content{left:5%;right:5%;bottom:3%;height:45%;gap:5%}
+  .approved-clean-content{left:5%;right:5%;bottom:3%;height:27%}
   .approved-clean-bottom{gap:3%}
   .approved-clean-brand{gap:5%}
   .approved-clean-quote{gap:3%;letter-spacing:-.055em}
@@ -190,19 +201,19 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
             <stop offset="1" stop-color="#063b31"></stop>
           </linearGradient>
         </defs>
+        <path class="approved-clean-seam" d="M0 4 C180 24 345 112 470 118 C490 121 510 121 530 118 C655 112 820 24 1000 4"></path>
         <path class="approved-clean-fill" d="M0 4 C180 24 345 112 470 118 C490 121 510 121 530 118 C655 112 820 24 1000 4 L1000 194 Q1000 230 962 230 L38 230 Q0 230 0 194 Z"></path>
         <path class="approved-clean-edge" d="M0 4 C180 24 345 112 470 118 C490 121 510 121 530 118 C655 112 820 24 1000 4"></path>
+        <path class="approved-clean-deco-line" d="M72 31 C164 45 247 82 335 118"></path>
+        <path id="approvedFooterTitlePath" d="M335 118 C390 141 446 149 500 149 C554 149 610 141 665 118" fill="none"></path>
+        <text class="approved-clean-deco-text"><textPath href="#approvedFooterTitlePath" startOffset="50%" text-anchor="middle">Your Better Tomorrow</textPath></text>
+        <path class="approved-clean-deco-line" d="M665 118 C753 82 836 45 928 31"></path>
       </svg>
       <div class="approved-clean-content">
-        <div class="approved-clean-top">
-          <span class="approved-clean-line"></span>
-          <span class="approved-clean-title">Your Better Tomorrow</span>
-          <span class="approved-clean-line"></span>
-        </div>
         <div class="approved-clean-bottom">
           <div class="approved-clean-brand"><strong>A+에셋</strong><span>구리리더스HB사업단</span></div>
           <span class="approved-clean-divider"></span>
-          <div class="approved-clean-quote"><b>“</b><span>당신의 자산이,<br>더 큰 가치를 만들어갈 수 있도록.</span></div>
+          <div class="approved-clean-quote"><b>“</b><span>당신의 자산이,<br>더 큰 가치를 만들어갈 수 있도록.</span><b>”</b></div>
         </div>
       </div>
     </div>
