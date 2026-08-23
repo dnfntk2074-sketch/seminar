@@ -359,8 +359,13 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
 .golden-photo:before{
   content:"";position:absolute;inset:-3%;
   background:url('/api/hero-visual-v3?v=20260823-1') right center/cover no-repeat;
-  transform-origin:74% 43%;will-change:transform;
-  animation:goldenHeroBreath 11s ease-in-out infinite alternate;
+  transform-origin:74% 43%;
+}
+.golden-globe-spin{
+  position:absolute;z-index:1;right:.5%;top:16.2%;width:46.5%;aspect-ratio:1;
+  border-radius:50%;background:url('/api/globe?v=20260823-1') center/contain no-repeat;
+  transform-origin:50% 50%;will-change:transform;pointer-events:none;
+  animation:goldenGlobeTurn 24s linear infinite;
 }
 .golden-brand,.golden-invitation,.golden-heading,.golden-subtitle,.golden-intro,
 .golden-helper,.golden-info,.golden-program-title,.golden-programs,.golden-poster .poster-bottom{
@@ -387,6 +392,10 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
   from{transform:scale(1.03) translate3d(1.6%,0,0)}
   to{transform:scale(1.085) translate3d(-2.1%,.25%,0)}
 }
+@keyframes goldenGlobeTurn{
+  from{transform:rotate(0deg)}
+  to{transform:rotate(360deg)}
+}
 @keyframes goldenCtaGlow{
   0%,68%,100%{box-shadow:0 10px 24px rgba(5,50,41,.28),0 2px 6px rgba(5,50,41,.18),inset 0 0 0 2px rgba(255,255,255,.08),inset 0 -8px 18px rgba(0,0,0,.12)}
   80%{box-shadow:0 13px 29px rgba(5,50,41,.35),0 3px 9px rgba(198,157,75,.2),inset 0 0 0 2px rgba(255,255,255,.1),inset 0 -8px 18px rgba(0,0,0,.1)}
@@ -403,7 +412,7 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
   85%{transform:translateX(0)}
 }
 @media(prefers-reduced-motion:reduce){
-  .golden-photo:before,.golden-brand,.golden-invitation,.golden-heading,.golden-subtitle,.golden-intro,
+  .golden-photo:before,.golden-globe-spin,.golden-brand,.golden-invitation,.golden-heading,.golden-subtitle,.golden-intro,
   .golden-cta,.golden-cta:after,.golden-cta-arrow,.golden-helper,.golden-info,.golden-program-title,
   .golden-programs,.golden-poster .poster-bottom{animation:none!important;opacity:1!important;transform:none!important}
 }
@@ -478,7 +487,7 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
       </div>
     </div>
     <div class="golden-poster">
-      <div class="golden-photo"></div>
+      <div class="golden-photo"><span class="golden-globe-spin" aria-hidden="true"></span></div>
       <div class="golden-copy">
         <div class="golden-brand"><span class="golden-brand-logo" role="img" aria-label="A+에셋"></span><i></i><span>구리리더스HB사업단</span></div>
         <div class="golden-invitation">Invitation</div>
