@@ -360,7 +360,7 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
   content:"";position:absolute;inset:-3%;
   background:url('/api/hero-visual-v3?v=20260823-1') right center/cover no-repeat;
   transform-origin:74% 43%;will-change:transform;
-  animation:goldenHeroBreath 14s ease-in-out infinite alternate;
+  animation:goldenHeroBreath 18s ease-in-out infinite alternate;
 }
 .golden-brand,.golden-invitation,.golden-heading,.golden-subtitle,.golden-intro,
 .golden-helper,.golden-info,.golden-program-title,.golden-programs,.golden-poster .poster-bottom{
@@ -371,9 +371,9 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
 .golden-helper{animation-delay:.56s}.golden-info{animation-delay:.64s}
 .golden-program-title{animation-delay:.72s}.golden-programs{animation-delay:.8s}
 .golden-poster .poster-bottom{animation-delay:.88s}
-.golden-cta{animation:goldenCtaEnter .76s .48s cubic-bezier(.22,.72,.28,1) both,goldenCtaGlow 5.8s 1.7s ease-in-out infinite}
-.golden-cta:after{left:-25%;animation:goldenCtaSheen 5.8s 1.7s ease-in-out infinite}
-.golden-cta-arrow{animation:goldenArrowNudge 5.8s 1.7s ease-in-out infinite}
+.golden-cta{animation:goldenCtaEnter .76s .48s cubic-bezier(.22,.72,.28,1) both,goldenCtaGlow 3s 1.35s ease-in-out infinite}
+.golden-cta:after{left:-25%;animation:goldenCtaSheen 3s 1.35s ease-in-out infinite}
+.golden-cta-arrow{animation:goldenArrowNudge 3s 1.35s ease-in-out infinite}
 .golden-cta:hover:after{animation:none;left:110%}
 @keyframes goldenSoftRise{
   from{opacity:0;transform:translate3d(0,10px,0)}
@@ -384,8 +384,8 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
   to{opacity:1;transform:translate3d(0,0,0) scale(1)}
 }
 @keyframes goldenHeroBreath{
-  from{transform:scale(1.015) translate3d(.4%,0,0)}
-  to{transform:scale(1.055) translate3d(-.65%,.3%,0)}
+  from{transform:scale(1.025) translate3d(.75%,0,0)}
+  to{transform:scale(1.055) translate3d(-.9%,.22%,0)}
 }
 @keyframes goldenCtaGlow{
   0%,68%,100%{box-shadow:0 10px 24px rgba(5,50,41,.28),0 2px 6px rgba(5,50,41,.18),inset 0 0 0 2px rgba(255,255,255,.08),inset 0 -8px 18px rgba(0,0,0,.12)}
