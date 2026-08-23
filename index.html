@@ -363,9 +363,16 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
 }
 .golden-globe-spin{
   position:absolute;z-index:1;right:-15.5%;top:15.3%;width:63%;aspect-ratio:1;
-  border-radius:50%;background:url('/api/globe?v=20260823-1') center/contain no-repeat;
-  transform-origin:50% 50%;will-change:transform;pointer-events:none;
+  overflow:hidden;border-radius:50%;
+  background-color:#11110f;background-image:url('/api/globe-map?v=20260823-1');
+  background-repeat:repeat-x;background-size:200% 100%;background-position:0 center;
+  box-shadow:inset 18px 5px 24px rgba(255,218,135,.28),inset -28px -8px 34px rgba(0,0,0,.62);
+  will-change:background-position;pointer-events:none;
   animation:goldenGlobeTurn 32s linear infinite;
+}
+.golden-globe-spin:after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(circle at 30% 25%,rgba(255,236,188,.24),transparent 30%),radial-gradient(circle at 55% 46%,transparent 48%,rgba(0,0,0,.48) 100%);
 }
 .golden-brand,.golden-invitation,.golden-heading,.golden-subtitle,.golden-intro,
 .golden-helper,.golden-info,.golden-program-title,.golden-programs,.golden-poster .poster-bottom{
@@ -393,8 +400,8 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
   to{transform:scale(1.085) translate3d(-2.1%,.25%,0)}
 }
 @keyframes goldenGlobeTurn{
-  from{transform:rotate(0deg)}
-  to{transform:rotate(360deg)}
+  from{background-position:0 center}
+  to{background-position:-200% center}
 }
 @keyframes goldenCtaGlow{
   0%,68%,100%{box-shadow:0 10px 24px rgba(5,50,41,.28),0 2px 6px rgba(5,50,41,.18),inset 0 0 0 2px rgba(255,255,255,.08),inset 0 -8px 18px rgba(0,0,0,.12)}
