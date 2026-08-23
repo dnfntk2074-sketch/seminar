@@ -370,10 +370,10 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
 .golden-helper{animation-delay:.56s}.golden-info{animation-delay:.64s}
 .golden-program-title{animation-delay:.72s}.golden-programs{animation-delay:.8s}
 .golden-poster .poster-bottom{animation-delay:.88s}
-.golden-cta{animation:goldenCtaEnter .76s .48s cubic-bezier(.22,.72,.28,1) both,goldenCtaGlow 3s 1.35s ease-in-out infinite}
-.golden-cta:after{left:-25%;animation:goldenCtaSheen 3s 1.35s ease-in-out infinite}
-.golden-cta-arrow{animation:goldenArrowNudge 3s 1.35s ease-in-out infinite}
-.golden-cta:hover:after{animation:none;left:110%}
+.golden-cta{animation:goldenCtaEnter .76s .48s cubic-bezier(.22,.72,.28,1) both,goldenCtaGlow 5.4s 1.35s ease-in-out infinite}
+.golden-cta:after{left:50%;top:50%;width:12%;height:12%;border-radius:999px;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,225,154,.34) 0%,rgba(211,168,83,.18) 38%,rgba(211,168,83,0) 72%);filter:blur(2px);animation:goldenCtaSheen 5.4s 1.35s ease-in-out infinite}
+.golden-cta-arrow{animation:goldenArrowNudge 5.4s 1.35s ease-in-out infinite}
+.golden-cta:hover:after{animation:goldenCtaSheen 5.4s ease-in-out infinite}
 @keyframes goldenSoftRise{
   from{opacity:0;transform:translate3d(0,10px,0)}
   to{opacity:1;transform:translate3d(0,0,0)}
@@ -391,10 +391,10 @@ h1{margin:8px 0 8px;font-size:28px;line-height:1.35;color:var(--green)}
   80%{box-shadow:0 13px 29px rgba(5,50,41,.35),0 3px 9px rgba(198,157,75,.2),inset 0 0 0 2px rgba(255,255,255,.1),inset 0 -8px 18px rgba(0,0,0,.1)}
 }
 @keyframes goldenCtaSheen{
-  0%,70%{left:-25%;opacity:0}
-  74%{opacity:.75}
-  88%{left:112%;opacity:.2}
-  100%{left:112%;opacity:0}
+  0%,58%,100%{opacity:0;transform:translate(-50%,-50%) scale(.35)}
+  66%{opacity:.28}
+  82%{opacity:.72;transform:translate(-50%,-50%) scale(8.5)}
+  94%{opacity:0;transform:translate(-50%,-50%) scale(13)}
 }
 @keyframes goldenArrowNudge{
   0%,74%,90%,100%{transform:translateX(0)}
