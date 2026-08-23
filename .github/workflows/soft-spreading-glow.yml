@@ -1,0 +1,13 @@
+name: Apply soft spreading glow
+on:
+  push:
+    paths:
+      - '.github/workflows/soft-spreading-glow.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo ready
