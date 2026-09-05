@@ -1,0 +1,31 @@
+name: Switch inheritance thumbnail jsDelivr
+on:
+  push:
+    paths:
+      - '.github/trigger-jsdelivr.txt'
+permissions:
+  contents: write
+jobs:
+  switch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Switch OG image URL to jsDelivr CDN
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('inheritance-tax/index.html')
+          s=p.read_text()
+          old='https://raw.githubusercontent.com/dnfntk2074-sketch/seminar/main/inheritance-tax/inheritance-og-kakao-v15.jpg?v=20260905-1928'
+          new='https://cdn.jsdelivr.net/gh/dnfntk2074-sketch/seminar@0d5e9150259624e85734e18b7b08f69852db885f/inheritance-tax/inheritance-og-kakao-v15.jpg'
+          if old not in s:
+              raise SystemExit('current raw OG URL not found')
+          p.write_text(s.replace(old,new))
+          PY
+      - name: Commit change
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add inheritance-tax/index.html
+          git commit -m 'Use jsDelivr CDN for inheritance OG image'
+          git push
