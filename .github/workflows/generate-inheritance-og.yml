@@ -1,0 +1,28 @@
+name: Generate inheritance OG
+on:
+  push:
+    paths:
+      - '.github/workflows/generate-inheritance-og.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y imagemagick fonts-noto-cjk
+          convert -size 1200x630 gradient:'#17153b-#5b2da3' \
+            -font /usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc -fill white -pointsize 78 -gravity northwest -annotate +70+145 '예상 상속세금' \
+            -fill '#c9a8ff' -pointsize 92 -annotate +70+235 '계산기' \
+            -font /usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc -fill white -pointsize 31 -annotate +74+355 '상속재산과 가족구성만 입력하면' \
+            -font /usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc -fill '#ffd56a' -pointsize 38 -annotate +74+405 '예상 상속세를 한눈에 확인' \
+            -fill '#d9d3ef' -pointsize 23 -annotate +76+555 '교육·상담용 간편 시뮬레이션' \
+            inheritance-tax/inheritance-og-korean-v10.jpg
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add inheritance-tax/inheritance-og-korean-v10.jpg
+          git commit -m 'Add Korean raster OG image' || exit 0
+          git push
