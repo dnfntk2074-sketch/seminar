@@ -1,1 +1,1 @@
-Fresh thumbnail reset 2026-09-05 20:23 KST. The calculator URL remains unchanged. OG will point to a newly uploaded same-origin JPEG.
+High-resolution thumbnail is inheritance-og-hq-20260906.jpg. Main target commit prepared: 22e8852d92f9720b78bcf87ef142b5a421fe4c53
