@@ -1,1 +1,1 @@
-Thumbnail reset marker 2026-09-05 20:23 KST. Direct-write method only; no automated OG rewrites.
+High-res inheritance tax thumbnail published 2026-09-06 11:54 KST
