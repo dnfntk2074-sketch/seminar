@@ -2,6 +2,7 @@ import express from "express";
 import pg from "pg";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -32,9 +33,17 @@ function auth(req,res,next){
     req.admin=p; next();
   }catch{ res.status(401).json({error:"unauthorized"}); }
 }
+function tokenHash(token){ return crypto.createHash("sha256").update(String(token||"")).digest("hex"); }
 function isTest(s){
-  const t=((s.ownerName||"")+" "+(s.customerName||"")).toLowerCase();
+  const t=((s.owner_name||s.ownerName||"")+" "+(s.customer_name||s.customerName||"")).toLowerCase();
   return ["테스트","점검","test"].some(w=>t.includes(w));
+}
+function toPublic(row,hash){
+  return {
+    id:String(row.id), ownerName:row.owner_name, customerName:row.customer_name,
+    scheduledAt:new Date(row.scheduled_at).toISOString(),
+    canEdit:!!hash && !!row.owner_token_hash && crypto.timingSafeEqual(Buffer.from(hash),Buffer.from(row.owner_token_hash))
+  };
 }
 async function init(){
   await pool.query(`CREATE TABLE IF NOT EXISTS app_settings(
@@ -44,11 +53,25 @@ async function init(){
     mvp_enabled boolean not null default true,
     mvp_title text not null default '한주 최다 방문 MVP',
     app_title text not null default '유료DB ACTION HUB',
-    app_subtitle text not null default '방문 · 학습 · 콜 활동을 한눈에 공유합니다.',
-    logo_height integer not null default 36
+    app_subtitle text not null default '방문 · 학습 · 콜 활동을 한눈에 공유합니다.'
   )`);
   await pool.query(`INSERT INTO app_settings(id) VALUES('main') ON CONFLICT DO NOTHING`);
-  await pool.query(`CREATE TABLE IF NOT EXISTS deleted_schedules(schedule_id text primary key, deleted_at timestamptz default now())`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS schedules(
+    id text primary key,
+    owner_name text not null,
+    customer_name text not null,
+    scheduled_at timestamptz not null,
+    owner_token_hash text,
+    source text not null default 'local',
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+  )`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS purged_schedule_ids(schedule_id text primary key, purged_at timestamptz not null default now())`);
+  const old=await pool.query(`SELECT to_regclass('public.deleted_schedules') AS t`);
+  if(old.rows[0]?.t){
+    await pool.query(`INSERT INTO purged_schedule_ids(schedule_id) SELECT schedule_id FROM deleted_schedules ON CONFLICT DO NOTHING`);
+    await pool.query(`DROP TABLE deleted_schedules`);
+  }
   await pool.query(`CREATE TABLE IF NOT EXISTS admin_auth(email text primary key, password_hash text not null, updated_at timestamptz default now())`);
   const r=await pool.query("SELECT 1 FROM admin_auth WHERE email=$1",[ADMIN_EMAIL]);
   if(!r.rowCount){
@@ -56,34 +79,70 @@ async function init(){
     await pool.query("INSERT INTO admin_auth(email,password_hash) VALUES($1,$2)",[ADMIN_EMAIL,hash]);
   }
 }
-async function getFloot(){
-  const r=await fetch(FLOOT+"/hub-data");
-  if(!r.ok) throw new Error("upstream");
-  const j=await r.json();
-  return j?.json?.schedules||[];
-}
-async function getDeleted(){
-  const r=await pool.query("SELECT schedule_id FROM deleted_schedules");
-  return new Set(r.rows.map(x=>x.schedule_id));
+async function syncFloot(){
+  try{
+    const r=await fetch(FLOOT+"/hub-data",{signal:AbortSignal.timeout(5000)});
+    if(!r.ok) return;
+    const j=await r.json();
+    const all=j?.json?.schedules||[];
+    const purged=new Set((await pool.query("SELECT schedule_id FROM purged_schedule_ids")).rows.map(x=>String(x.schedule_id)));
+    for(const s of all){
+      const id=String(s.id||"");
+      if(!id||purged.has(id)||!s.ownerName||!s.customerName||!s.scheduledAt) continue;
+      await pool.query(`INSERT INTO schedules(id,owner_name,customer_name,scheduled_at,source)
+        VALUES($1,$2,$3,$4,'upstream')
+        ON CONFLICT(id) DO UPDATE SET owner_name=EXCLUDED.owner_name,customer_name=EXCLUDED.customer_name,scheduled_at=EXCLUDED.scheduled_at,updated_at=now()
+        WHERE schedules.source='upstream'`,[id,s.ownerName,s.customerName,s.scheduledAt]);
+    }
+  }catch(e){ console.warn("upstream sync skipped",e.message); }
 }
 async function getSettings(){
-  const r=await pool.query("SELECT * FROM app_settings WHERE id='main'");
+  const r=await pool.query("SELECT marquee_mode,marquee_text,mvp_enabled,mvp_title,app_title,app_subtitle FROM app_settings WHERE id='main'");
   return r.rows[0];
+}
+function makeCustomer(type,place){
+  if(type==="study") return "[DB학습회] "+place;
+  if(type==="call") return "[콜번개] "+place;
+  return place;
 }
 
 app.get("/api/data", async(req,res)=>{
   try{
-    const [all,del,settings]=await Promise.all([getFloot(),getDeleted(),getSettings()]);
-    res.json({schedules:all.filter(s=>!del.has(String(s.id))&&!isTest(s)),settings});
-  }catch(e){res.status(500).json({error:"load_failed"});}
+    await syncFloot();
+    const [rows,settings]=await Promise.all([pool.query("SELECT * FROM schedules ORDER BY scheduled_at ASC"),getSettings()]);
+    const h=req.get("x-owner-token")?tokenHash(req.get("x-owner-token")):"";
+    res.json({schedules:rows.rows.filter(s=>!isTest(s)).map(s=>toPublic(s,h)),settings});
+  }catch(e){console.error(e);res.status(500).json({error:"load_failed"});}
 });
 
 app.post("/api/register", async(req,res)=>{
-  const {ownerName,place,date,time}=req.body||{};
-  if(!ownerName||!place||!date||!time) return res.status(400).json({error:"missing"});
-  const r=await fetch(FLOOT+"/public-visit",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({ownerName,place,date,time})});
-  const text=await r.text();
-  res.status(r.status).type(r.headers.get("content-type")||"application/json").send(text);
+  const {ownerName,place,date,time,type="visit",ownerToken}=req.body||{};
+  if(!ownerName||!place||!date||!time||!ownerToken||!["visit","study","call"].includes(type)) return res.status(400).json({error:"missing"});
+  const at=new Date(`${date}T${time}:00+09:00`);
+  if(Number.isNaN(at.getTime())) return res.status(400).json({error:"invalid_date"});
+  const id=crypto.randomUUID();
+  await pool.query(`INSERT INTO schedules(id,owner_name,customer_name,scheduled_at,owner_token_hash,source) VALUES($1,$2,$3,$4,$5,'local')`,
+    [id,String(ownerName).trim(),makeCustomer(type,String(place).trim()),at.toISOString(),tokenHash(ownerToken)]);
+  res.json({ok:true,id});
+});
+
+app.put("/api/schedules/:id",async(req,res)=>{
+  const {ownerName,place,date,time,type="visit",ownerToken}=req.body||{};
+  if(!ownerName||!place||!date||!time||!ownerToken||!["visit","study","call"].includes(type)) return res.status(400).json({error:"missing"});
+  const at=new Date(`${date}T${time}:00+09:00`);
+  if(Number.isNaN(at.getTime())) return res.status(400).json({error:"invalid_date"});
+  const r=await pool.query("SELECT owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
+  if(!r.rowCount||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
+  await pool.query("UPDATE schedules SET owner_name=$1,customer_name=$2,scheduled_at=$3,updated_at=now() WHERE id=$4",
+    [String(ownerName).trim(),makeCustomer(type,String(place).trim()),at.toISOString(),req.params.id]);
+  res.json({ok:true});
+});
+app.delete("/api/schedules/:id",async(req,res)=>{
+  const ownerToken=req.get("x-owner-token")||req.body?.ownerToken||"";
+  const r=await pool.query("SELECT owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
+  if(!r.rowCount||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
+  await pool.query("DELETE FROM schedules WHERE id=$1",[req.params.id]);
+  res.json({ok:true});
 });
 
 app.post("/api/admin/login",async(req,res)=>{
@@ -99,24 +158,20 @@ app.post("/api/admin/login",async(req,res)=>{
 app.post("/api/admin/logout",(req,res)=>{res.setHeader("Set-Cookie","hb_admin=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0");res.json({ok:true})});
 app.get("/api/admin/me",auth,(req,res)=>res.json({email:req.admin.email}));
 app.get("/api/admin/schedules",auth,async(req,res)=>{
-  try{
-    const [all,del]=await Promise.all([getFloot(),getDeleted()]);
-    res.json({schedules:all.map(s=>({...s,deleted:del.has(String(s.id))}))});
-  }catch{res.status(500).json({error:"load_failed"});}
+  try{await syncFloot();const r=await pool.query("SELECT id,owner_name AS \"ownerName\",customer_name AS \"customerName\",scheduled_at AS \"scheduledAt\",source FROM schedules ORDER BY scheduled_at DESC LIMIT 100");res.json({schedules:r.rows});}
+  catch{res.status(500).json({error:"load_failed"});}
 });
 app.delete("/api/admin/schedules/:id",auth,async(req,res)=>{
-  await pool.query("INSERT INTO deleted_schedules(schedule_id) VALUES($1) ON CONFLICT DO NOTHING",[req.params.id]);
-  res.json({ok:true});
-});
-app.post("/api/admin/schedules/:id/restore",auth,async(req,res)=>{
-  await pool.query("DELETE FROM deleted_schedules WHERE schedule_id=$1",[req.params.id]);
+  const r=await pool.query("SELECT source FROM schedules WHERE id=$1",[req.params.id]);
+  if(r.rowCount&&r.rows[0].source==='upstream') await pool.query("INSERT INTO purged_schedule_ids(schedule_id) VALUES($1) ON CONFLICT DO NOTHING",[req.params.id]);
+  await pool.query("DELETE FROM schedules WHERE id=$1",[req.params.id]);
   res.json({ok:true});
 });
 app.get("/api/admin/settings",auth,async(req,res)=>res.json(await getSettings()));
 app.put("/api/admin/settings",auth,async(req,res)=>{
   const s=req.body||{};
-  await pool.query(`UPDATE app_settings SET marquee_mode=$1,marquee_text=$2,mvp_enabled=$3,mvp_title=$4,app_title=$5,app_subtitle=$6,logo_height=$7 WHERE id='main'`,
-    [s.marquee_mode||"auto",s.marquee_text||"",!!s.mvp_enabled,s.mvp_title||"한주 최다 방문 MVP",s.app_title||"유료DB ACTION HUB",s.app_subtitle||"",Number(s.logo_height)||36]);
+  await pool.query(`UPDATE app_settings SET marquee_mode=$1,marquee_text=$2,mvp_enabled=$3,mvp_title=$4,app_title=$5,app_subtitle=$6 WHERE id='main'`,
+    [s.marquee_mode||"auto",s.marquee_text||"",!!s.mvp_enabled,s.mvp_title||"한주 최다 방문 MVP",s.app_title||"유료DB ACTION HUB",s.app_subtitle||""]);
   res.json({ok:true});
 });
 app.post("/api/admin/change-password",auth,async(req,res)=>{
