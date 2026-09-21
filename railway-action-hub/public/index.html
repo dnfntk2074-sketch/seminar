@@ -30,10 +30,151 @@ linear-gradient(135deg,#20194a,#302066);color:#ffd166;min-height:138px;padding:2
   .mvp-center{left:68%;width:74px;height:74px}
   .mvp-crown{font-size:38px}
 }
+
+/* Times Square MVP billboard */
+.mvp{
+  min-height:184px!important;
+  padding:38px 22px 34px 22px!important;
+  border:2px solid #ffe08a55;
+  box-shadow:inset 0 0 0 1px #ffffff10,inset 0 0 30px #0008,0 0 18px #6f54ff22;
+  background:
+    radial-gradient(circle at 78% 36%,#ffd16624 0 8%,transparent 28%),
+    linear-gradient(135deg,#11152f 0%,#1a1640 48%,#24184f 100%)!important;
+}
+.mvp:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image:radial-gradient(circle,#ffffff18 1px,transparent 1.35px);
+  background-size:8px 8px;
+  opacity:.22;
+  animation:ledMatrix 4.8s ease-in-out infinite;
+  pointer-events:none;
+  z-index:0;
+}
+.mvp:after{
+  content:"";
+  position:absolute;
+  inset:4px;
+  border:1px solid #ffd1662f;
+  border-radius:14px;
+  box-shadow:inset 0 0 18px #ffd16618;
+  animation:framePulse 3.6s ease-in-out infinite;
+  pointer-events:none;
+}
+.mvp-copy{
+  width:64%!important;
+  gap:5px!important;
+  z-index:5!important;
+  padding-top:8px;
+}
+.mvp-kicker{
+  font-size:12px!important;
+  letter-spacing:2px!important;
+  color:#ffe8a3!important;
+  text-transform:uppercase;
+}
+.mvp-sub{
+  font-size:16px!important;
+  color:#d9dcff!important;
+  letter-spacing:.5px;
+}
+.mvp-name{
+  font-size:36px!important;
+  line-height:1.02!important;
+  letter-spacing:-1.1px!important;
+  color:#fff!important;
+  text-shadow:0 0 8px #fff8,0 0 18px #7dd3fc77,0 0 34px #6f54ff55!important;
+  margin-top:4px!important;
+}
+.mvp-count{
+  display:inline-block;
+  width:max-content;
+  font-size:27px!important;
+  padding:4px 12px 5px;
+  margin-top:4px!important;
+  border:1px solid #ffd16655;
+  border-radius:999px;
+  background:#ffd16612;
+  color:#ffd166!important;
+  text-shadow:0 0 10px #ffd166aa!important;
+}
+.mvp-billboard-bg{
+  position:absolute;
+  left:55%;
+  top:48%;
+  transform:translate(-50%,-50%);
+  z-index:1;
+  font-size:94px;
+  line-height:1;
+  font-weight:1000;
+  letter-spacing:-7px;
+  color:transparent;
+  -webkit-text-stroke:2px #ffd16624;
+  text-shadow:0 0 24px #ffd16618;
+  opacity:.85;
+  pointer-events:none;
+  animation:bgMvp 5s ease-in-out infinite;
+}
+.mvp-scan{
+  position:absolute;
+  z-index:2;
+  top:-20%;
+  bottom:-20%;
+  width:28%;
+  left:-35%;
+  transform:skewX(-17deg);
+  background:linear-gradient(90deg,transparent,#ffffff08 25%,#fff8d536 50%,#ffffff08 75%,transparent);
+  filter:blur(1px);
+  animation:scanBillboard 6.5s linear infinite;
+  pointer-events:none;
+}
+.mvp-ticker{
+  position:absolute;
+  left:8px;
+  right:8px;
+  height:19px;
+  overflow:hidden;
+  z-index:4;
+  color:#ffd166;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:1.6px;
+  white-space:nowrap;
+  text-shadow:0 0 6px #ffd16688;
+  opacity:.88;
+}
+.mvp-ticker.top{top:9px}
+.mvp-ticker.bottom{bottom:7px;color:#9fdcff;text-shadow:0 0 6px #7dd3fc88}
+.mvp-ticker span{
+  display:inline-block;
+  min-width:200%;
+  animation:tickerMove 14s linear infinite;
+}
+@keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes scanBillboard{0%{left:-35%}100%{left:115%}}
+@keyframes framePulse{0%,100%{opacity:.42;box-shadow:inset 0 0 14px #ffd16612}50%{opacity:1;box-shadow:inset 0 0 26px #ffd1662b}}
+@keyframes ledMatrix{0%,100%{opacity:.13}50%{opacity:.28}}
+@keyframes bgMvp{0%,100%{transform:translate(-50%,-50%) scale(.98);opacity:.55}50%{transform:translate(-50%,-50%) scale(1.04);opacity:.9}}
+@media(max-width:420px){
+  .mvp{min-height:170px!important;padding:36px 14px 31px!important}
+  .mvp-copy{width:68%!important}
+  .mvp-kicker{font-size:9px!important;letter-spacing:1.2px!important}
+  .mvp-sub{font-size:13px!important}
+  .mvp-name{font-size:28px!important}
+  .mvp-count{font-size:21px!important;padding:3px 9px 4px}
+  .mvp-billboard-bg{left:68%;font-size:70px;letter-spacing:-5px}
+  .mvp-ticker{font-size:8px;height:16px}
+  .mvp-ticker.top{top:7px}.mvp-ticker.bottom{bottom:5px}
+  .fw{width:48px!important;height:48px!important;opacity:.72}
+  .fw1{right:3px!important;top:24px!important}
+  .fw2{right:5px!important;bottom:20px!important}
+  .fw3{right:52px!important;top:58px!important}
+}
 </style></head><body><div class="wrap">
 <div class="card"><img class="brand-logo" src="/brand-logo-user.gif?v=20260921-1935" alt="보험이 착해지다 A+에셋"><div class="title" id="appTitle">유료DB ACTION HUB</div><div class="sub" id="appSub">방문 · 학습 · 콜 활동을 한눈에 공유합니다.</div></div>
 <div class="led schedule-led"><div class="glow-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="scroll" id="marquee">일정을 불러오는 중...</div></div>
-<div class="led mvp"><div class="mvp-copy"><div class="mvp-kicker">👑 WEEKLY VISIT MVP 👑</div><div class="mvp-sub" id="mvpTitle">이번 주 방문왕</div><div class="mvp-name" id="mvpName">집계 중...</div><div class="mvp-count" id="mvpCount"></div></div><div class="mvp-center" aria-hidden="true"><span class="mvp-crown">♛</span><span class="mvp-rays"></span></div><div class="mvp-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="fw fw1" aria-hidden="true"><i></i><i></i><i></i></div><div class="fw fw2" aria-hidden="true"><i></i><i></i><i></i></div><div class="fw fw3" aria-hidden="true"><i></i><i></i><i></i></div></div>
+<div class="led mvp"><div class="mvp-copy"><div class="mvp-kicker">👑 WEEKLY VISIT MVP 👑</div><div class="mvp-sub" id="mvpTitle">이번 주 방문왕</div><div class="mvp-name" id="mvpName">집계 중...</div><div class="mvp-count" id="mvpCount"></div></div><div class="mvp-billboard-bg" aria-hidden="true">MVP</div><div class="mvp-scan" aria-hidden="true"></div><div class="mvp-ticker top" aria-hidden="true"><span>★ WEEKLY VISIT MVP ★ TOP PERFORMANCE ★ WEEKLY VISIT MVP ★</span></div><div class="mvp-ticker bottom" aria-hidden="true"><span>★ GURI LEADERS HB ★ WEEKLY CHAMPION ★ GURI LEADERS HB ★</span></div><div class="mvp-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="fw fw1" aria-hidden="true"><i></i><i></i><i></i></div><div class="fw fw2" aria-hidden="true"><i></i><i></i><i></i></div><div class="fw fw3" aria-hidden="true"><i></i><i></i><i></i></div></div>
 <div class="card"><b>ACTION 등록</b><div class="tabs" id="tabs"><button class="on" data-t="visit">🤝 방문일정</button><button data-t="study">📚 DB학습회</button><button data-t="call">⚡ 콜번개</button></div>
 <div class="field"><label>TFA</label><input class="input" id="owner" placeholder="예: 이충학"></div>
 <div class="field"><label id="placeLabel">방문 장소</label><input class="input" id="place" placeholder="예: 구리OO병원"></div>
