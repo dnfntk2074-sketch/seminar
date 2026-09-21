@@ -9,10 +9,10 @@
   "theme_color": "#0b4cc8",
   "icons": [
     {
-      "src": "/action-hub-app-icon.png",
-      "sizes": "192x192",
+      "src": "/apple-touch-icon.png?v=20260921-2201",
+      "sizes": "180x180",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
