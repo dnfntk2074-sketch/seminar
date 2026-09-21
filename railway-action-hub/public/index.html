@@ -151,10 +151,10 @@ linear-gradient(135deg,#20194a,#302066);color:#ffd166;min-height:138px;padding:2
 .mvp-ticker.top .ticker-copy{animation:none}
 .mvp-ticker.bottom .ticker-copy{animation:none}
 .mvp-ticker.top,.mvp-ticker.bottom{will-change:transform}
-.mvp-ticker.top{animation:tickerTopRTL 13s linear infinite}
-.mvp-ticker.bottom{animation:tickerBottomRTL 15s linear infinite}
-@keyframes tickerTopRTL{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-@keyframes tickerBottomRTL{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.mvp-ticker.top{animation:tickerTopLTR 13s linear infinite}
+.mvp-ticker.bottom{animation:tickerBottomLTR 15s linear infinite}
+@keyframes tickerTopLTR{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+@keyframes tickerBottomLTR{from{transform:translateX(-50%)}to{transform:translateX(0)}}
 @keyframes scanBillboard{0%{left:-35%}100%{left:115%}}
 @keyframes framePulse{0%,100%{opacity:.42;box-shadow:inset 0 0 14px #ffd16612}50%{opacity:1;box-shadow:inset 0 0 26px #ffd1662b}}
 @keyframes ledMatrix{0%,100%{opacity:.13}50%{opacity:.28}}
