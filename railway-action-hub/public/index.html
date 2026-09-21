@@ -171,10 +171,63 @@ linear-gradient(135deg,#20194a,#302066);color:#ffd166;min-height:138px;padding:2
   .fw2{right:5px!important;bottom:20px!important}
   .fw3{right:52px!important;top:58px!important}
 }
+
+/* seamless left-to-right marquees */
+.led{overflow:hidden}
+.led .scroll{animation:none!important;padding-left:0!important}
+.marquee-track,.mvp-marquee-track{
+  display:flex;
+  width:max-content;
+  min-width:200%;
+  align-items:center;
+  gap:0;
+  will-change:transform;
+}
+.marquee-copy,.mvp-marquee-copy{
+  flex:0 0 auto;
+  padding-right:48px;
+  white-space:nowrap;
+}
+.marquee-track.ltr{animation:scheduleLTR 16s linear infinite}
+.mvp-marquee-track.ltr{animation:mvpLTR 18s linear infinite}
+@keyframes scheduleLTR{
+  from{transform:translateX(-50%)}
+  to{transform:translateX(0)}
+}
+@keyframes mvpLTR{
+  from{transform:translateX(-50%)}
+  to{transform:translateX(0)}
+}
+.mvp-marquee-track{
+  position:relative;
+  z-index:5;
+  font-weight:900;
+  align-items:center;
+}
+.mvp-marquee-copy{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.mvp-sep{color:#7dd3fc;opacity:.8;text-shadow:0 0 8px #7dd3fc66}
+.mvp-kicker{font-size:13px!important}
+.mvp-sub{font-size:18px!important}
+.mvp-name{font-size:34px!important}
+.mvp-count{font-size:25px!important;margin:0!important;padding:4px 11px!important}
+.mvp-billboard-bg{display:none!important}
+@media(max-width:420px){
+  .marquee-track.ltr{animation-duration:14s}
+  .mvp-marquee-track.ltr{animation-duration:16s}
+  .mvp-marquee-copy{gap:10px}
+  .mvp-kicker{font-size:10px!important}
+  .mvp-sub{font-size:14px!important}
+  .mvp-name{font-size:27px!important}
+  .mvp-count{font-size:21px!important}
+}
 </style></head><body><div class="wrap">
 <div class="card"><img class="brand-logo" src="/brand-logo-user.gif?v=20260921-1935" alt="보험이 착해지다 A+에셋"><div class="title" id="appTitle">유료DB ACTION HUB</div><div class="sub" id="appSub">방문 · 학습 · 콜 활동을 한눈에 공유합니다.</div></div>
-<div class="led schedule-led"><div class="glow-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="scroll" id="marquee">일정을 불러오는 중...</div></div>
-<div class="led mvp"><div class="mvp-copy"><div class="mvp-kicker">👑 WEEKLY VISIT MVP 👑</div><div class="mvp-sub" id="mvpTitle">이번 주 방문왕</div><div class="mvp-name" id="mvpName">집계 중...</div><div class="mvp-count" id="mvpCount"></div></div><div class="mvp-billboard-bg" aria-hidden="true">MVP</div><div class="mvp-scan" aria-hidden="true"></div><div class="mvp-ticker top" aria-hidden="true"><span>★ WEEKLY VISIT MVP ★ TOP PERFORMANCE ★ WEEKLY VISIT MVP ★</span></div><div class="mvp-ticker bottom" aria-hidden="true"><span>★ GURI LEADERS HB ★ WEEKLY CHAMPION ★ GURI LEADERS HB ★</span></div><div class="mvp-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="fw fw1" aria-hidden="true"><i></i><i></i><i></i></div><div class="fw fw2" aria-hidden="true"><i></i><i></i><i></i></div><div class="fw fw3" aria-hidden="true"><i></i><i></i><i></i></div></div>
+<div class="led schedule-led"><div class="glow-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="marquee-track ltr" id="scheduleTrack"><span class="marquee-copy" id="marquee">일정을 불러오는 중...</span><span class="marquee-copy mirror" id="marqueeMirror" aria-hidden="true">일정을 불러오는 중...</span></div></div>
+<div class="led mvp"><div class="mvp-marquee-track ltr" id="mvpTrack"><div class="mvp-marquee-copy"><span class="mvp-kicker">👑 WEEKLY VISIT MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitle">이번 주 방문왕</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpName">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCount"></span></div><div class="mvp-marquee-copy mirror" aria-hidden="true"><span class="mvp-kicker">👑 WEEKLY VISIT MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitleMirror">이번 주 방문왕</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpNameMirror">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCountMirror"></span></div></div><div class="mvp-scan" aria-hidden="true"></div><div class="mvp-ticker top" aria-hidden="true"><span>★ WEEKLY VISIT MVP ★ TOP PERFORMANCE ★ WEEKLY VISIT MVP ★</span></div><div class="mvp-ticker bottom" aria-hidden="true"><span>★ GURI LEADERS HB ★ WEEKLY CHAMPION ★ GURI LEADERS HB ★</span></div><div class="mvp-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="fw fw1" aria-hidden="true"><i></i><i></i><i></i></div><div class="fw fw2" aria-hidden="true"><i></i><i></i><i></i></div><div class="fw fw3" aria-hidden="true"><i></i><i></i><i></i></div></div>
 <div class="card"><b>ACTION 등록</b><div class="tabs" id="tabs"><button class="on" data-t="visit">🤝 방문일정</button><button data-t="study">📚 DB학습회</button><button data-t="call">⚡ 콜번개</button></div>
 <div class="field"><label>TFA</label><input class="input" id="owner" placeholder="예: 이충학"></div>
 <div class="field"><label id="placeLabel">방문 장소</label><input class="input" id="place" placeholder="예: 구리OO병원"></div>
@@ -193,7 +246,7 @@ function add(iso,n){let d=new Date(iso+"T00:00:00Z");d.setUTCDate(d.getUTCDate()
 function parse(s){let d=new Date(s.scheduledAt),name=s.customerName||"",type="visit",p=name;if(name.startsWith("[DB학습회] ")){type="study";p=name.slice(9)}else if(name.startsWith("[콜번개] ")){type="call";p=name.slice(7)}return{id:String(s.id),owner:s.ownerName||"",place:p,type,date:seoulDate(d),time:new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hour12:false}).format(d),at:d.getTime(),canEdit:!!s.canEdit}}
 function week(){let t=seoulDate(),d=new Date(t+"T00:00:00Z"),dow=d.getUTCDay(),back=dow===0?6:dow-1;let m=add(t,-back);return[m,add(m,6)]}
 function seoulNowKey(){let d=new Date();let date=seoulDate(d);let time=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hour12:false}).format(d);return date+"T"+time}
-async function load(){let r=await fetch("/api/data",{headers:{"x-owner-token":ownerToken}}),j=await r.json();let s=j.settings||{};appTitle.textContent=s.app_title||"유료DB ACTION HUB";appSub.textContent=s.app_subtitle||"";mvpTitle.textContent=s.mvp_title||"이번 주 방문왕";document.querySelector(".mvp").style.display=s.mvp_enabled===false?"none":"flex";data=(j.schedules||[]).map(parse).sort((a,b)=>a.at-b.at);let nowKey=seoulNowKey();let n=data.find(x=>(x.date+"T"+x.time)>=nowKey);let typeName=n?(n.type==="visit"?"방문":n.type==="study"?"DB학습회":"콜번개"):"";marquee.textContent=s.marquee_mode==="manual"&&s.marquee_text?s.marquee_text:(n?`다음 일정 · ${typeName} · ${n.date} ${n.time} · ${n.owner} TFA · ${n.place}`:"등록된 다음 일정이 없습니다");let [m,su]=week(),c={};data.filter(x=>x.type==="visit"&&x.date>=m&&x.date<=su).forEach(x=>c[x.owner]=(c[x.owner]||0)+1);let vals=Object.entries(c);if(!vals.length){mvpName.textContent="이번 주 방문 기록 없음";mvpCount.textContent=""}else{let mx=Math.max(...vals.map(x=>x[1]));let names=vals.filter(x=>x[1]===mx).map(x=>x[0]).join(" · ");mvpName.textContent=names+" TFA";mvpCount.textContent=mx+"건"}render()}
+async function load(){let r=await fetch("/api/data",{headers:{"x-owner-token":ownerToken}}),j=await r.json();let s=j.settings||{};appTitle.textContent=s.app_title||"유료DB ACTION HUB";appSub.textContent=s.app_subtitle||"";mvpTitle.textContent=s.mvp_title||"이번 주 방문왕";mvpTitleMirror.textContent=s.mvp_title||"이번 주 방문왕";document.querySelector(".mvp").style.display=s.mvp_enabled===false?"none":"flex";data=(j.schedules||[]).map(parse).sort((a,b)=>a.at-b.at);let nowKey=seoulNowKey();let n=data.find(x=>(x.date+"T"+x.time)>=nowKey);let typeName=n?(n.type==="visit"?"방문":n.type==="study"?"DB학습회":"콜번개"):"";let marqueeText=s.marquee_mode==="manual"&&s.marquee_text?s.marquee_text:(n?`다음 일정 · ${typeName} · ${n.date} ${n.time} · ${n.owner} TFA · ${n.place}`:"등록된 다음 일정이 없습니다");marquee.textContent=marqueeText;marqueeMirror.textContent=marqueeText;let [m,su]=week(),c={};data.filter(x=>x.type==="visit"&&x.date>=m&&x.date<=su).forEach(x=>c[x.owner]=(c[x.owner]||0)+1);let vals=Object.entries(c);if(!vals.length){mvpName.textContent="이번 주 방문 기록 없음";mvpCount.textContent="";mvpNameMirror.textContent="이번 주 방문 기록 없음";mvpCountMirror.textContent=""}else{let mx=Math.max(...vals.map(x=>x[1]));let names=vals.filter(x=>x[1]===mx).map(x=>x[0]).join(" · ");mvpName.textContent=names+" TFA";mvpCount.textContent=mx+"건";mvpNameMirror.textContent=names+" TFA";mvpCountMirror.textContent=mx+"건"}render()}
 function render(){let t=seoulDate();grid.innerHTML="";for(let i=0;i<14;i++){let d=add(t,i),list=data.filter(x=>x.date===d),el=document.createElement("div");el.className="day";el.innerHTML=`<h4>${d.slice(5,7)}월 ${d.slice(8)}일</h4>`+(list.length?list.map(x=>`<div class=item data-id="${x.id}">${x.type==="visit"?"🤝":x.type==="study"?"📚":"⚡"} <b>${x.time} · ${esc(x.owner)}</b><br>${esc(x.place)}${x.canEdit?`<div class=item-actions><button class=edit-btn data-edit="${x.id}">수정</button><button class=delete-btn data-delete="${x.id}">삭제</button></div>`:""}</div>`).join(""):"<div class=muted>등록 일정 없음</div>");grid.appendChild(el)}}
 function esc(v){return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 grid.onclick=async e=>{let id=e.target.dataset.edit||e.target.dataset.delete;if(!id)return;let x=data.find(v=>v.id===id);if(!x||!x.canEdit)return;if(e.target.dataset.delete){if(!confirm("정말 삭제할까요?"))return;let r=await fetch("/api/schedules/"+encodeURIComponent(id),{method:"DELETE",headers:{"x-owner-token":ownerToken}});if(r.ok){if(editingId===id)closeEdit();await load()}else alert("삭제하지 못했습니다.");return}openEdit(x)};
