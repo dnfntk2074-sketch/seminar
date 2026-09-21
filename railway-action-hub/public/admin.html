@@ -1,18 +1,248 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ACTION HUB 관리자</title><style>
-*{box-sizing:border-box}body{margin:0;background:#f4f7fb;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;color:#172033}.wrap{max-width:760px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px #0001}input,select{width:100%;height:44px;border:1px solid #dbe1ea;border-radius:10px;padding:0 10px;margin:5px 0 10px}button{border:0;border-radius:10px;padding:11px 14px;font-weight:800}.primary{background:#2456d8;color:#fff}.danger{background:#e5484d;color:#fff}.ghost{background:#eef2f7}.row{display:flex;gap:8px;align-items:center}.item{border:1px solid #e5eaf1;border-radius:12px;padding:10px;margin-top:8px}.muted{color:#6b7280;font-size:12px}.hidden{display:none}@media(max-width:420px){.wrap{padding:10px}.card{padding:14px}}
-</style></head><body><div class=wrap><h2>ACTION HUB 관리자</h2>
-<div class=card id=login><b>관리자 로그인</b><input id=email type=email placeholder=이메일 value="dnfntk2074@gmail.com"><input id=pw type=password placeholder=비밀번호><button class=primary id=loginBtn>로그인</button><div class=muted id=loginMsg></div></div>
-<div id=panel class=hidden><div class=card><div class=row><b style="flex:1">전광판 · 화면 설정</b><button class=ghost id=logout>로그아웃</button></div><label>전광판 모드</label><select id=mode><option value=auto>자동 (다음 방문 일정)</option><option value=manual>직접 입력</option></select><label>전광판 문구</label><input id=marquee><label>MVP 제목</label><input id=mvpTitle><label><input type=checkbox id=mvp style="width:auto;height:auto"> MVP 표시</label><label>앱 제목</label><input id=title><label>앱 부제목</label><input id=sub><button class=primary id=save>설정 저장</button></div>
-<div class=card><b>최근 일정 관리</b><p class=muted>완전 삭제는 DB에서 실제 일정 레코드를 삭제하며 복구할 수 없습니다.</p><div id=list></div></div>
-<div class=card><b>관리자 비밀번호 변경</b><input id=newpw type=password placeholder="새 비밀번호 (8자 이상)"><button class=primary id=change>비밀번호 변경</button><div class=muted id=changeMsg></div></div></div></div><script>
-async function api(u,o={}){let r=await fetch(u,{...o,headers:{"content-type":"application/json",...(o.headers||{})}});if(r.status===401){showLogin();throw new Error("unauthorized")}return r}
-function showLogin(){login.classList.remove("hidden");panel.classList.add("hidden")}
-function showPanel(){login.classList.add("hidden");panel.classList.remove("hidden")}
-loginBtn.onclick=async()=>{let r=await api("/api/admin/login",{method:"POST",body:JSON.stringify({email:email.value,password:pw.value})});if(r.ok){showPanel();load()}else loginMsg.textContent="로그인 정보를 확인해 주세요."}
-logout.onclick=async()=>{await api("/api/admin/logout",{method:"POST"});showLogin()}
-async function load(){let me=await fetch("/api/admin/me");if(!me.ok)return showLogin();showPanel();let s=await (await api("/api/admin/settings")).json();mode.value=s.marquee_mode;marquee.value=s.marquee_text||"";mvp.checked=s.mvp_enabled;mvpTitle.value=s.mvp_title;title.value=s.app_title;sub.value=s.app_subtitle;let j=await (await api("/api/admin/schedules")).json();list.innerHTML="";(j.schedules||[]).forEach(x=>{let d=document.createElement("div");d.className="item";d.innerHTML=`<b>${esc(x.ownerName||"")}</b><div class=muted>${new Date(x.scheduledAt).toLocaleString("ko-KR")} · ${esc(x.customerName||"")}</div>`;let b=document.createElement("button");b.className="danger";b.textContent="완전 삭제";b.onclick=async()=>{if(!confirm("이 일정은 복구할 수 없습니다. 완전히 삭제하시겠습니까?"))return;let r=await api("/api/admin/schedules/"+encodeURIComponent(x.id),{method:"DELETE"});if(r.ok){d.remove();await load()}};d.appendChild(b);list.appendChild(d)})}
-function esc(v){return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-save.onclick=async()=>{await api("/api/admin/settings",{method:"PUT",body:JSON.stringify({marquee_mode:mode.value,marquee_text:marquee.value,mvp_enabled:mvp.checked,mvp_title:mvpTitle.value,app_title:title.value,app_subtitle:sub.value})});alert("저장되었습니다.")}
-change.onclick=async()=>{let r=await api("/api/admin/change-password",{method:"POST",body:JSON.stringify({password:newpw.value})});changeMsg.textContent=r.ok?"비밀번호가 변경되었습니다.":"8자 이상으로 설정해 주세요.";if(r.ok)newpw.value=""}
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ACTION HUB 관리자</title>
+<meta name="theme-color" content="#0b2a66">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ACTION HUB 관리자">
+<link rel="manifest" href="/admin-manifest.webmanifest?v=20260921-2210">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20260921-2201">
+<link rel="icon" type="image/png" href="/favicon.png?v=20260921-2201">
+<style>
+*{box-sizing:border-box}
+:root{--blue:#0b57e3;--navy:#0d2349;--bg:#f2f6fb;--card:#fff;--muted:#6b7280;--line:#e6ebf2;--danger:#e5484d;--green:#14b86e;--amber:#f5a300;--purple:#7c3aed}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#172033}
+button,input,select{font:inherit}
+.wrap{max-width:760px;margin:auto;min-height:100vh;padding:0 12px 92px}
+.hero{margin:0 -12px 14px;padding:calc(14px + env(safe-area-inset-top)) 18px 20px;background:
+radial-gradient(circle at 90% 10%,#7dd3fc55,transparent 30%),
+linear-gradient(135deg,#0b2a66,#0b57e3 58%,#13a8ff);color:#fff;border-radius:0 0 28px 28px;box-shadow:0 10px 28px #0b57e326}
+.hero-top{display:flex;align-items:center;gap:12px}
+.app-icon{width:58px;height:58px;border-radius:17px;object-fit:cover;background:#fff;box-shadow:0 7px 20px #0003}
+.hero-title{font-size:22px;font-weight:950;line-height:1.15}
+.hero-sub{font-size:12px;opacity:.84;margin-top:4px}
+.admin-badge{margin-left:auto;background:#ffffff20;border:1px solid #ffffff40;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:900}
+.card{background:#fff;border-radius:20px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px #17335d0b;border:1px solid #eef2f7}
+.section-title{font-size:16px;font-weight:950;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.muted{color:var(--muted);font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{border-radius:16px;padding:14px;color:#fff;min-height:94px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:inset 0 0 0 1px #ffffff22}
+.stat b{font-size:26px;line-height:1}.stat span{font-size:12px;font-weight:800;opacity:.9}
+.s1{background:linear-gradient(135deg,#1263ef,#0b57e3)}.s2{background:linear-gradient(135deg,#12b981,#079b67)}.s3{background:linear-gradient(135deg,#f6b21b,#ef8d00)}.s4{background:linear-gradient(135deg,#7c3aed,#5b21b6)}
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.quick button{border:0;background:#f7f9fc;border-radius:16px;padding:15px 8px;font-weight:900;color:#25324a;min-height:82px}
+.quick .ico{font-size:24px;display:block;margin-bottom:7px}
+.field{margin-top:12px}.field label{display:block;font-size:12px;font-weight:850;color:#667085;margin-bottom:6px}
+input,select{width:100%;height:46px;border:1px solid #dfe5ee;border-radius:12px;background:#fff;padding:0 12px;color:#172033}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+.toggle-row input{width:20px;height:20px}
+.btn{border:0;border-radius:12px;padding:12px 15px;font-weight:900}
+.primary{background:var(--blue);color:#fff}.ghost{background:#eef3f8;color:#344054}.danger{background:#fff0f0;color:#c9353c;border:1px solid #ffd5d7}
+.full{width:100%;height:48px}
+.row{display:flex;gap:8px;align-items:center}
+.filters{display:grid;grid-template-columns:1.4fr .8fr;gap:8px;margin-bottom:10px}
+.item{border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:9px;background:#fff}
+.item-top{display:flex;gap:10px;align-items:flex-start}
+.item-main{flex:1;min-width:0}
+.owner{font-weight:950;font-size:15px}
+.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:900;margin-left:5px}
+.visit{background:#e8f1ff;color:#0b57e3}.study{background:#ecfdf3;color:#09875d}.call{background:#fff4df;color:#bd7100}
+.item-meta{font-size:12px;color:#667085;margin-top:4px;line-height:1.45;word-break:keep-all}
+.item-actions{display:flex;justify-content:flex-end;margin-top:9px}
+.empty{padding:28px 10px;text-align:center;color:#8a94a5;font-size:13px}
+.hidden{display:none!important}
+.view{display:none}.view.on{display:block}
+.bottom{position:fixed;z-index:20;left:0;right:0;bottom:0;background:#ffffffee;backdrop-filter:blur(16px);border-top:1px solid #e7ecf3;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+.bottom-inner{max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.nav{border:0;background:transparent;color:#8a94a5;font-size:10px;font-weight:900;padding:7px 3px}.nav i{display:block;font-style:normal;font-size:21px;margin-bottom:3px}.nav.on{color:var(--blue)}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(150deg,#0b2a66,#0b57e3 55%,#51c6ff)}
+.login-card{width:min(420px,100%);background:#fff;border-radius:26px;padding:22px;box-shadow:0 20px 60px #001d5744}
+.login-logo{width:72px;height:72px;border-radius:20px;display:block;margin:0 auto 12px;object-fit:cover}
+.login-title{text-align:center;font-size:22px;font-weight:950}.login-sub{text-align:center;color:#7a8597;font-size:12px;margin:6px 0 18px}
+.msg{font-size:12px;color:#c9353c;margin-top:8px}
+.save-msg{font-size:12px;color:#079b67;margin-top:8px}
+@media(min-width:620px){.stats{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<div id="loginScreen" class="login-wrap">
+  <div class="login-card">
+    <img class="login-logo" src="/apple-touch-icon.png?v=20260921-2201" alt="">
+    <div class="login-title">ACTION HUB 관리자</div>
+    <div class="login-sub">구리리더스HB 유료DB ACTION HUB</div>
+    <div class="field"><label>관리자 이메일</label><input id="email" type="email" value="dnfntk2074@gmail.com" autocomplete="username"></div>
+    <div class="field"><label>비밀번호</label><input id="pw" type="password" placeholder="관리자 비밀번호" autocomplete="current-password"></div>
+    <button class="btn primary full" id="loginBtn">관리자 로그인</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <div class="wrap">
+    <div class="hero">
+      <div class="hero-top">
+        <img class="app-icon" src="/apple-touch-icon.png?v=20260921-2201" alt="">
+        <div><div class="hero-title">ACTION HUB 관리자</div><div class="hero-sub">일정 · 전광판 · MVP를 한 곳에서 관리합니다.</div></div>
+        <div class="admin-badge">👑 ADMIN</div>
+      </div>
+    </div>
+
+    <section class="view on" id="view-home">
+      <div class="card">
+        <div class="section-title">📊 오늘의 관리 현황</div>
+        <div class="stats">
+          <div class="stat s1"><span>오늘 일정</span><b id="stToday">0</b></div>
+          <div class="stat s2"><span>이번 주 일정</span><b id="stWeek">0</b></div>
+          <div class="stat s3"><span>방문 일정</span><b id="stVisit">0</b></div>
+          <div class="stat s4"><span>DB학습회·콜번개</span><b id="stEtc">0</b></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">⚡ 빠른 관리</div>
+        <div class="quick">
+          <button onclick="go('schedule')"><span class="ico">📅</span>일정 관리</button>
+          <button onclick="go('board')"><span class="ico">📺</span>전광판 설정</button>
+          <button onclick="openUserApp()"><span class="ico">🚀</span>사용자 앱</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">⏭ 가장 가까운 일정</div>
+        <div id="nextSchedule" class="empty">일정을 불러오는 중...</div>
+      </div>
+    </section>
+
+    <section class="view" id="view-schedule">
+      <div class="card">
+        <div class="section-title">📅 일정 관리 <span class="muted" id="scheduleCount"></span></div>
+        <div class="filters">
+          <input id="search" placeholder="TFA명 · 장소 검색">
+          <select id="typeFilter"><option value="all">전체 유형</option><option value="visit">방문</option><option value="study">DB학습회</option><option value="call">콜번개</option></select>
+        </div>
+        <div id="list"></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-board">
+      <div class="card">
+        <div class="section-title">📺 전광판 · MVP 설정</div>
+        <div class="field"><label>전광판 모드</label><select id="mode"><option value="auto">자동 — 가장 가까운 다음 일정</option><option value="manual">직접 문구 입력</option></select></div>
+        <div class="field"><label>직접 입력 문구</label><input id="marquee" placeholder="직접 입력 모드에서 노출할 문구"></div>
+        <div class="toggle-row"><div><b>MVP 전광판 표시</b><div class="muted">주간 방문 MVP 영역 표시 여부</div></div><input type="checkbox" id="mvp"></div>
+        <div class="field"><label>MVP 제목</label><input id="mvpTitle"></div>
+        <div class="field"><label>앱 제목</label><input id="title"></div>
+        <div class="field"><label>앱 부제목</label><input id="sub"></div>
+        <button class="btn primary full" id="save">설정 저장</button>
+        <div class="save-msg" id="saveMsg"></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-more">
+      <div class="card">
+        <div class="section-title">⚙️ 관리자 설정</div>
+        <div class="field"><label>새 비밀번호</label><input id="newpw" type="password" placeholder="8자 이상"></div>
+        <button class="btn primary full" id="change">비밀번호 변경</button>
+        <div class="save-msg" id="changeMsg"></div>
+      </div>
+      <div class="card">
+        <button class="btn ghost full" id="logout">로그아웃</button>
+      </div>
+    </section>
+  </div>
+
+  <nav class="bottom">
+    <div class="bottom-inner">
+      <button class="nav on" data-view="home"><i>🏠</i>홈</button>
+      <button class="nav" data-view="schedule"><i>📅</i>일정</button>
+      <button class="nav" data-view="board"><i>📺</i>전광판</button>
+      <button class="nav" data-view="more"><i>⚙️</i>설정</button>
+    </div>
+  </nav>
+</div>
+
+<script>
+let schedules=[],settings={};
+async function api(u,o={}){
+  let r=await fetch(u,{...o,headers:{"content-type":"application/json",...(o.headers||{})}});
+  if(r.status===401){showLogin();throw new Error("unauthorized")}
+  return r;
+}
+function showLogin(){loginScreen.classList.remove("hidden");app.classList.add("hidden")}
+function showApp(){loginScreen.classList.add("hidden");app.classList.remove("hidden")}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function seoulDate(d=new Date()){return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(d)}
+function typeOf(x){let s=x.customerName||"";return s.startsWith("[DB학습회]")?"study":s.startsWith("[콜번개]")?"call":"visit"}
+function placeOf(x){return String(x.customerName||"").replace(/^\[(DB학습회|콜번개)\]\s*/,"")}
+function typeName(t){return t==="study"?"DB학습회":t==="call"?"콜번개":"방문"}
+function badgeClass(t){return t==="study"?"study":t==="call"?"call":"visit"}
+function fmt(iso){return new Intl.DateTimeFormat("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(iso))}
+function weekRange(){
+  let now=new Date(), kst=new Date(now.toLocaleString("en-US",{timeZone:"Asia/Seoul"})),day=kst.getDay(),back=day===0?6:day-1;
+  let mon=new Date(kst);mon.setDate(kst.getDate()-back);mon.setHours(0,0,0,0);
+  let sun=new Date(mon);sun.setDate(mon.getDate()+7);
+  return[mon,sun]
+}
+function renderStats(){
+  const today=seoulDate(), [mon,sun]=weekRange();
+  stToday.textContent=schedules.filter(x=>seoulDate(new Date(x.scheduledAt))===today).length;
+  stWeek.textContent=schedules.filter(x=>{let d=new Date(x.scheduledAt);return d>=mon&&d<sun}).length;
+  stVisit.textContent=schedules.filter(x=>typeOf(x)==="visit").length;
+  stEtc.textContent=schedules.filter(x=>typeOf(x)!=="visit").length;
+  const n=schedules.filter(x=>new Date(x.scheduledAt)>=new Date()).sort((a,b)=>new Date(a.scheduledAt)-new Date(b.scheduledAt))[0];
+  if(!n) nextSchedule.innerHTML='<div class="empty">등록된 다음 일정이 없습니다.</div>';
+  else{let t=typeOf(n);nextSchedule.innerHTML='<div class="item"><div class="item-top"><div class="item-main"><div class="owner">'+esc(n.ownerName)+' TFA <span class="badge '+badgeClass(t)+'">'+typeName(t)+'</span></div><div class="item-meta">'+fmt(n.scheduledAt)+' · '+esc(placeOf(n))+'</div></div></div></div>'}
+}
+function renderList(){
+  const q=search.value.trim().toLowerCase(), tf=typeFilter.value;
+  let rows=schedules.filter(x=>{
+    let t=typeOf(x), hay=((x.ownerName||"")+" "+placeOf(x)).toLowerCase();
+    return(!q||hay.includes(q))&&(tf==="all"||t===tf)
+  }).sort((a,b)=>new Date(b.scheduledAt)-new Date(a.scheduledAt));
+  scheduleCount.textContent=rows.length+"건";
+  list.innerHTML="";
+  if(!rows.length){list.innerHTML='<div class="empty">조건에 맞는 일정이 없습니다.</div>';return}
+  rows.forEach(x=>{
+    let t=typeOf(x),d=document.createElement("div");d.className="item";
+    d.innerHTML='<div class="item-top"><div class="item-main"><div class="owner">'+esc(x.ownerName)+' TFA <span class="badge '+badgeClass(t)+'">'+typeName(t)+'</span></div><div class="item-meta">'+fmt(x.scheduledAt)+'<br>'+esc(placeOf(x))+'</div></div></div><div class="item-actions"></div>';
+    let b=document.createElement("button");b.className="btn danger";b.textContent="완전 삭제";
+    b.onclick=async()=>{if(!confirm("이 일정은 복구할 수 없습니다. 완전히 삭제하시겠습니까?"))return;let r=await api("/api/admin/schedules/"+encodeURIComponent(x.id),{method:"DELETE"});if(r.ok)await load()};
+    d.querySelector(".item-actions").appendChild(b);list.appendChild(d)
+  })
+}
+function go(v){
+  document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
+  document.getElementById("view-"+v).classList.add("on");
+  document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("on",x.dataset.view===v))
+}
+function openUserApp(){location.href="/"}
+document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>go(b.dataset.view));
+search.oninput=renderList;typeFilter.onchange=renderList;
+
+loginBtn.onclick=async()=>{
+  loginMsg.textContent="";
+  let r=await api("/api/admin/login",{method:"POST",body:JSON.stringify({email:email.value,password:pw.value})});
+  if(r.ok){pw.value="";showApp();await load()}else loginMsg.textContent="로그인 정보를 확인해 주세요."
+};
+logout.onclick=async()=>{await api("/api/admin/logout",{method:"POST"});showLogin()};
+save.onclick=async()=>{
+  await api("/api/admin/settings",{method:"PUT",body:JSON.stringify({marquee_mode:mode.value,marquee_text:marquee.value,mvp_enabled:mvp.checked,mvp_title:mvpTitle.value,app_title:title.value,app_subtitle:sub.value})});
+  saveMsg.textContent="저장되었습니다.";setTimeout(()=>saveMsg.textContent="",1800)
+};
+change.onclick=async()=>{
+  let r=await api("/api/admin/change-password",{method:"POST",body:JSON.stringify({password:newpw.value})});
+  changeMsg.textContent=r.ok?"비밀번호가 변경되었습니다.":"8자 이상으로 설정해 주세요.";if(r.ok)newpw.value=""
+};
+async function load(){
+  let me=await fetch("/api/admin/me");if(!me.ok)return showLogin();
+  showApp();
+  settings=await (await api("/api/admin/settings")).json();
+  mode.value=settings.marquee_mode;marquee.value=settings.marquee_text||"";mvp.checked=!!settings.mvp_enabled;mvpTitle.value=settings.mvp_title||"";title.value=settings.app_title||"";sub.value=settings.app_subtitle||"";
+  let j=await (await api("/api/admin/schedules")).json();schedules=j.schedules||[];
+  renderStats();renderList()
+}
 load();
-</script></body></html>
+</script>
+</body>
+</html>
