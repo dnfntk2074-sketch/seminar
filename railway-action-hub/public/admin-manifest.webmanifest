@@ -1,0 +1,18 @@
+{
+  "name": "ACTION HUB 관리자",
+  "short_name": "HB 관리자",
+  "description": "구리리더스HB 유료DB ACTION HUB 관리자",
+  "start_url": "/admin",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f2f6fb",
+  "theme_color": "#0b2a66",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png?v=20260921-2201",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
