@@ -43,6 +43,7 @@ function toPublic(row,hash,ownerName){
   return {
     id:String(row.id), ownerName:row.owner_name, customerName:row.customer_name,
     scheduledAt:new Date(row.scheduled_at).toISOString(),
+    completed:!!row.completed,
     canEdit:!!hash && !!ownerName && sameOwnerName(row.owner_name,ownerName) && !!row.owner_token_hash && crypto.timingSafeEqual(Buffer.from(hash),Buffer.from(row.owner_token_hash))
   };
 }
@@ -67,6 +68,7 @@ async function init(){
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
   )`);
+  await pool.query(`ALTER TABLE schedules ADD COLUMN IF NOT EXISTS completed boolean NOT NULL DEFAULT false`);
   await pool.query(`CREATE TABLE IF NOT EXISTS purged_schedule_ids(schedule_id text primary key, purged_at timestamptz not null default now())`);
   const old=await pool.query(`SELECT to_regclass('public.deleted_schedules') AS t`);
   if(old.rows[0]?.t){
@@ -136,9 +138,20 @@ app.put("/api/schedules/:id",async(req,res)=>{
   const r=await pool.query("SELECT owner_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
   const ownerIdentity=(req.get("x-owner-name")||"").trim();
   if(!r.rowCount||!ownerIdentity||!sameOwnerName(r.rows[0].owner_name,ownerIdentity)||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
-  await pool.query("UPDATE schedules SET owner_name=$1,customer_name=$2,scheduled_at=$3,updated_at=now() WHERE id=$4",
-    [String(ownerName).trim(),makeCustomer(type,String(place).trim()),at.toISOString(),req.params.id]);
+  await pool.query("UPDATE schedules SET owner_name=$1,customer_name=$2,scheduled_at=$3,completed=CASE WHEN $5='visit' THEN completed ELSE false END,updated_at=now() WHERE id=$4",
+    [String(ownerName).trim(),makeCustomer(type,String(place).trim()),at.toISOString(),req.params.id,type]);
   res.json({ok:true});
+});
+app.patch("/api/schedules/:id/complete",async(req,res)=>{
+  const ownerToken=req.get("x-owner-token")||"";
+  const ownerIdentity=(req.get("x-owner-name")||"").trim();
+  const completed=req.body?.completed===true;
+  const r=await pool.query("SELECT owner_name,customer_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
+  if(!r.rowCount||!ownerIdentity||!sameOwnerName(r.rows[0].owner_name,ownerIdentity)||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
+  const customer=String(r.rows[0].customer_name||"");
+  if(customer.startsWith("[DB학습회] ")||customer.startsWith("[콜번개] ")) return res.status(400).json({error:"visit_only"});
+  await pool.query("UPDATE schedules SET completed=$1,updated_at=now() WHERE id=$2",[completed,req.params.id]);
+  res.json({ok:true,completed});
 });
 app.delete("/api/schedules/:id",async(req,res)=>{
   const ownerToken=req.get("x-owner-token")||req.body?.ownerToken||"";
