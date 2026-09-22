@@ -38,11 +38,12 @@ function isTest(s){
   const t=((s.owner_name||s.ownerName||"")+" "+(s.customer_name||s.customerName||"")).toLowerCase();
   return ["테스트","점검","test"].some(w=>t.includes(w));
 }
-function toPublic(row,hash){
+function sameOwnerName(a,b){return String(a||"").trim()===String(b||"").trim()}
+function toPublic(row,hash,ownerName){
   return {
     id:String(row.id), ownerName:row.owner_name, customerName:row.customer_name,
     scheduledAt:new Date(row.scheduled_at).toISOString(),
-    canEdit:!!hash && !!row.owner_token_hash && crypto.timingSafeEqual(Buffer.from(hash),Buffer.from(row.owner_token_hash))
+    canEdit:!!hash && !!ownerName && sameOwnerName(row.owner_name,ownerName) && !!row.owner_token_hash && crypto.timingSafeEqual(Buffer.from(hash),Buffer.from(row.owner_token_hash))
   };
 }
 async function init(){
@@ -111,7 +112,8 @@ app.get("/api/data", async(req,res)=>{
     await syncFloot();
     const [rows,settings]=await Promise.all([pool.query("SELECT * FROM schedules ORDER BY scheduled_at ASC"),getSettings()]);
     const h=req.get("x-owner-token")?tokenHash(req.get("x-owner-token")):"";
-    res.json({schedules:rows.rows.filter(s=>!isTest(s)).map(s=>toPublic(s,h)),settings});
+    const ownerName=(req.get("x-owner-name")||"").trim();
+    res.json({schedules:rows.rows.filter(s=>!isTest(s)).map(s=>toPublic(s,h,ownerName)),settings});
   }catch(e){console.error(e);res.status(500).json({error:"load_failed"});}
 });
 
@@ -131,16 +133,18 @@ app.put("/api/schedules/:id",async(req,res)=>{
   if(!ownerName||!place||!date||!time||!ownerToken||!["visit","study","call"].includes(type)) return res.status(400).json({error:"missing"});
   const at=new Date(`${date}T${time}:00+09:00`);
   if(Number.isNaN(at.getTime())) return res.status(400).json({error:"invalid_date"});
-  const r=await pool.query("SELECT owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
-  if(!r.rowCount||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
+  const r=await pool.query("SELECT owner_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
+  const ownerIdentity=(req.get("x-owner-name")||"").trim();
+  if(!r.rowCount||!ownerIdentity||!sameOwnerName(r.rows[0].owner_name,ownerIdentity)||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
   await pool.query("UPDATE schedules SET owner_name=$1,customer_name=$2,scheduled_at=$3,updated_at=now() WHERE id=$4",
     [String(ownerName).trim(),makeCustomer(type,String(place).trim()),at.toISOString(),req.params.id]);
   res.json({ok:true});
 });
 app.delete("/api/schedules/:id",async(req,res)=>{
   const ownerToken=req.get("x-owner-token")||req.body?.ownerToken||"";
-  const r=await pool.query("SELECT owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
-  if(!r.rowCount||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
+  const r=await pool.query("SELECT owner_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
+  const ownerIdentity=(req.get("x-owner-name")||"").trim();
+  if(!r.rowCount||!ownerIdentity||!sameOwnerName(r.rows[0].owner_name,ownerIdentity)||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
   await pool.query("DELETE FROM schedules WHERE id=$1",[req.params.id]);
   res.json({ok:true});
 });
