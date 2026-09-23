@@ -18,6 +18,10 @@ const FLOOT = "https://guri-leaders-hb-db-hub.floot.app/_api";
 const pool = new Pool({ connectionString: DATABASE_URL, ssl: DATABASE_URL?.includes("railway") ? { rejectUnauthorized:false } : undefined });
 
 app.use(express.json());
+app.use((req,res,next)=>{
+  if(req.path==="/"||req.path.endsWith(".html")) res.setHeader("Cache-Control","no-store, no-cache, must-revalidate");
+  next();
+});
 app.use(express.static(path.join(__dirname,"public")));
 
 function parseCookies(req){
