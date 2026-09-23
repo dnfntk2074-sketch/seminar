@@ -283,6 +283,16 @@ linear-gradient(135deg,#20194a,#302066);color:#ffd166;min-height:138px;padding:2
 .library-viewer-name{min-width:0;flex:1;font-size:12px;font-weight:900;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .library-viewer-frame{display:block;width:100%;flex:1;min-height:0;border:0;background:#fff}
 @media(max-width:420px){.library-viewer-name{display:none}.library-viewer-back,.library-viewer-home{font-size:11px}}
+
+.library-download-view{position:fixed;inset:0;z-index:1760;background:#f4f7fb;display:flex;align-items:center;justify-content:center;padding:20px}
+.library-download-view[hidden]{display:none}
+.library-download-card{width:min(420px,100%);background:#fff;border-radius:22px;padding:22px;box-shadow:0 18px 60px #0002;text-align:center}
+.library-download-icon{font-size:42px;margin-bottom:10px}
+.library-download-title{font-size:19px;font-weight:950;color:#172033}
+.library-download-desc{font-size:12px;line-height:1.55;color:#64748b;margin-top:8px}
+.library-download-name{margin-top:12px;padding:10px 12px;border-radius:12px;background:#f8fafc;color:#334155;font-size:12px;font-weight:850;word-break:break-all}
+.library-download-home{width:100%;height:46px;border:0;border-radius:12px;background:#2456d8;color:#fff;font-weight:950;margin-top:16px}
+.library-download-again{width:100%;height:42px;border:1px solid #dbe1ea;border-radius:12px;background:#fff;color:#475569;font-weight:900;margin-top:8px}
 </style></head><body><div class="wrap">
 <div class="card top-card"><div class="top-actions"><button type="button" class="top-action-btn" id="libraryTopBtn">📚 자료실</button><a class="top-action-btn toolbox" href="https://hbtoolbox.vercel.app/">🧰 TOOLBOX</a></div><img class="brand-logo" src="/brand-logo-user.gif?v=20260921-1935" alt="보험이 착해지다 A+에셋"><div class="title" id="appTitle">유료DB ACTION HUB</div><div class="sub" id="appSub">방문 · 학습 · 콜 활동을 한눈에 공유합니다.</div></div>
 <div class="led schedule-led"><div class="glow-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="marquee-track ltr" id="scheduleTrack"><span class="marquee-copy" id="marquee">일정을 불러오는 중...</span><span class="marquee-copy mirror" id="marqueeMirror" aria-hidden="true">일정을 불러오는 중...</span><span class="marquee-copy extra" id="marqueeExtra" aria-hidden="true">일정을 불러오는 중...</span></div></div>
@@ -297,6 +307,7 @@ linear-gradient(135deg,#20194a,#302066);color:#ffd166;min-height:138px;padding:2
 <div class="card editbox" id="editBox" hidden><b>내 일정 수정</b><div class="field"><label>일정 종류</label><select class="input" id="editType"><option value="visit">🤝 방문일정</option><option value="study">📚 DB학습회</option><option value="call">⚡ 콜번개</option></select></div><div class="field"><label>TFA 이름</label><input class="input" id="editOwner"></div><div class="field"><label>장소/주제</label><input class="input" id="editPlace"></div><div class="dt"><div class="field"><label>날짜</label><input class="input" type="date" id="editDate"></div><div class="field"><label>시간</label><input class="input" type="time" step="300" id="editTime"></div></div><div class="edit-actions"><button class="cancel-btn" id="cancelEdit">취소</button><button class="save-btn" id="saveEdit">수정 저장</button></div></div>
 <div class="library-backdrop" id="libraryBackdrop" hidden><div class="library-panel" role="dialog" aria-modal="true" aria-labelledby="libraryTitle"><div class="library-head"><div><div class="library-head-title" id="libraryTitle">📚 영업 자료실</div><div class="muted">필요한 자료를 열어보거나 내려받을 수 있습니다.</div></div><button type="button" class="library-close" id="libraryClose">×</button></div><div class="library-filters"><input id="librarySearch" placeholder="자료 제목 검색"><select id="libraryCategory"><option value="all">전체 카테고리</option><option>영업자료</option><option>상품자료</option><option>교육자료</option><option>서식</option><option>기타</option></select></div><div id="libraryList"><div class="library-empty">자료를 불러오는 중...</div></div></div></div><div class="library-viewer" id="libraryViewer" hidden><div class="library-viewer-head"><button type="button" class="library-viewer-back" id="libraryViewerBack">← 자료실</button><div class="library-viewer-name" id="libraryViewerName">자료 보기</div><button type="button" class="library-viewer-home" id="libraryViewerHome">ACTION HUB 홈</button></div><iframe class="library-viewer-frame" id="libraryViewerFrame" title="자료 보기"></iframe></div>
 
+<div class="library-download-view" id="libraryDownloadView" hidden><div class="library-download-card"><div class="library-download-icon">⬇️</div><div class="library-download-title">자료 다운로드</div><div class="library-download-desc">파일 저장 화면이 열리면 저장 후 닫아주세요.<br>다시 ACTION HUB로 바로 돌아올 수 있습니다.</div><div class="library-download-name" id="libraryDownloadName"></div><button type="button" class="library-download-home" id="libraryDownloadHome">← ACTION HUB로 돌아가기</button><button type="button" class="library-download-again" id="libraryDownloadAgain">다운로드 다시 시작</button></div></div>
 </div><script>
 let tab="visit", data=[], editingId="", libraryItems=[];
 const OWNER_KEY="hb_action_owner_token_v1",OWNER_NAME_KEY="hb_action_owner_name_v1";
@@ -315,8 +326,9 @@ function renderLibrary(){
   if(!rows.length){libraryList.innerHTML='<div class="library-empty">조건에 맞는 자료가 없습니다.</div>';return}
   rows.forEach(x=>{
     let d=document.createElement("div");d.className="library-item";
-    d.innerHTML='<div class="library-item-top">'+(x.pinned?'<span class="library-pin">📌 상단고정</span>':'')+(isLibraryNew(x.createdAt)?'<span class="library-new">NEW</span>':'')+'<span class="library-cat">'+esc(x.category)+'</span><span class="library-title">'+esc(x.title)+'</span></div>'+(x.description?'<div class="library-desc">'+esc(x.description)+'</div>':'')+'<div class="library-meta">'+esc(x.fileName)+' · '+libBytes(x.fileSize)+' · '+libDate(x.createdAt)+'</div><div class="library-actions"><button type="button" class="library-open" data-library-open="'+esc(x.id)+'">열기</button><a class="library-download" href="/api/library/'+encodeURIComponent(x.id)+'/file?download=1">다운로드</a></div>';
+    d.innerHTML='<div class="library-item-top">'+(x.pinned?'<span class="library-pin">📌 상단고정</span>':'')+(isLibraryNew(x.createdAt)?'<span class="library-new">NEW</span>':'')+'<span class="library-cat">'+esc(x.category)+'</span><span class="library-title">'+esc(x.title)+'</span></div>'+(x.description?'<div class="library-desc">'+esc(x.description)+'</div>':'')+'<div class="library-meta">'+esc(x.fileName)+' · '+libBytes(x.fileSize)+' · '+libDate(x.createdAt)+'</div><div class="library-actions"><button type="button" class="library-open" data-library-open="'+esc(x.id)+'">열기</button><button type="button" class="library-download" data-library-download="'+esc(x.id)+'">다운로드</button></div>';
     d.querySelector("[data-library-open]").onclick=()=>openLibraryViewer(x);
+    d.querySelector("[data-library-download]").onclick=()=>startLibraryDownload(x);
     libraryList.appendChild(d)
   })
 }
@@ -332,6 +344,29 @@ function closeLibraryViewer(){
   libraryViewer.hidden=true;
   libraryViewerFrame.src="about:blank";
 }
+let currentDownloadItem=null;
+function triggerLibraryDownload(x){
+  const a=document.createElement("a");
+  a.href="/api/library/"+encodeURIComponent(x.id)+"/file?download=1";
+  a.download=x.fileName||"";
+  a.style.display="none";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>a.remove(),1000);
+}
+function startLibraryDownload(x){
+  currentDownloadItem=x;
+  libraryDownloadName.textContent=x.fileName||x.title||"자료";
+  libraryDownloadView.hidden=false;
+  triggerLibraryDownload(x);
+}
+libraryDownloadHome.onclick=()=>{
+  libraryDownloadView.hidden=true;
+  currentDownloadItem=null;
+  closeLibrary();
+  window.scrollTo({top:0,behavior:"smooth"});
+};
+libraryDownloadAgain.onclick=()=>{if(currentDownloadItem)triggerLibraryDownload(currentDownloadItem)};
 libraryViewerBack.onclick=()=>{closeLibraryViewer();libraryBackdrop.hidden=false};
 libraryViewerHome.onclick=()=>{closeLibraryViewer();closeLibrary()};
 libraryTopBtn.onclick=openLibrary;
@@ -340,7 +375,7 @@ libraryClose.onclick=closeLibrary;
 libraryBackdrop.onclick=e=>{if(e.target===libraryBackdrop)closeLibrary()};
 librarySearch.oninput=renderLibrary;
 libraryCategory.onchange=renderLibrary;
-document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!libraryViewer.hidden){closeLibraryViewer();return}if(!libraryBackdrop.hidden)closeLibrary()});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!libraryDownloadView.hidden){libraryDownloadView.hidden=true;return}if(!libraryViewer.hidden){closeLibraryViewer();return}if(!libraryBackdrop.hidden)closeLibrary()});
 function seoulDate(d=new Date()){return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(d)}
 function add(iso,n){let d=new Date(iso+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)}
 function parse(s){let d=new Date(s.scheduledAt),name=s.customerName||"",type="visit",p=name;if(name.startsWith("[DB학습회] ")){type="study";p=name.slice(9)}else if(name.startsWith("[콜번개] ")){type="call";p=name.slice(7)}return{id:String(s.id),owner:s.ownerName||"",place:p,type,date:seoulDate(d),time:new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hour12:false}).format(d),at:d.getTime(),completed:!!s.completed,canEdit:!!s.canEdit}}
