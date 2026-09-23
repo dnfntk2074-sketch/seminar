@@ -20,10 +20,26 @@ const pool = new Pool({ connectionString: DATABASE_URL, ssl: DATABASE_URL?.inclu
 const upload = multer({storage:multer.memoryStorage(),limits:{fileSize:30*1024*1024}});
 const LIBRARY_CATEGORIES=new Set(["영업자료","상품자료","교육자료","서식","기타"]);
 const LIBRARY_EXTS=new Set(["pdf","jpg","jpeg","png","webp","gif","xlsx","xls","pptx","ppt","docx","doc","hwp","hwpx","txt","zip"]);
-function libraryExt(name){const p=String(name||"").split(".");return p.length>1?p.pop().toLowerCase():""}
+function normalizeFilename(name){
+  const s=String(name||"");
+  if(!s)return s;
+  try{
+    if(/[\u00C0-\u00FF]/.test(s)){
+      const decoded=Buffer.from(s,"latin1").toString("utf8");
+      if(/[\uAC00-\uD7A3]/.test(decoded)&&!decoded.includes("\uFFFD"))return decoded;
+    }
+  }catch{}
+  return s;
+}
+function libraryExt(name){const p=normalizeFilename(name).split(".");return p.length>1?p.pop().toLowerCase():""}
 function safeCategory(v){return LIBRARY_CATEGORIES.has(String(v||""))?String(v):"기타"}
-function libraryMeta(row){return {id:String(row.id),title:row.title,description:row.description||"",category:row.category,pinned:!!row.pinned,fileName:row.file_name,mimeType:row.mime_type,fileSize:Number(row.file_size||0),createdAt:new Date(row.created_at).toISOString(),updatedAt:new Date(row.updated_at).toISOString()}}
-function contentDisposition(name,download=false){const fallback=String(name||"file").replace(/[\r\n"]/g,"_");const encoded=encodeURIComponent(String(name||"file"));return `${download?"attachment":"inline"}; filename="${fallback}"; filename*=UTF-8''${encoded}`}
+function libraryMeta(row){return {id:String(row.id),title:row.title,description:row.description||"",category:row.category,pinned:!!row.pinned,fileName:normalizeFilename(row.file_name),mimeType:row.mime_type,fileSize:Number(row.file_size||0),createdAt:new Date(row.created_at).toISOString(),updatedAt:new Date(row.updated_at).toISOString()}}
+function contentDisposition(name,download=false){
+  const clean=normalizeFilename(name)||"file";
+  const fallback=clean.replace(/[^\x20-\x7E]/g,"_").replace(/[\r\n"]/g,"_");
+  const encoded=encodeURIComponent(clean);
+  return `${download?"attachment":"inline"}; filename="${fallback}"; filename*=UTF-8''${encoded}`;
+}
 
 app.use(express.json());
 app.use((req,res,next)=>{
@@ -94,6 +110,12 @@ async function init(){
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
   )`);
+  // repair existing mojibake library filenames without touching file contents
+  const badNames=await pool.query("SELECT id,file_name FROM library_files");
+  for(const row of badNames.rows){
+    const fixed=normalizeFilename(row.file_name);
+    if(fixed&&fixed!==row.file_name) await pool.query("UPDATE library_files SET file_name=$1,updated_at=now() WHERE id=$2",[fixed,row.id]);
+  }
   await pool.query(`CREATE TABLE IF NOT EXISTS purged_schedule_ids(schedule_id text primary key, purged_at timestamptz not null default now())`);
   const old=await pool.query(`SELECT to_regclass('public.deleted_schedules') AS t`);
   if(old.rows[0]?.t){
@@ -234,16 +256,17 @@ app.get("/api/admin/library",auth,async(req,res)=>{
 app.post("/api/admin/library",auth,upload.single("file"),async(req,res)=>{
   try{
     if(!req.file)return res.status(400).json({error:"file_required"});
-    const ext=libraryExt(req.file.originalname);
+    const originalName=normalizeFilename(req.file.originalname);
+    const ext=libraryExt(originalName);
     if(!LIBRARY_EXTS.has(ext))return res.status(400).json({error:"unsupported_file"});
-    const title=String(req.body?.title||"").trim()||req.file.originalname;
+    const title=String(req.body?.title||"").trim()||originalName;
     const description=String(req.body?.description||"").trim();
     const category=safeCategory(req.body?.category);
     const pinned=String(req.body?.pinned||"").toLowerCase()==="true";
     const id=crypto.randomUUID();
     await pool.query(`INSERT INTO library_files(id,title,description,category,pinned,file_name,mime_type,file_size,file_data)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-      [id,title,description,category,pinned,req.file.originalname,req.file.mimetype||"application/octet-stream",req.file.size,req.file.buffer]);
+      [id,title,description,category,pinned,originalName,req.file.mimetype||"application/octet-stream",req.file.size,req.file.buffer]);
     const r=await pool.query("SELECT id,title,description,category,pinned,file_name,mime_type,file_size,created_at,updated_at FROM library_files WHERE id=$1",[id]);
     res.json({ok:true,item:libraryMeta(r.rows[0])});
   }catch(e){
