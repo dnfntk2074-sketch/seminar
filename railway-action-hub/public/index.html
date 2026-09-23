@@ -297,6 +297,20 @@ linear-gradient(135deg,#20194a,#302066);color:#ffd166;min-height:138px;padding:2
   .calendar-card .schedule-chip{height:15px!important;font-size:7px!important;padding:2px 0!important}
   .calendar-card .more-btn{height:9px!important;font-size:6px!important}
 }
+
+.library-file-view{position:fixed;inset:0;z-index:1800;background:#eef2f7;display:flex;flex-direction:column}
+.library-file-view[hidden]{display:none}
+.library-file-toolbar{flex:0 0 auto;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;padding:calc(9px + env(safe-area-inset-top)) 10px 9px;background:#fff;border-bottom:1px solid #e2e8f0;box-shadow:0 3px 12px #00000012}
+.library-file-back,.library-file-save{height:40px;border:0;border-radius:11px;font-size:11px;font-weight:950;padding:0 12px;cursor:pointer}
+.library-file-back{background:#172033;color:#fff}
+.library-file-save{background:#2456d8;color:#fff}
+.library-file-title{min-width:0;text-align:center;font-size:12px;font-weight:900;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.library-file-frame{display:block;width:100%;flex:1;min-height:0;border:0;background:#fff}
+@media(max-width:420px){
+  .library-file-toolbar{grid-template-columns:auto minmax(0,1fr) auto;gap:5px;padding-left:6px;padding-right:6px}
+  .library-file-back,.library-file-save{height:38px;padding:0 9px;font-size:10px}
+  .library-file-title{font-size:10px}
+}
 </style></head><body><div class="wrap">
 <div class="card top-card"><img class="brand-logo" src="/brand-logo-user.gif?v=20260921-1935" alt="보험이 착해지다 A+에셋"><div class="title" id="appTitle">유료DB ACTION HUB</div><div class="sub" id="appSub">방문 · 학습 · 콜 활동을 한눈에 공유합니다.</div><div class="top-actions"><button type="button" class="top-action-btn" id="libraryTopBtn">📚 자료실</button><a class="top-action-btn toolbox" href="https://hbtoolbox.vercel.app/">🧰 TOOLBOX</a><button type="button" class="top-action-btn refresh" id="appRefreshBtn">↻ 새로고침</button></div></div>
 <div class="led schedule-led"><div class="glow-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="marquee-track ltr" id="scheduleTrack"><span class="marquee-copy" id="marquee">일정을 불러오는 중...</span><span class="marquee-copy mirror" id="marqueeMirror" aria-hidden="true">일정을 불러오는 중...</span><span class="marquee-copy extra" id="marqueeExtra" aria-hidden="true">일정을 불러오는 중...</span></div></div>
@@ -309,7 +323,7 @@ linear-gradient(135deg,#20194a,#302066);color:#ffd166;min-height:138px;padding:2
 <div class="card calendar-card"><div class="calendar-head"><button type="button" class="calendar-nav" id="calendarPrev" aria-label="이전 달">‹</button><b id="calendarTitle">월간 ACTION 스케줄러</b><button type="button" class="calendar-nav" id="calendarNext" aria-label="다음 달">›</button></div><div class="calendar-tools"><button type="button" class="my-only-btn" id="myScheduleToggle">내 일정만 보기</button></div><div class="weekday-row"><span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span></div><div class="grid" id="grid"></div></div>
 <div class="schedule-detail-backdrop" id="scheduleDetailBackdrop" hidden><div class="schedule-detail" role="dialog" aria-modal="true" aria-labelledby="scheduleDetailTitle"><div class="schedule-detail-head"><div><div class="schedule-detail-title" id="scheduleDetailTitle">일정 상세</div><div class="detail-type" id="scheduleDetailType"></div></div><button class="detail-close" id="scheduleDetailClose" type="button" aria-label="닫기">×</button></div><div class="detail-list"><div class="detail-row"><span>등록자</span><strong id="scheduleDetailOwner"></strong></div><div class="detail-row"><span>날짜</span><strong id="scheduleDetailDate"></strong></div><div class="detail-row"><span>시간</span><strong id="scheduleDetailTime"></strong></div><div class="detail-row"><span>장소/주제</span><strong id="scheduleDetailPlace"></strong></div><div class="detail-row" id="scheduleDetailStatusRow" hidden><span>상태</span><strong id="scheduleDetailStatus"></strong></div></div><button class="complete-btn" id="scheduleDetailComplete" type="button" hidden>✓ 방문 완료</button><div class="detail-actions" id="scheduleDetailActions" hidden><button class="detail-edit" id="scheduleDetailEdit" type="button">수정</button><button class="detail-delete" id="scheduleDetailDelete" type="button">삭제</button></div></div></div>
 <div class="card editbox" id="editBox" hidden><b>내 일정 수정</b><div class="field"><label>일정 종류</label><select class="input" id="editType"><option value="visit">🤝 방문일정</option><option value="study">📚 DB학습회</option><option value="call">⚡ 콜번개</option></select></div><div class="field"><label>TFA 이름</label><input class="input" id="editOwner"></div><div class="field"><label>장소/주제</label><input class="input" id="editPlace"></div><div class="dt"><div class="field"><label>날짜</label><input class="input" type="date" id="editDate"></div><div class="field"><label>시간</label><input class="input" type="time" step="300" id="editTime"></div></div><div class="edit-actions"><button class="cancel-btn" id="cancelEdit">취소</button><button class="save-btn" id="saveEdit">수정 저장</button></div></div>
-<div class="library-backdrop" id="libraryBackdrop" hidden><div class="library-panel" role="dialog" aria-modal="true" aria-labelledby="libraryTitle"><div class="library-head"><div><div class="library-head-title" id="libraryTitle">📚 영업 자료실</div><div class="muted">필요한 자료를 열어보거나 내려받을 수 있습니다.</div></div><button type="button" class="library-close" id="libraryClose">×</button></div><div class="library-filters"><input id="librarySearch" placeholder="자료 제목 검색"><select id="libraryCategory"><option value="all">전체 카테고리</option><option>영업자료</option><option>상품자료</option><option>교육자료</option><option>서식</option><option>기타</option></select></div><div id="libraryList"><div class="library-empty">자료를 불러오는 중...</div></div></div></div><div class="library-download-view" id="libraryDownloadView" hidden><div class="library-download-card"><div class="library-download-icon">⬇️</div><div class="library-download-title">자료 다운로드</div><div class="library-download-desc">파일 저장 화면이 열리면 저장 후 닫아주세요.<br>다시 ACTION HUB로 바로 돌아올 수 있습니다.</div><div class="library-download-name" id="libraryDownloadName"></div><button type="button" class="library-download-home" id="libraryDownloadHome">← ACTION HUB로 돌아가기</button><button type="button" class="library-download-again" id="libraryDownloadAgain">다운로드 다시 시작</button></div></div>
+<div class="library-backdrop" id="libraryBackdrop" hidden><div class="library-panel" role="dialog" aria-modal="true" aria-labelledby="libraryTitle"><div class="library-head"><div><div class="library-head-title" id="libraryTitle">📚 영업 자료실</div><div class="muted">필요한 자료를 열어보거나 내려받을 수 있습니다.</div></div><button type="button" class="library-close" id="libraryClose">×</button></div><div class="library-filters"><input id="librarySearch" placeholder="자료 제목 검색"><select id="libraryCategory"><option value="all">전체 카테고리</option><option>영업자료</option><option>상품자료</option><option>교육자료</option><option>서식</option><option>기타</option></select></div><div id="libraryList"><div class="library-empty">자료를 불러오는 중...</div></div></div></div><div class="library-file-view" id="libraryFileView" hidden><div class="library-file-toolbar"><button type="button" class="library-file-back" id="libraryFileBack">← ACTION HUB 복귀</button><div class="library-file-title" id="libraryFileTitle">자료 보기</div><button type="button" class="library-file-save" id="libraryFileSave">파일 저장</button></div><iframe class="library-file-frame" id="libraryFileFrame" title="자료 보기"></iframe></div><div class="library-download-view" id="libraryDownloadView" hidden><div class="library-download-card"><div class="library-download-icon">⬇️</div><div class="library-download-title">자료 다운로드</div><div class="library-download-desc">파일 저장 화면이 열리면 저장 후 닫아주세요.<br>다시 ACTION HUB로 바로 돌아올 수 있습니다.</div><div class="library-download-name" id="libraryDownloadName"></div><button type="button" class="library-download-home" id="libraryDownloadHome">← ACTION HUB로 돌아가기</button><button type="button" class="library-download-again" id="libraryDownloadAgain">다운로드 다시 시작</button></div></div>
 </div><script>
 let tab="visit", data=[], editingId="", libraryItems=[];
 const OWNER_KEY="hb_action_owner_token_v1",OWNER_NAME_KEY="hb_action_owner_name_v1";
@@ -341,17 +355,39 @@ function triggerLibraryDownload(x){
   const a=document.createElement("a");
   a.href="/api/library/"+encodeURIComponent(x.id)+"/file?download=1";
   a.download=x.fileName||"";
+  a.target="_blank";
+  a.rel="noopener";
   a.style.display="none";
   document.body.appendChild(a);
   a.click();
   setTimeout(()=>a.remove(),1000);
 }
+function canPreviewLibrary(x){
+  const mime=String(x.mimeType||"").toLowerCase();
+  const name=String(x.fileName||"").toLowerCase();
+  return mime==="application/pdf"||mime.startsWith("image/")||/\.(pdf|png|jpe?g|gif|webp)$/.test(name);
+}
 function startLibraryDownload(x){
   currentDownloadItem=x;
+  if(canPreviewLibrary(x)){
+    libraryFileTitle.textContent=x.title||x.fileName||"자료 보기";
+    libraryFileFrame.src="/api/library/"+encodeURIComponent(x.id)+"/file";
+    libraryFileView.hidden=false;
+    libraryBackdrop.hidden=true;
+    return;
+  }
   libraryDownloadName.textContent=x.fileName||x.title||"자료";
   libraryDownloadView.hidden=false;
   triggerLibraryDownload(x);
 }
+libraryFileBack.onclick=()=>{
+  libraryFileView.hidden=true;
+  libraryFileFrame.src="about:blank";
+  currentDownloadItem=null;
+  closeLibrary();
+  window.scrollTo({top:0,behavior:"smooth"});
+};
+libraryFileSave.onclick=()=>{if(currentDownloadItem)triggerLibraryDownload(currentDownloadItem)};
 libraryDownloadHome.onclick=()=>{
   libraryDownloadView.hidden=true;
   currentDownloadItem=null;
@@ -366,7 +402,7 @@ libraryClose.onclick=closeLibrary;
 libraryBackdrop.onclick=e=>{if(e.target===libraryBackdrop)closeLibrary()};
 librarySearch.oninput=renderLibrary;
 libraryCategory.onchange=renderLibrary;
-document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!libraryDownloadView.hidden){libraryDownloadView.hidden=true;return}if(!libraryBackdrop.hidden)closeLibrary()});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!libraryFileView.hidden){libraryFileBack.click();return}if(!libraryDownloadView.hidden){libraryDownloadView.hidden=true;return}if(!libraryBackdrop.hidden)closeLibrary()});
 function seoulDate(d=new Date()){return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(d)}
 function add(iso,n){let d=new Date(iso+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)}
 function parse(s){let d=new Date(s.scheduledAt),name=s.customerName||"",type="visit",p=name;if(name.startsWith("[DB학습회] ")){type="study";p=name.slice(9)}else if(name.startsWith("[콜번개] ")){type="call";p=name.slice(7)}return{id:String(s.id),owner:s.ownerName||"",place:p,type,date:seoulDate(d),time:new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hour12:false}).format(d),at:d.getTime(),completed:!!s.completed,canEdit:!!s.canEdit}}
