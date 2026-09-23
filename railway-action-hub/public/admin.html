@@ -15,7 +15,7 @@
 *{box-sizing:border-box}
 :root{--blue:#0b57e3;--navy:#0d2349;--bg:#f2f6fb;--card:#fff;--muted:#6b7280;--line:#e6ebf2;--danger:#e5484d;--green:#14b86e;--amber:#f5a300;--purple:#7c3aed}
 body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#172033}
-button,input,select{font:inherit}
+button,input,select,textarea{font:inherit}
 .wrap{max-width:760px;margin:auto;min-height:100vh;padding:0 12px 92px}
 .hero{margin:0 -12px 14px;padding:calc(14px + env(safe-area-inset-top)) 18px 20px;background:
 radial-gradient(circle at 90% 10%,#7dd3fc55,transparent 30%),
@@ -32,11 +32,20 @@ linear-gradient(135deg,#0b2a66,#0b57e3 58%,#13a8ff);color:#fff;border-radius:0 0
 .stat{border-radius:16px;padding:14px;color:#fff;min-height:94px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:inset 0 0 0 1px #ffffff22}
 .stat b{font-size:26px;line-height:1}.stat span{font-size:12px;font-weight:800;opacity:.9}
 .s1{background:linear-gradient(135deg,#1263ef,#0b57e3)}.s2{background:linear-gradient(135deg,#12b981,#079b67)}.s3{background:linear-gradient(135deg,#f6b21b,#ef8d00)}.s4{background:linear-gradient(135deg,#7c3aed,#5b21b6)}
-.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
 .quick button{border:0;background:#f7f9fc;border-radius:16px;padding:15px 8px;font-weight:900;color:#25324a;min-height:82px}
 .quick .ico{font-size:24px;display:block;margin-bottom:7px}
 .field{margin-top:12px}.field label{display:block;font-size:12px;font-weight:850;color:#667085;margin-bottom:6px}
 input,select{width:100%;height:46px;border:1px solid #dfe5ee;border-radius:12px;background:#fff;padding:0 12px;color:#172033}
+textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;background:#fff;padding:10px 12px;color:#172033;resize:vertical}
+.file-input{height:auto;padding:11px 10px}
+.library-admin-item{border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:9px;background:#fff}
+.library-admin-title{font-weight:950;font-size:15px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.library-pin{display:inline-flex;padding:3px 7px;border-radius:999px;background:#fff4d6;color:#ad6800;font-size:10px;font-weight:950}
+.library-cat{display:inline-flex;padding:3px 7px;border-radius:999px;background:#eef4ff;color:#2456d8;font-size:10px;font-weight:950}
+.library-actions{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.library-actions .btn{padding:9px 11px;font-size:11px}
+@media(max-width:520px){.quick{grid-template-columns:repeat(2,1fr)}}
 .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
 .toggle-row input{width:20px;height:20px}
 .btn{border:0;border-radius:12px;padding:12px 15px;font-weight:900}
@@ -105,6 +114,7 @@ input,select{width:100%;height:46px;border:1px solid #dfe5ee;border-radius:12px;
         <div class="quick">
           <button onclick="go('schedule')"><span class="ico">📅</span>일정 관리</button>
           <button onclick="go('board')"><span class="ico">📺</span>전광판 설정</button>
+          <button onclick="go('library')"><span class="ico">📚</span>자료실</button>
           <button onclick="openUserApp()"><span class="ico">🚀</span>사용자 앱</button>
         </div>
       </div>
@@ -139,6 +149,23 @@ input,select{width:100%;height:46px;border:1px solid #dfe5ee;border-radius:12px;
       </div>
     </section>
 
+    <section class="view" id="view-library">
+      <div class="card">
+        <div class="section-title">📚 영업 자료실 업로드</div>
+        <div class="field"><label>자료 제목</label><input id="libTitle" placeholder="예: 9월 자동차보험 핵심자료"></div>
+        <div class="field"><label>카테고리</label><select id="libCategory"><option>영업자료</option><option>상품자료</option><option>교육자료</option><option>서식</option><option>기타</option></select></div>
+        <div class="field"><label>간단 설명</label><textarea id="libDescription" placeholder="TFA님들이 자료 용도를 바로 알 수 있게 간단히 적어주세요."></textarea></div>
+        <div class="field"><label>파일 선택 · 최대 30MB</label><input class="file-input" id="libFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.xlsx,.xls,.pptx,.ppt,.docx,.doc,.hwp,.hwpx,.txt,.zip"></div>
+        <div class="toggle-row"><div><b>상단 고정</b><div class="muted">중요 자료를 자료실 맨 위에 표시합니다.</div></div><input type="checkbox" id="libPinned"></div>
+        <button class="btn primary full" id="libUpload">자료 업로드</button>
+        <div class="save-msg" id="libMsg"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">🗂 등록 자료 <span class="muted" id="libCount"></span></div>
+        <div id="adminLibraryList"><div class="empty">자료를 불러오는 중...</div></div>
+      </div>
+    </section>
+
     <section class="view" id="view-more">
       <div class="card">
         <div class="section-title">⚙️ 관리자 설정</div>
@@ -163,9 +190,11 @@ input,select{width:100%;height:46px;border:1px solid #dfe5ee;border-radius:12px;
 </div>
 
 <script>
-let schedules=[],settings={};
+let schedules=[],settings={},libraryItems=[];
 async function api(u,o={}){
-  let r=await fetch(u,{...o,headers:{"content-type":"application/json",...(o.headers||{})}});
+  const form=typeof FormData!=="undefined"&&o.body instanceof FormData;
+  let headers=form?{...(o.headers||{})}:{"content-type":"application/json",...(o.headers||{})};
+  let r=await fetch(u,{...o,headers});
   if(r.status===401){showLogin();throw new Error("unauthorized")}
   return r;
 }
@@ -211,6 +240,35 @@ function renderList(){
     d.querySelector(".item-actions").appendChild(b);list.appendChild(d)
   })
 }
+function bytes(n){n=Number(n||0);if(n<1024)return n+"B";if(n<1024*1024)return (n/1024).toFixed(1)+"KB";return (n/1024/1024).toFixed(1)+"MB"}
+function renderLibraryAdmin(){
+  libCount.textContent=libraryItems.length+"건";
+  adminLibraryList.innerHTML="";
+  if(!libraryItems.length){adminLibraryList.innerHTML='<div class="empty">등록된 자료가 없습니다.</div>';return}
+  libraryItems.forEach(x=>{
+    let d=document.createElement("div");d.className="library-admin-item";
+    d.innerHTML='<div class="library-admin-title">'+(x.pinned?'<span class="library-pin">📌 상단고정</span>':'')+'<span class="library-cat">'+esc(x.category)+'</span>'+esc(x.title)+'</div><div class="item-meta">'+esc(x.fileName)+' · '+bytes(x.fileSize)+(x.description?'<br>'+esc(x.description):'')+'</div><div class="library-actions"></div>';
+    let open=document.createElement("button");open.className="btn ghost";open.textContent="열기";open.onclick=()=>window.open("/api/library/"+encodeURIComponent(x.id)+"/file","_blank");
+    let pin=document.createElement("button");pin.className="btn ghost";pin.textContent=x.pinned?"고정 해제":"상단 고정";pin.onclick=async()=>{let r=await api("/api/admin/library/"+encodeURIComponent(x.id),{method:"PUT",body:JSON.stringify({title:x.title,description:x.description,category:x.category,pinned:!x.pinned})});if(r.ok)await loadLibraryAdmin()};
+    let del=document.createElement("button");del.className="btn danger";del.textContent="삭제";del.onclick=async()=>{if(!confirm("이 자료를 자료실에서 완전히 삭제하시겠습니까?"))return;let r=await api("/api/admin/library/"+encodeURIComponent(x.id),{method:"DELETE"});if(r.ok)await loadLibraryAdmin()};
+    d.querySelector(".library-actions").append(open,pin,del);adminLibraryList.appendChild(d)
+  })
+}
+async function loadLibraryAdmin(){
+  let j=await (await api("/api/admin/library")).json();libraryItems=j.items||[];renderLibraryAdmin()
+}
+async function uploadLibrary(){
+  libMsg.textContent="";
+  if(!libFile.files[0]){libMsg.textContent="업로드할 파일을 선택해 주세요.";return}
+  let fd=new FormData();fd.append("file",libFile.files[0]);fd.append("title",libTitle.value.trim());fd.append("category",libCategory.value);fd.append("description",libDescription.value.trim());fd.append("pinned",libPinned.checked?"true":"false");
+  libUpload.disabled=true;libUpload.textContent="업로드 중...";
+  try{
+    let r=await api("/api/admin/library",{method:"POST",body:fd});
+    let j=await r.json().catch(()=>({}));
+    if(r.ok){libMsg.textContent="자료가 등록되었습니다.";libTitle.value="";libDescription.value="";libFile.value="";libPinned.checked=false;await loadLibraryAdmin()}
+    else libMsg.textContent=j.error==="file_too_large"?"파일은 30MB 이하로 올려주세요.":j.error==="unsupported_file"?"지원하지 않는 파일 형식입니다.":"업로드에 실패했습니다.";
+  }finally{libUpload.disabled=false;libUpload.textContent="자료 업로드"}
+}
 function go(v){
   document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
   document.getElementById("view-"+v).classList.add("on");
@@ -219,6 +277,7 @@ function go(v){
 function openUserApp(){location.href="/"}
 document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>go(b.dataset.view));
 search.oninput=renderList;typeFilter.onchange=renderList;
+libUpload.onclick=uploadLibrary;
 
 loginBtn.onclick=async()=>{
   loginMsg.textContent="";
@@ -240,7 +299,7 @@ async function load(){
   settings=await (await api("/api/admin/settings")).json();
   mode.value=settings.marquee_mode;marquee.value=settings.marquee_text||"";mvp.checked=!!settings.mvp_enabled;mvpTitle.value=settings.mvp_title||"";title.value=settings.app_title||"";sub.value=settings.app_subtitle||"";
   let j=await (await api("/api/admin/schedules")).json();schedules=j.schedules||[];
-  renderStats();renderList()
+  renderStats();renderList();await loadLibraryAdmin()
 }
 load();
 </script>
