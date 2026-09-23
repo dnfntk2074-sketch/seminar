@@ -215,6 +215,58 @@ linear-gradient(135deg,#20194a,#302066);color:#ffd166;min-height:138px;padding:2
   .mvp-name{font-size:27px!important}
   .mvp-count{font-size:21px!important}
 }
+
+/* FINAL mobile full-month calendar fit */
+@media(max-width:420px){
+  .wrap{padding-left:5px!important;padding-right:5px!important}
+  .card:has(.calendar-head){padding:8px 4px!important;overflow:hidden!important}
+  .calendar-head{grid-template-columns:28px minmax(0,1fr) 28px!important;gap:2px!important;margin-bottom:4px!important}
+  .calendar-head b{font-size:12px!important;line-height:1.1!important}
+  .calendar-nav{width:28px!important;height:28px!important;font-size:18px!important;border-radius:7px!important}
+  .weekday-row,.grid{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    grid-template-columns:repeat(7,minmax(0,1fr))!important;
+    gap:1px!important;
+  }
+  .weekday-row{font-size:8px!important;margin-bottom:2px!important}
+  .weekday-row span{padding:2px 0!important}
+  .day{
+    min-width:0!important;
+    width:auto!important;
+    min-height:52px!important;
+    height:52px!important;
+    padding:1px!important;
+    border-radius:3px!important;
+    overflow:hidden!important;
+  }
+  .day h4{
+    height:12px!important;
+    margin:0 0 1px!important;
+    font-size:8px!important;
+    line-height:1!important;
+    gap:1px!important;
+    overflow:hidden!important;
+  }
+  .day-badge{font-size:5px!important;padding:0 1px!important;max-width:28px!important;border-radius:3px!important}
+  .schedule-chip{
+    height:16px!important;
+    margin-top:1px!important;
+    padding:2px 0!important;
+    font-size:7px!important;
+    line-height:1!important;
+    border-radius:2px!important;
+    border-left-width:2px!important;
+  }
+  .more-btn{
+    height:12px!important;
+    padding:0!important;
+    margin:1px 0 0!important;
+    font-size:6px!important;
+    line-height:1!important;
+  }
+}
 </style></head><body><div class="wrap">
 <div class="card"><img class="brand-logo" src="/brand-logo-user.gif?v=20260921-1935" alt="보험이 착해지다 A+에셋"><div class="title" id="appTitle">유료DB ACTION HUB</div><div class="sub" id="appSub">방문 · 학습 · 콜 활동을 한눈에 공유합니다.</div></div>
 <div class="led schedule-led"><div class="glow-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="marquee-track ltr" id="scheduleTrack"><span class="marquee-copy" id="marquee">일정을 불러오는 중...</span><span class="marquee-copy mirror" id="marqueeMirror" aria-hidden="true">일정을 불러오는 중...</span><span class="marquee-copy extra" id="marqueeExtra" aria-hidden="true">일정을 불러오는 중...</span></div></div>
@@ -251,7 +303,7 @@ function scheduleIcon(type){return type==="visit"?"🤝":type==="study"?"📚":"
 function scheduleTypeName(type){return type==="visit"?"방문":type==="study"?"DB학습회":"콜번개"}
 function shiftMonth(ym,n){let y=Number(ym.slice(0,4)),m=Number(ym.slice(5,7));let d=new Date(Date.UTC(y,m-1+n,1));return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,"0")}`}
 function monthCalendarRange(ym=calendarCursor){let y=Number(ym.slice(0,4)),m=Number(ym.slice(5,7)),first=`${y}-${String(m).padStart(2,"0")}-01`,lastDay=new Date(Date.UTC(y,m,0)).getUTCDate(),last=`${y}-${String(m).padStart(2,"0")}-${String(lastDay).padStart(2,"0")}`,start=add(first,-new Date(first+"T00:00:00Z").getUTCDay()),endDow=new Date(last+"T00:00:00Z").getUTCDay(),end=add(last,6-endDow);return[start,end]}
-function render(){let [start,end]=monthCalendarRange(),today=seoulDate();calendarTitle.textContent=`${calendarCursor.slice(0,4)}년 ${Number(calendarCursor.slice(5,7))}월 ACTION 스케줄러`;grid.innerHTML="";for(let d=start;d<=end;d=add(d,1)){let list=data.filter(x=>x.date===d),el=document.createElement("div"),tone=dayTone(d),badge=specialBadge(d),expanded=expandedDays.has(d),shown=expanded?list:list.slice(0,2),more=list.length-shown.length,outside=d.slice(0,7)!==calendarCursor;el.className="day"+(outside?" outside":"")+(d===today?" today":"");el.innerHTML=`<h4 class="${tone}"><span class="day-date">${Number(d.slice(8))}</span>${badge}</h4>`+(list.length?shown.map(x=>`<button type="button" class="schedule-chip ${x.type}" data-detail="${x.id}" title="${esc(x.owner)}">${esc(x.owner)}</button>`).join("")+(more>0?`<button type="button" class="more-btn" data-more="${d}">+${more}건</button>`:(expanded&&list.length>2?`<button type="button" class="more-btn" data-more="${d}">접기</button>`:"")):"");grid.appendChild(el)}}
+function render(){let [start,end]=monthCalendarRange(),today=seoulDate();calendarTitle.textContent=`${calendarCursor.slice(0,4)}년 ${Number(calendarCursor.slice(5,7))}월 ACTION 스케줄러`;grid.innerHTML="";for(let d=start;d<=end;d=add(d,1)){let list=data.filter(x=>x.date===d),el=document.createElement("div"),tone=dayTone(d),badge=specialBadge(d),expanded=expandedDays.has(d),shown=expanded?list:list.slice(0,(window.innerWidth<=420?1:2)),more=list.length-shown.length,outside=d.slice(0,7)!==calendarCursor;el.className="day"+(outside?" outside":"")+(d===today?" today":"");el.innerHTML=`<h4 class="${tone}"><span class="day-date">${Number(d.slice(8))}</span>${badge}</h4>`+(list.length?shown.map(x=>`<button type="button" class="schedule-chip ${x.type}" data-detail="${x.id}" title="${esc(x.owner)}">${esc(x.owner)}</button>`).join("")+(more>0?`<button type="button" class="more-btn" data-more="${d}">+${more}건</button>`:(expanded&&list.length>2?`<button type="button" class="more-btn" data-more="${d}">접기</button>`:"")):"");grid.appendChild(el)}}
 calendarPrev.onclick=()=>{calendarCursor=shiftMonth(calendarCursor,-1);expandedDays.clear();render()};
 calendarNext.onclick=()=>{calendarCursor=shiftMonth(calendarCursor,1);expandedDays.clear();render()};
 function esc(v){return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
