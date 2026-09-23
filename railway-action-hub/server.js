@@ -3,6 +3,7 @@ import pg from "pg";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -16,6 +17,13 @@ const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "dnfntk2074@gmail.com").toLowerC
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "ChangeMe!2026";
 const FLOOT = "https://guri-leaders-hb-db-hub.floot.app/_api";
 const pool = new Pool({ connectionString: DATABASE_URL, ssl: DATABASE_URL?.includes("railway") ? { rejectUnauthorized:false } : undefined });
+const upload = multer({storage:multer.memoryStorage(),limits:{fileSize:30*1024*1024}});
+const LIBRARY_CATEGORIES=new Set(["영업자료","상품자료","교육자료","서식","기타"]);
+const LIBRARY_EXTS=new Set(["pdf","jpg","jpeg","png","webp","gif","xlsx","xls","pptx","ppt","docx","doc","hwp","hwpx","txt","zip"]);
+function libraryExt(name){const p=String(name||"").split(".");return p.length>1?p.pop().toLowerCase():""}
+function safeCategory(v){return LIBRARY_CATEGORIES.has(String(v||""))?String(v):"기타"}
+function libraryMeta(row){return {id:String(row.id),title:row.title,description:row.description||"",category:row.category,pinned:!!row.pinned,fileName:row.file_name,mimeType:row.mime_type,fileSize:Number(row.file_size||0),createdAt:new Date(row.created_at).toISOString(),updatedAt:new Date(row.updated_at).toISOString()}}
+function contentDisposition(name,download=false){const fallback=String(name||"file").replace(/[\r\n"]/g,"_");const encoded=encodeURIComponent(String(name||"file"));return `${download?"attachment":"inline"}; filename="${fallback}"; filename*=UTF-8''${encoded}`}
 
 app.use(express.json());
 app.use((req,res,next)=>{
@@ -47,6 +55,7 @@ function toPublic(row,hash,ownerName){
   return {
     id:String(row.id), ownerName:row.owner_name, customerName:row.customer_name,
     scheduledAt:new Date(row.scheduled_at).toISOString(),
+    completed:!!row.completed,
     canEdit:!!hash && !!ownerName && sameOwnerName(row.owner_name,ownerName) && !!row.owner_token_hash && crypto.timingSafeEqual(Buffer.from(hash),Buffer.from(row.owner_token_hash))
   };
 }
@@ -68,6 +77,20 @@ async function init(){
     scheduled_at timestamptz not null,
     owner_token_hash text,
     source text not null default 'local',
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+  )`);
+  await pool.query(`ALTER TABLE schedules ADD COLUMN IF NOT EXISTS completed boolean NOT NULL DEFAULT false`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS library_files(
+    id text primary key,
+    title text not null,
+    description text not null default '',
+    category text not null default '기타',
+    pinned boolean not null default false,
+    file_name text not null,
+    mime_type text not null default 'application/octet-stream',
+    file_size integer not null default 0,
+    file_data bytea not null,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
   )`);
@@ -140,9 +163,20 @@ app.put("/api/schedules/:id",async(req,res)=>{
   const r=await pool.query("SELECT owner_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
   const ownerIdentity=(req.get("x-owner-name")||"").trim();
   if(!r.rowCount||!ownerIdentity||!sameOwnerName(r.rows[0].owner_name,ownerIdentity)||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
-  await pool.query("UPDATE schedules SET owner_name=$1,customer_name=$2,scheduled_at=$3,updated_at=now() WHERE id=$4",
-    [String(ownerName).trim(),makeCustomer(type,String(place).trim()),at.toISOString(),req.params.id]);
+  await pool.query("UPDATE schedules SET owner_name=$1,customer_name=$2,scheduled_at=$3,completed=CASE WHEN $5='visit' THEN completed ELSE false END,updated_at=now() WHERE id=$4",
+    [String(ownerName).trim(),makeCustomer(type,String(place).trim()),at.toISOString(),req.params.id,type]);
   res.json({ok:true});
+});
+app.patch("/api/schedules/:id/complete",async(req,res)=>{
+  const ownerToken=req.get("x-owner-token")||"";
+  const ownerIdentity=(req.get("x-owner-name")||"").trim();
+  const completed=req.body?.completed===true;
+  const r=await pool.query("SELECT owner_name,customer_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
+  if(!r.rowCount||!ownerIdentity||!sameOwnerName(r.rows[0].owner_name,ownerIdentity)||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
+  const customer=String(r.rows[0].customer_name||"");
+  if(customer.startsWith("[DB학습회] ")||customer.startsWith("[콜번개] ")) return res.status(400).json({error:"visit_only"});
+  await pool.query("UPDATE schedules SET completed=$1,updated_at=now() WHERE id=$2",[completed,req.params.id]);
+  res.json({ok:true,completed});
 });
 app.delete("/api/schedules/:id",async(req,res)=>{
   const ownerToken=req.get("x-owner-token")||req.body?.ownerToken||"";
@@ -151,6 +185,24 @@ app.delete("/api/schedules/:id",async(req,res)=>{
   if(!r.rowCount||!ownerIdentity||!sameOwnerName(r.rows[0].owner_name,ownerIdentity)||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
   await pool.query("DELETE FROM schedules WHERE id=$1",[req.params.id]);
   res.json({ok:true});
+});
+
+app.get("/api/library",async(req,res)=>{
+  try{
+    const r=await pool.query("SELECT id,title,description,category,pinned,file_name,mime_type,file_size,created_at,updated_at FROM library_files ORDER BY pinned DESC, created_at DESC");
+    res.json({items:r.rows.map(libraryMeta)});
+  }catch(e){console.error(e);res.status(500).json({error:"library_load_failed"});}
+});
+app.get("/api/library/:id/file",async(req,res)=>{
+  try{
+    const r=await pool.query("SELECT file_name,mime_type,file_data FROM library_files WHERE id=$1",[req.params.id]);
+    if(!r.rowCount)return res.status(404).end();
+    const row=r.rows[0],download=req.query.download==="1";
+    res.setHeader("Content-Type",row.mime_type||"application/octet-stream");
+    res.setHeader("Content-Disposition",contentDisposition(row.file_name,download));
+    res.setHeader("Cache-Control","private, max-age=300");
+    res.send(row.file_data);
+  }catch(e){console.error(e);res.status(500).end();}
 });
 
 app.post("/api/admin/login",async(req,res)=>{
@@ -175,6 +227,49 @@ app.delete("/api/admin/schedules/:id",auth,async(req,res)=>{
   await pool.query("DELETE FROM schedules WHERE id=$1",[req.params.id]);
   res.json({ok:true});
 });
+app.get("/api/admin/library",auth,async(req,res)=>{
+  const r=await pool.query("SELECT id,title,description,category,pinned,file_name,mime_type,file_size,created_at,updated_at FROM library_files ORDER BY pinned DESC, created_at DESC");
+  res.json({items:r.rows.map(libraryMeta)});
+});
+app.post("/api/admin/library",auth,upload.single("file"),async(req,res)=>{
+  try{
+    if(!req.file)return res.status(400).json({error:"file_required"});
+    const ext=libraryExt(req.file.originalname);
+    if(!LIBRARY_EXTS.has(ext))return res.status(400).json({error:"unsupported_file"});
+    const title=String(req.body?.title||"").trim()||req.file.originalname;
+    const description=String(req.body?.description||"").trim();
+    const category=safeCategory(req.body?.category);
+    const pinned=String(req.body?.pinned||"").toLowerCase()==="true";
+    const id=crypto.randomUUID();
+    await pool.query(`INSERT INTO library_files(id,title,description,category,pinned,file_name,mime_type,file_size,file_data)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+      [id,title,description,category,pinned,req.file.originalname,req.file.mimetype||"application/octet-stream",req.file.size,req.file.buffer]);
+    const r=await pool.query("SELECT id,title,description,category,pinned,file_name,mime_type,file_size,created_at,updated_at FROM library_files WHERE id=$1",[id]);
+    res.json({ok:true,item:libraryMeta(r.rows[0])});
+  }catch(e){
+    if(e?.code==="LIMIT_FILE_SIZE")return res.status(413).json({error:"file_too_large"});
+    console.error(e);res.status(500).json({error:"upload_failed"});
+  }
+});
+app.put("/api/admin/library/:id",auth,async(req,res)=>{
+  const s=req.body||{};
+  const r=await pool.query(`UPDATE library_files SET
+    title=COALESCE(NULLIF($1,''),title),
+    description=$2,
+    category=$3,
+    pinned=$4,
+    updated_at=now()
+    WHERE id=$5
+    RETURNING id,title,description,category,pinned,file_name,mime_type,file_size,created_at,updated_at`,
+    [String(s.title||"").trim(),String(s.description||"").trim(),safeCategory(s.category),!!s.pinned,req.params.id]);
+  if(!r.rowCount)return res.status(404).json({error:"not_found"});
+  res.json({ok:true,item:libraryMeta(r.rows[0])});
+});
+app.delete("/api/admin/library/:id",auth,async(req,res)=>{
+  await pool.query("DELETE FROM library_files WHERE id=$1",[req.params.id]);
+  res.json({ok:true});
+});
+
 app.get("/api/admin/settings",auth,async(req,res)=>res.json(await getSettings()));
 app.put("/api/admin/settings",auth,async(req,res)=>{
   const s=req.body||{};
@@ -188,6 +283,12 @@ app.post("/api/admin/change-password",auth,async(req,res)=>{
   const hash=await bcrypt.hash(p,12);
   await pool.query("UPDATE admin_auth SET password_hash=$1,updated_at=now() WHERE email=$2",[hash,ADMIN_EMAIL]);
   res.json({ok:true});
+});
+
+app.use((err,req,res,next)=>{
+  if(err?.code==="LIMIT_FILE_SIZE")return res.status(413).json({error:"file_too_large"});
+  if(err)return res.status(500).json({error:"server_error"});
+  next();
 });
 
 app.get("/admin",(req,res)=>res.sendFile(path.join(__dirname,"public","admin.html")));
