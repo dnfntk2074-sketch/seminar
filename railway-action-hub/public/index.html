@@ -305,7 +305,11 @@ linear-gradient(135deg,#20194a,#302066);color:#ffd166;min-height:138px;padding:2
 .library-file-back{background:#172033;color:#fff}
 .library-file-save{background:#2456d8;color:#fff}
 .library-file-title{min-width:0;text-align:center;font-size:12px;font-weight:900;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.library-file-frame{display:block;width:100%;flex:1;min-height:0;border:0;background:#fff}
+.library-file-frame{display:none}
+.library-file-content{flex:1;min-height:0;overflow:auto;background:#dfe5ec;padding:10px}
+.library-pdf-loading{padding:30px 12px;text-align:center;color:#64748b;font-size:13px;font-weight:850}
+.library-pdf-page{display:block;width:100%;height:auto;margin:0 auto 10px;background:#fff;box-shadow:0 2px 10px #0002}
+.library-image-preview{display:block;max-width:100%;height:auto;margin:0 auto;background:#fff;box-shadow:0 2px 10px #0002}
 @media(max-width:420px){
   .library-file-toolbar{grid-template-columns:auto minmax(0,1fr) auto;gap:5px;padding-left:6px;padding-right:6px}
   .library-file-back,.library-file-save{height:38px;padding:0 9px;font-size:10px}
@@ -323,7 +327,7 @@ linear-gradient(135deg,#20194a,#302066);color:#ffd166;min-height:138px;padding:2
 <div class="card calendar-card"><div class="calendar-head"><button type="button" class="calendar-nav" id="calendarPrev" aria-label="이전 달">‹</button><b id="calendarTitle">월간 ACTION 스케줄러</b><button type="button" class="calendar-nav" id="calendarNext" aria-label="다음 달">›</button></div><div class="calendar-tools"><button type="button" class="my-only-btn" id="myScheduleToggle">내 일정만 보기</button></div><div class="weekday-row"><span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span></div><div class="grid" id="grid"></div></div>
 <div class="schedule-detail-backdrop" id="scheduleDetailBackdrop" hidden><div class="schedule-detail" role="dialog" aria-modal="true" aria-labelledby="scheduleDetailTitle"><div class="schedule-detail-head"><div><div class="schedule-detail-title" id="scheduleDetailTitle">일정 상세</div><div class="detail-type" id="scheduleDetailType"></div></div><button class="detail-close" id="scheduleDetailClose" type="button" aria-label="닫기">×</button></div><div class="detail-list"><div class="detail-row"><span>등록자</span><strong id="scheduleDetailOwner"></strong></div><div class="detail-row"><span>날짜</span><strong id="scheduleDetailDate"></strong></div><div class="detail-row"><span>시간</span><strong id="scheduleDetailTime"></strong></div><div class="detail-row"><span>장소/주제</span><strong id="scheduleDetailPlace"></strong></div><div class="detail-row" id="scheduleDetailStatusRow" hidden><span>상태</span><strong id="scheduleDetailStatus"></strong></div></div><button class="complete-btn" id="scheduleDetailComplete" type="button" hidden>✓ 방문 완료</button><div class="detail-actions" id="scheduleDetailActions" hidden><button class="detail-edit" id="scheduleDetailEdit" type="button">수정</button><button class="detail-delete" id="scheduleDetailDelete" type="button">삭제</button></div></div></div>
 <div class="card editbox" id="editBox" hidden><b>내 일정 수정</b><div class="field"><label>일정 종류</label><select class="input" id="editType"><option value="visit">🤝 방문일정</option><option value="study">📚 DB학습회</option><option value="call">⚡ 콜번개</option></select></div><div class="field"><label>TFA 이름</label><input class="input" id="editOwner"></div><div class="field"><label>장소/주제</label><input class="input" id="editPlace"></div><div class="dt"><div class="field"><label>날짜</label><input class="input" type="date" id="editDate"></div><div class="field"><label>시간</label><input class="input" type="time" step="300" id="editTime"></div></div><div class="edit-actions"><button class="cancel-btn" id="cancelEdit">취소</button><button class="save-btn" id="saveEdit">수정 저장</button></div></div>
-<div class="library-backdrop" id="libraryBackdrop" hidden><div class="library-panel" role="dialog" aria-modal="true" aria-labelledby="libraryTitle"><div class="library-head"><div><div class="library-head-title" id="libraryTitle">📚 영업 자료실</div><div class="muted">필요한 자료를 열어보거나 내려받을 수 있습니다.</div></div><button type="button" class="library-close" id="libraryClose">×</button></div><div class="library-filters"><input id="librarySearch" placeholder="자료 제목 검색"><select id="libraryCategory"><option value="all">전체 카테고리</option><option>영업자료</option><option>상품자료</option><option>교육자료</option><option>서식</option><option>기타</option></select></div><div id="libraryList"><div class="library-empty">자료를 불러오는 중...</div></div></div></div><div class="library-file-view" id="libraryFileView" hidden><div class="library-file-toolbar"><button type="button" class="library-file-back" id="libraryFileBack">← ACTION HUB 복귀</button><div class="library-file-title" id="libraryFileTitle">자료 보기</div><button type="button" class="library-file-save" id="libraryFileSave">파일 저장</button></div><iframe class="library-file-frame" id="libraryFileFrame" title="자료 보기"></iframe></div><div class="library-download-view" id="libraryDownloadView" hidden><div class="library-download-card"><div class="library-download-icon">⬇️</div><div class="library-download-title">자료 다운로드</div><div class="library-download-desc">파일 저장 화면이 열리면 저장 후 닫아주세요.<br>다시 ACTION HUB로 바로 돌아올 수 있습니다.</div><div class="library-download-name" id="libraryDownloadName"></div><button type="button" class="library-download-home" id="libraryDownloadHome">← ACTION HUB로 돌아가기</button><button type="button" class="library-download-again" id="libraryDownloadAgain">다운로드 다시 시작</button></div></div>
+<div class="library-backdrop" id="libraryBackdrop" hidden><div class="library-panel" role="dialog" aria-modal="true" aria-labelledby="libraryTitle"><div class="library-head"><div><div class="library-head-title" id="libraryTitle">📚 영업 자료실</div><div class="muted">필요한 자료를 열어보거나 내려받을 수 있습니다.</div></div><button type="button" class="library-close" id="libraryClose">×</button></div><div class="library-filters"><input id="librarySearch" placeholder="자료 제목 검색"><select id="libraryCategory"><option value="all">전체 카테고리</option><option>영업자료</option><option>상품자료</option><option>교육자료</option><option>서식</option><option>기타</option></select></div><div id="libraryList"><div class="library-empty">자료를 불러오는 중...</div></div></div></div><div class="library-file-view" id="libraryFileView" hidden><div class="library-file-toolbar"><button type="button" class="library-file-back" id="libraryFileBack">← ACTION HUB 복귀</button><div class="library-file-title" id="libraryFileTitle">자료 보기</div><button type="button" class="library-file-save" id="libraryFileSave">파일 저장</button></div><div class="library-file-content" id="libraryFileContent"><div class="library-pdf-loading">자료를 불러오는 중...</div></div><iframe class="library-file-frame" id="libraryFileFrame" title="자료 보기"></iframe></div><div class="library-download-view" id="libraryDownloadView" hidden><div class="library-download-card"><div class="library-download-icon">⬇️</div><div class="library-download-title">자료 다운로드</div><div class="library-download-desc">파일 저장 화면이 열리면 저장 후 닫아주세요.<br>다시 ACTION HUB로 바로 돌아올 수 있습니다.</div><div class="library-download-name" id="libraryDownloadName"></div><button type="button" class="library-download-home" id="libraryDownloadHome">← ACTION HUB로 돌아가기</button><button type="button" class="library-download-again" id="libraryDownloadAgain">다운로드 다시 시작</button></div></div>
 </div><script>
 let tab="visit", data=[], editingId="", libraryItems=[];
 const OWNER_KEY="hb_action_owner_token_v1",OWNER_NAME_KEY="hb_action_owner_name_v1";
@@ -367,13 +371,57 @@ function canPreviewLibrary(x){
   const name=String(x.fileName||"").toLowerCase();
   return mime==="application/pdf"||mime.startsWith("image/")||/\.(pdf|png|jpe?g|gif|webp)$/.test(name);
 }
-function startLibraryDownload(x){
+function isPdfLibrary(x){
+  const mime=String(x.mimeType||"").toLowerCase();
+  const name=String(x.fileName||"").toLowerCase();
+  return mime==="application/pdf"||/\.pdf$/.test(name);
+}
+async function renderPdfLibrary(x){
+  libraryFileContent.innerHTML='<div class="library-pdf-loading">PDF 전체 페이지를 불러오는 중...</div>';
+  try{
+    const url="/api/library/"+encodeURIComponent(x.id)+"/file";
+    const buf=await (await fetch(url)).arrayBuffer();
+    const pdfjs=await import("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs");
+    pdfjs.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs";
+    const pdf=await pdfjs.getDocument({data:buf}).promise;
+    libraryFileContent.innerHTML="";
+    for(let pageNo=1;pageNo<=pdf.numPages;pageNo++){
+      const page=await pdf.getPage(pageNo);
+      const base=page.getViewport({scale:1});
+      const targetWidth=Math.min(window.innerWidth-20,760);
+      const scale=targetWidth/base.width;
+      const viewport=page.getViewport({scale});
+      const canvas=document.createElement("canvas");
+      canvas.className="library-pdf-page";
+      canvas.width=Math.floor(viewport.width*devicePixelRatio);
+      canvas.height=Math.floor(viewport.height*devicePixelRatio);
+      canvas.style.width=Math.floor(viewport.width)+"px";
+      canvas.style.height=Math.floor(viewport.height)+"px";
+      const ctx=canvas.getContext("2d");
+      ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+      libraryFileContent.appendChild(canvas);
+      await page.render({canvasContext:ctx,viewport}).promise;
+    }
+    libraryFileContent.scrollTop=0;
+  }catch(e){
+    libraryFileContent.innerHTML='<div class="library-pdf-loading">PDF 전체보기를 불러오지 못했습니다.<br>오른쪽의 파일 저장을 이용해 주세요.</div>';
+  }
+}
+function renderImageLibrary(x){
+  libraryFileContent.innerHTML="";
+  const img=document.createElement("img");
+  img.className="library-image-preview";
+  img.alt=x.title||x.fileName||"자료 이미지";
+  img.src="/api/library/"+encodeURIComponent(x.id)+"/file";
+  libraryFileContent.appendChild(img);
+}
+async function startLibraryDownload(x){
   currentDownloadItem=x;
   if(canPreviewLibrary(x)){
     libraryFileTitle.textContent=x.title||x.fileName||"자료 보기";
-    libraryFileFrame.src="/api/library/"+encodeURIComponent(x.id)+"/file";
     libraryFileView.hidden=false;
     libraryBackdrop.hidden=true;
+    if(isPdfLibrary(x)) await renderPdfLibrary(x); else renderImageLibrary(x);
     return;
   }
   libraryDownloadName.textContent=x.fileName||x.title||"자료";
@@ -382,6 +430,7 @@ function startLibraryDownload(x){
 }
 libraryFileBack.onclick=()=>{
   libraryFileView.hidden=true;
+  libraryFileContent.innerHTML='<div class="library-pdf-loading">자료를 불러오는 중...</div>';
   libraryFileFrame.src="about:blank";
   currentDownloadItem=null;
   closeLibrary();
