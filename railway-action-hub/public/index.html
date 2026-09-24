@@ -272,10 +272,10 @@ linear-gradient(135deg,#20194a,#302066);color:#ffd166;min-height:138px;padding:2
 .calendar-card .grid{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;width:100%!important;min-width:0!important;max-width:100%!important;gap:2px!important;overflow:visible!important}
 .calendar-card .weekday-row{font-size:10px;margin-bottom:2px}
 .calendar-card .weekday-row span{padding:3px 0}
-.calendar-card .grid{grid-auto-rows:56px!important;height:auto!important;min-height:0!important;max-height:none!important}.calendar-card .grid[data-weeks="5"]{grid-template-rows:repeat(5,56px)!important}.calendar-card .grid[data-weeks="6"]{grid-template-rows:repeat(6,56px)!important}
-.calendar-card .day{display:block!important;visibility:visible!important;min-width:0!important;width:auto!important;height:56px!important;min-height:56px!important;max-height:56px!important;padding:3px!important;border-radius:5px!important;overflow:hidden!important}
-.calendar-card .day h4{margin:0 0 2px!important;font-size:9px!important;line-height:1!important;height:12px!important;overflow:hidden!important}
-.calendar-card .day-badge{font-size:6px!important;padding:1px 2px!important;max-width:28px!important}
+.calendar-card .grid{grid-auto-rows:84px!important;height:auto!important;min-height:0!important;max-height:none!important}.calendar-card .grid[data-weeks="5"]{grid-template-rows:repeat(5,84px)!important}.calendar-card .grid[data-weeks="6"]{grid-template-rows:repeat(6,84px)!important}
+.calendar-card .day{display:block!important;visibility:visible!important;min-width:0!important;width:auto!important;height:84px!important;min-height:84px!important;max-height:84px!important;padding:4px!important;border-radius:5px!important;overflow:hidden!important}
+.calendar-card .day h4{margin:0 0 3px!important;font-size:9px!important;line-height:1.15!important;min-height:22px!important;height:auto!important;overflow:visible!important;display:flex!important;align-items:flex-start!important;gap:2px!important;flex-wrap:wrap!important}
+.calendar-card .day-badge{font-size:6px!important;padding:1px 3px!important;max-width:100%!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.1!important}
 .calendar-card .schedule-chip{height:17px!important;margin-top:1px!important;padding:2px 1px!important;font-size:8px!important;line-height:1!important;border-radius:3px!important}
 .calendar-card .more-btn{height:11px!important;margin:1px 0 0!important;padding:0!important;font-size:7px!important;line-height:1!important}
 
@@ -290,11 +290,11 @@ linear-gradient(135deg,#20194a,#302066);color:#ffd166;min-height:138px;padding:2
   .calendar-card .grid{gap:1px!important}
   .calendar-card .weekday-row{font-size:8px}
   .calendar-card .weekday-row span{padding:2px 0}
-  .calendar-card .grid{grid-auto-rows:48px!important;height:auto!important;min-height:0!important}.calendar-card .grid[data-weeks="5"]{grid-template-rows:repeat(5,48px)!important}.calendar-card .grid[data-weeks="6"]{grid-template-rows:repeat(6,48px)!important}
-  .calendar-card .day{height:48px!important;min-height:48px!important;max-height:48px!important;padding:2px!important;border-radius:4px!important}
-  .calendar-card .day h4{font-size:8px!important;height:10px!important;margin-bottom:1px!important}
-  .calendar-card .day-badge{display:none!important}
-  .calendar-card .schedule-chip{height:15px!important;font-size:7px!important;padding:2px 0!important}
+  .calendar-card .grid{grid-auto-rows:78px!important;height:auto!important;min-height:0!important}.calendar-card .grid[data-weeks="5"]{grid-template-rows:repeat(5,78px)!important}.calendar-card .grid[data-weeks="6"]{grid-template-rows:repeat(6,78px)!important}
+  .calendar-card .day{height:78px!important;min-height:78px!important;max-height:78px!important;padding:3px!important;border-radius:4px!important}
+  .calendar-card .day h4{font-size:8px!important;min-height:20px!important;height:auto!important;margin-bottom:2px!important;line-height:1.1!important;overflow:visible!important}
+  .calendar-card .day-badge{display:inline-flex!important;font-size:6px!important;max-width:100%!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.05!important}
+  .calendar-card .schedule-chip{height:16px!important;font-size:7px!important;padding:2px 0!important;margin-top:1px!important}
   .calendar-card .more-btn{height:9px!important;font-size:6px!important}
 }
 
@@ -430,7 +430,7 @@ function render(){
     let d=add(start,i);
     let list=data.filter(x=>x.date===d&&(!myOnly||x.owner===ownerIdentity));
     let el=document.createElement("div"),tone=dayTone(d),badge=specialBadge(d),expanded=expandedDays.has(d);
-    let shown=expanded?list:list.slice(0,(window.innerWidth<=420?1:2));
+    let shown=expanded?list:list.slice(0,3);
     let more=list.length-shown.length,outside=d.slice(0,7)!==calendarCursor;
     el.className="day"+(outside?" outside":"")+(d===today?" today":"");
     el.innerHTML=`<h4 class="${tone}"><span class="day-date">${Number(d.slice(8))}</span>${badge}</h4>`+
