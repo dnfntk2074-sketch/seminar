@@ -18,7 +18,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "ChangeMe!2026";
 const FLOOT = "https://guri-leaders-hb-db-hub.floot.app/_api";
 const pool = new Pool({ connectionString: DATABASE_URL, ssl: DATABASE_URL?.includes("railway") ? { rejectUnauthorized:false } : undefined });
 const upload = multer({storage:multer.memoryStorage(),limits:{fileSize:30*1024*1024}});
-const LIBRARY_CATEGORIES=new Set(["영업자료","상품자료","교육자료","서식","기타"]);
+const LIBRARY_CATEGORIES=new Set(["영업자료","상품자료","교육자료","서식","전사시책","상품환산","수수료예시"]);
 const LIBRARY_EXTS=new Set(["pdf","jpg","jpeg","png","webp","gif","xlsx","xls","pptx","ppt","docx","doc","hwp","hwpx","txt","zip"]);
 function normalizeFilename(name){
   const s=String(name||"");
@@ -32,7 +32,7 @@ function normalizeFilename(name){
   return s;
 }
 function libraryExt(name){const p=normalizeFilename(name).split(".");return p.length>1?p.pop().toLowerCase():""}
-function safeCategory(v){return LIBRARY_CATEGORIES.has(String(v||""))?String(v):"기타"}
+function safeCategory(v){const category=String(v||"");return category==="기타"?"전사시책":LIBRARY_CATEGORIES.has(category)?category:"전사시책"}
 function libraryMeta(row){return {id:String(row.id),title:row.title,description:row.description||"",category:row.category,pinned:!!row.pinned,fileName:normalizeFilename(row.file_name),mimeType:row.mime_type,fileSize:Number(row.file_size||0),createdAt:new Date(row.created_at).toISOString(),updatedAt:new Date(row.updated_at).toISOString()}}
 function contentDisposition(name,download=false){
   const clean=normalizeFilename(name)||"file";
@@ -101,7 +101,7 @@ async function init(){
     id text primary key,
     title text not null,
     description text not null default '',
-    category text not null default '기타',
+    category text not null default '전사시책',
     pinned boolean not null default false,
     file_name text not null,
     mime_type text not null default 'application/octet-stream',
@@ -110,6 +110,7 @@ async function init(){
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
   )`);
+  await pool.query("UPDATE library_files SET category=$1 WHERE category=$2",["전사시책","기타"]);
   // repair existing mojibake library filenames without touching file contents
   const badNames=await pool.query("SELECT id,file_name FROM library_files");
   for(const row of badNames.rows){
