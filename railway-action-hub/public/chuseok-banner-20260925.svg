@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 536" role="img" aria-labelledby="t d">
+<title id="t">구리리더스HB사업단 추석 인사</title>
+<desc id="d">풍성한 한가위 되세요. 가족과 함께 넉넉하고 따뜻한 하루 보내세요.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#081a39"/>
+    <stop offset=".56" stop-color="#0d2e58"/>
+    <stop offset="1" stop-color="#173966"/>
+  </linearGradient>
+  <radialGradient id="moon" cx=".38" cy=".33" r=".72">
+    <stop offset="0" stop-color="#fff8d9"/>
+    <stop offset=".5" stop-color="#ffe6a0"/>
+    <stop offset=".82" stop-color="#f6c96b"/>
+    <stop offset="1" stop-color="#d9a546"/>
+  </radialGradient>
+  <radialGradient id="glow" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#ffd87a" stop-opacity=".28"/>
+    <stop offset=".55" stop-color="#ffd87a" stop-opacity=".10"/>
+    <stop offset="1" stop-color="#ffd87a" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="gold" x1="0" x2="1">
+    <stop offset="0" stop-color="#f3be58"/>
+    <stop offset=".5" stop-color="#ffe29a"/>
+    <stop offset="1" stop-color="#e8ad45"/>
+  </linearGradient>
+  <linearGradient id="cloud" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#d8e3f1" stop-opacity=".28"/>
+    <stop offset="1" stop-color="#6d88a9" stop-opacity=".05"/>
+  </linearGradient>
+  <filter id="moonShadow" x="-40%" y="-40%" width="180%" height="180%">
+    <feGaussianBlur stdDeviation="14" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+</defs>
+<rect width="1600" height="536" fill="url(#bg)"/>
+<g opacity=".38">
+  <circle cx="805" cy="75" r="1.8" fill="#dbeafe"/>
+  <circle cx="916" cy="112" r="1.1" fill="#fef3c7"/>
+  <circle cx="1040" cy="62" r="1.4" fill="#dbeafe"/>
+  <circle cx="1120" cy="142" r="1.2" fill="#fff"/>
+  <circle cx="1290" cy="82" r="1.5" fill="#dbeafe"/>
+  <circle cx="1450" cy="118" r="1.1" fill="#fef3c7"/>
+</g>
+<g transform="translate(1250 235)">
+  <circle r="168" fill="url(#glow)"/>
+  <circle r="118" fill="url(#moon)" filter="url(#moonShadow)"/>
+  <g fill="#c99742" opacity=".22">
+    <ellipse cx="-34" cy="-42" rx="30" ry="18"/>
+    <ellipse cx="35" cy="-20" rx="19" ry="13"/>
+    <ellipse cx="-5" cy="34" rx="28" ry="17"/>
+    <ellipse cx="49" cy="48" rx="18" ry="12"/>
+    <ellipse cx="-53" cy="53" rx="16" ry="10"/>
+  </g>
+  <g fill="#fff6d8" opacity=".18">
+    <circle cx="-14" cy="-65" r="13"/>
+    <circle cx="58" cy="9" r="10"/>
+    <circle cx="-67" cy="8" r="8"/>
+  </g>
+</g>
+<g opacity=".5" fill="url(#cloud)">
+  <ellipse cx="1125" cy="447" rx="180" ry="50"/>
+  <ellipse cx="1300" cy="453" rx="220" ry="56"/>
+  <ellipse cx="1460" cy="437" rx="150" ry="46"/>
+</g>
+<text x="78" y="120" fill="#fff" font-family="Arial,'Apple SD Gothic Neo','Noto Sans KR',sans-serif" font-size="46" font-weight="800">구리리더스HB사업단</text>
+<circle cx="564" cy="104" r="5" fill="#f4c96c"/>
+<text x="592" y="120" fill="url(#gold)" font-family="Arial,'Apple SD Gothic Neo','Noto Sans KR',sans-serif" font-size="44" font-weight="800">추석 인사</text>
+<text x="78" y="284" fill="#fff" font-family="Arial,'Apple SD Gothic Neo','Noto Sans KR',sans-serif" font-size="83" font-weight="850">풍성한</text>
+<text x="345" y="284" fill="url(#gold)" font-family="Arial,'Apple SD Gothic Neo','Noto Sans KR',sans-serif" font-size="83" font-weight="900">한가위</text>
+<text x="632" y="284" fill="#fff" font-family="Arial,'Apple SD Gothic Neo','Noto Sans KR',sans-serif" font-size="83" font-weight="850">되세요</text>
+<text x="78" y="390" fill="#dce8f6" font-family="Arial,'Apple SD Gothic Neo','Noto Sans KR',sans-serif" font-size="42" font-weight="650">가족과 함께 넉넉하고 따뜻한 하루 보내세요.</text>
+</svg>
