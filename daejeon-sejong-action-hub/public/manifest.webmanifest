@@ -1,7 +1,7 @@
 {
   "name": "대전세종지점 ACTION HUB",
   "short_name": "ACTION HUB",
-  "description": "초회방문 · 보장분석 · 상품제안 활동 관리",
+  "description": "신규상담 · 후속상담 · 고객관리 활동 관리",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

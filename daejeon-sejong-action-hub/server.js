@@ -73,6 +73,7 @@ function toPublic(row,hash,ownerName){
     id:String(row.id), ownerName:row.owner_name, customerName:row.customer_name,
     scheduledAt:new Date(row.scheduled_at).toISOString(),
     completed:!!row.completed,
+    completedAt:row.completed_at?new Date(row.completed_at).toISOString():null,
     canEdit:!!hash && !!ownerName && sameOwnerName(row.owner_name,ownerName) && !!row.owner_token_hash && crypto.timingSafeEqual(Buffer.from(hash),Buffer.from(row.owner_token_hash))
   };
 }
@@ -83,9 +84,9 @@ async function init(){
     marquee_mode text not null default 'auto',
     marquee_text text not null default '',
     mvp_enabled boolean not null default true,
-    mvp_title text not null default '한주 최다 방문 MVP',
+    mvp_title text not null default '이번 주 활동왕',
     app_title text not null default '대전세종지점 ACTION HUB',
-    app_subtitle text not null default '초회방문 · 보장분석 · 상품제안을 한눈에 공유합니다.'
+    app_subtitle text not null default '신규상담 · 후속상담 · 고객관리를 한눈에 공유합니다.'
   )`);
   await pool.query(`INSERT INTO app_settings(id) VALUES('main') ON CONFLICT DO NOTHING`);
   await pool.query(`CREATE TABLE IF NOT EXISTS schedules(
@@ -99,7 +100,10 @@ async function init(){
     updated_at timestamptz not null default now()
   )`);
   await pool.query(`ALTER TABLE schedules ADD COLUMN IF NOT EXISTS completed boolean NOT NULL DEFAULT false`);
-  await pool.query("UPDATE schedules SET customer_name=replace(replace(customer_name,$1,$2),$3,$4) WHERE customer_name LIKE $5 OR customer_name LIKE $6",["[DB학습회] ","[보장분석] ","[콜번개] ","[상품제안] ","[DB학습회] %","[콜번개] %"]);
+  await pool.query("ALTER TABLE schedules ADD COLUMN IF NOT EXISTS completed_at timestamptz");
+  await pool.query("UPDATE schedules SET completed_at=scheduled_at WHERE completed=true AND completed_at IS NULL");
+  await pool.query("UPDATE schedules SET customer_name=CASE WHEN customer_name LIKE $1 THEN $2||substring(customer_name from length($3)+1) WHEN customer_name LIKE $4 THEN $5||substring(customer_name from length($6)+1) ELSE customer_name END WHERE customer_name LIKE $1 OR customer_name LIKE $4",["[보장분석] %","[후속상담] ","[보장분석] ","[상품제안] %","[고객관리] ","[상품제안] "]);
+  await pool.query("UPDATE schedules SET customer_name=replace(replace(customer_name,$1,$2),$3,$4) WHERE customer_name LIKE $5 OR customer_name LIKE $6",["[DB학습회] ","[후속상담] ","[콜번개] ","[고객관리] ","[DB학습회] %","[콜번개] %"]);
 
   await pool.query(`CREATE TABLE IF NOT EXISTS library_files(
     id text primary key,
@@ -128,7 +132,9 @@ async function init(){
     await pool.query(`DROP TABLE deleted_schedules`);
   }
   await pool.query(`CREATE TABLE IF NOT EXISTS admin_auth(email text primary key, password_hash text not null, updated_at timestamptz default now())`);
-  await pool.query("UPDATE app_settings SET app_subtitle=$1 WHERE id=\'main\' AND app_subtitle=$2",["초회방문 · 보장분석 · 상품제안을 한눈에 공유합니다.","방문 · 학습 · 콜 활동을 한눈에 공유합니다."]);
+  await pool.query("UPDATE app_settings SET app_subtitle=$1 WHERE id=\'main\' AND app_subtitle=$2",["신규상담 · 후속상담 · 고객관리를 한눈에 공유합니다.","방문 · 학습 · 콜 활동을 한눈에 공유합니다."]);
+  await pool.query("UPDATE app_settings SET app_subtitle=$1 WHERE id=\'main\' AND app_subtitle IN ($2,$3)",["신규상담 · 후속상담 · 고객관리를 한눈에 공유합니다.","초회방문 · 보장분석 · 상품제안을 한눈에 공유합니다.","방문 · 학습 · 콜 활동을 한눈에 공유합니다."]);
+  await pool.query("UPDATE app_settings SET mvp_title=$1 WHERE id=\'main\' AND mvp_title IN ($2,$3,$4,$5)",["이번 주 활동왕","한주 최다 방문 MVP","이번 달 방문왕","이번 주 방문왕","한주 최다 신규상담 MVP"]);
   const r=await pool.query("SELECT 1 FROM admin_auth WHERE email=$1",[ADMIN_EMAIL]);
   if(!r.rowCount){
     const hash=await bcrypt.hash(ADMIN_PASSWORD,12);
@@ -158,8 +164,8 @@ async function getSettings(){
   return r.rows[0];
 }
 function makeCustomer(type,place){
-  if(type==="study") return "[보장분석] "+place;
-  if(type==="call") return "[상품제안] "+place;
+  if(type==="study") return "[후속상담] "+place;
+  if(type==="call") return "[고객관리] "+place;
   return place;
 }
 
@@ -192,8 +198,8 @@ app.put("/api/schedules/:id",async(req,res)=>{
   const r=await pool.query("SELECT owner_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
   const ownerIdentity=requestOwnerName(req);
   if(!r.rowCount||!ownerIdentity||!sameOwnerName(r.rows[0].owner_name,ownerIdentity)||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
-  await pool.query("UPDATE schedules SET owner_name=$1,customer_name=$2,scheduled_at=$3,completed=CASE WHEN $5='visit' THEN completed ELSE false END,updated_at=now() WHERE id=$4",
-    [String(ownerName).trim(),makeCustomer(type,String(place).trim()),at.toISOString(),req.params.id,type]);
+  await pool.query("UPDATE schedules SET owner_name=$1,customer_name=$2,scheduled_at=$3,completed=completed,updated_at=now() WHERE id=$4",
+    [String(ownerName).trim(),makeCustomer(type,String(place).trim()),at.toISOString(),req.params.id]);
   res.json({ok:true});
 });
 app.patch("/api/schedules/:id/complete",async(req,res)=>{
@@ -203,8 +209,8 @@ app.patch("/api/schedules/:id/complete",async(req,res)=>{
   const r=await pool.query("SELECT owner_name,customer_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
   if(!r.rowCount||!ownerIdentity||!sameOwnerName(r.rows[0].owner_name,ownerIdentity)||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
   const customer=String(r.rows[0].customer_name||"");
-  if(customer.startsWith("[보장분석] ")||customer.startsWith("[상품제안] ")) return res.status(400).json({error:"visit_only"});
-  await pool.query("UPDATE schedules SET completed=$1,updated_at=now() WHERE id=$2",[completed,req.params.id]);
+
+  await pool.query("UPDATE schedules SET completed=$1,completed_at=CASE WHEN $1 THEN COALESCE(completed_at,now()) ELSE NULL END,updated_at=now() WHERE id=$2",[completed,req.params.id]);
   res.json({ok:true,completed});
 });
 app.delete("/api/schedules/:id",async(req,res)=>{
@@ -304,7 +310,7 @@ app.get("/api/admin/settings",auth,async(req,res)=>res.json(await getSettings())
 app.put("/api/admin/settings",auth,async(req,res)=>{
   const s=req.body||{};
   await pool.query(`UPDATE app_settings SET marquee_mode=$1,marquee_text=$2,mvp_enabled=$3,mvp_title=$4,app_title=$5,app_subtitle=$6 WHERE id='main'`,
-    [s.marquee_mode||"auto",s.marquee_text||"",!!s.mvp_enabled,s.mvp_title||"한주 최다 방문 MVP",s.app_title||"대전세종지점 ACTION HUB",s.app_subtitle||""]);
+    [s.marquee_mode||"auto",s.marquee_text||"",!!s.mvp_enabled,s.mvp_title||"이번 주 활동왕",s.app_title||"대전세종지점 ACTION HUB",s.app_subtitle||""]);
   res.json({ok:true});
 });
 app.post("/api/admin/change-password",auth,async(req,res)=>{

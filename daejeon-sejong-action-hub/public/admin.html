@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ACTION HUB 관리자</title><meta property="og:type" content="website"><meta property="og:title" content="ACTION HUB 관리자"><meta property="og:description" content="대전세종지점 ACTION HUB 관리자"><meta property="og:url" content="https://daejeon-sejong-action-hub-production.up.railway.app/admin"><meta property="og:image" content="https://daejeon-sejong-action-hub-production.up.railway.app/daejeon-thumbnail-v2.jpg"><meta property="og:image:secure_url" content="https://daejeon-sejong-action-hub-production.up.railway.app/daejeon-thumbnail-v2.jpg"><meta property="og:image:type" content="image/jpeg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://daejeon-sejong-action-hub-production.up.railway.app/daejeon-thumbnail-v2.jpg">
+<title>ACTION HUB 관리자</title><meta property="og:type" content="website"><meta property="og:title" content="ACTION HUB 관리자"><meta property="og:description" content="대전세종지점 ACTION HUB 관리자"><meta property="og:url" content="https://daejeon-sejong-action-hub-production.up.railway.app/admin"><meta property="og:image" content="https://daejeon-sejong-action-hub-production.up.railway.app/daejeon-thumbnail-v3.jpg"><meta property="og:image:secure_url" content="https://daejeon-sejong-action-hub-production.up.railway.app/daejeon-thumbnail-v3.jpg"><meta property="og:image:type" content="image/jpeg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://daejeon-sejong-action-hub-production.up.railway.app/daejeon-thumbnail-v3.jpg">
 <meta name="theme-color" content="#0b2a66">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -105,8 +105,8 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
         <div class="stats">
           <div class="stat s1"><span>오늘 일정</span><b id="stToday">0</b></div>
           <div class="stat s2"><span>이번 주 일정</span><b id="stWeek">0</b></div>
-          <div class="stat s3"><span>초회방문</span><b id="stVisit">0</b></div>
-          <div class="stat s4"><span>보장분석·상품제안</span><b id="stEtc">0</b></div>
+          <div class="stat s3"><span>신규상담</span><b id="stVisit">0</b></div>
+          <div class="stat s4"><span>후속상담·고객관리</span><b id="stEtc">0</b></div>
         </div>
       </div>
       <div class="card">
@@ -129,7 +129,7 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
         <div class="section-title">📅 일정 관리 <span class="muted" id="scheduleCount"></span></div>
         <div class="filters">
           <input id="search" placeholder="TFA명 · 장소 검색">
-          <select id="typeFilter"><option value="all">전체 유형</option><option value="visit">초회방문</option><option value="study">보장분석</option><option value="call">상품제안</option></select>
+          <select id="typeFilter"><option value="all">전체 유형</option><option value="visit">신규상담</option><option value="study">후속상담</option><option value="call">고객관리</option></select>
         </div>
         <div id="list"></div>
       </div>
@@ -140,7 +140,7 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
         <div class="section-title">📺 전광판 · MVP 설정</div>
         <div class="field"><label>전광판 모드</label><select id="mode"><option value="auto">자동 — 가장 가까운 다음 일정</option><option value="manual">직접 문구 입력</option></select></div>
         <div class="field"><label>직접 입력 문구</label><input id="marquee" placeholder="직접 입력 모드에서 노출할 문구"></div>
-        <div class="toggle-row"><div><b>MVP 전광판 표시</b><div class="muted">주간 방문 MVP 영역 표시 여부</div></div><input type="checkbox" id="mvp"></div>
+        <div class="toggle-row"><div><b>MVP 전광판 표시</b><div class="muted">이번 주 완료 활동 MVP 표시 여부</div></div><input type="checkbox" id="mvp"></div>
         <div class="field"><label>MVP 제목</label><input id="mvpTitle"></div>
         <div class="field"><label>앱 제목</label><input id="title"></div>
         <div class="field"><label>앱 부제목</label><input id="sub"></div>
@@ -202,9 +202,9 @@ function showLogin(){loginScreen.classList.remove("hidden");app.classList.add("h
 function showApp(){loginScreen.classList.add("hidden");app.classList.remove("hidden")}
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function seoulDate(d=new Date()){return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(d)}
-function typeOf(x){let s=x.customerName||"";return s.startsWith("[보장분석]")?"study":s.startsWith("[상품제안]")?"call":"visit"}
-function placeOf(x){return String(x.customerName||"").replace(/^\[(보장분석|상품제안)\]\s*/,"")}
-function typeName(t){return t==="study"?"보장분석":t==="call"?"상품제안":"초회방문"}
+function typeOf(x){let s=x.customerName||"";return s.startsWith("[후속상담]")?"study":s.startsWith("[고객관리]")?"call":"visit"}
+function placeOf(x){return String(x.customerName||"").replace(/^\[(후속상담|고객관리)\]\s*/,"")}
+function typeName(t){return t==="study"?"후속상담":t==="call"?"고객관리":"신규상담"}
 function badgeClass(t){return t==="study"?"study":t==="call"?"call":"visit"}
 function fmt(iso){return new Intl.DateTimeFormat("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(iso))}
 function weekRange(){
@@ -234,7 +234,7 @@ function renderList(){
   if(!rows.length){list.innerHTML='<div class="empty">조건에 맞는 일정이 없습니다.</div>';return}
   rows.forEach(x=>{
     let t=typeOf(x),d=document.createElement("div");d.className="item";
-    d.innerHTML='<div class="item-top"><div class="item-main"><div class="owner">'+esc(x.ownerName)+' TFA <span class="badge '+badgeClass(t)+'">'+typeName(t)+'</span></div><div class="item-meta">'+fmt(x.scheduledAt)+'<br>'+esc(placeOf(x))+'</div></div></div><div class="item-actions"></div>';
+    d.innerHTML='<div class="item-top"><div class="item-main"><div class="owner">'+esc(x.ownerName)+' TFA <span class="badge '+badgeClass(t)+'">'+typeName(t)+'</span></div><div class="item-meta">'+fmt(x.scheduledAt)+'<br>'+esc(placeOf(x))+'<br><strong>'+(x.completed?'✓ 완료':'예정')+'</strong></div></div></div><div class="item-actions"></div>';
     let b=document.createElement("button");b.className="btn danger";b.textContent="완전 삭제";
     b.onclick=async()=>{if(!confirm("이 일정은 복구할 수 없습니다. 완전히 삭제하시겠습니까?"))return;let r=await api("/api/admin/schedules/"+encodeURIComponent(x.id),{method:"DELETE"});if(r.ok)await load()};
     d.querySelector(".item-actions").appendChild(b);list.appendChild(d)
