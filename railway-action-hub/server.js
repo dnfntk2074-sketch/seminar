@@ -15,8 +15,8 @@ const DATABASE_URL = process.env.DATABASE_URL;
 const JWT_SECRET = process.env.JWT_SECRET || "change-me";
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "dnfntk2074@gmail.com").toLowerCase();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "ChangeMe!2026";
-const FLOOT = "https://guri-leaders-hb-db-hub.floot.app/_api";
-const pool = new Pool({ connectionString: DATABASE_URL, ssl: DATABASE_URL?.includes("railway") ? { rejectUnauthorized:false } : undefined });
+const FLOOT = "";
+const pool = new Pool({ connectionString: DATABASE_URL, options: "-c search_path=daejeon_sejong_action_hub", ssl: DATABASE_URL?.includes("railway") ? { rejectUnauthorized:false } : undefined });
 const upload = multer({storage:multer.memoryStorage(),limits:{fileSize:30*1024*1024}});
 const LIBRARY_CATEGORIES=new Set(["영업자료","상품자료","교육자료","서식","전사시책","상품환산","수수료예시"]);
 const LIBRARY_EXTS=new Set(["pdf","jpg","jpeg","png","webp","gif","xlsx","xls","pptx","ppt","docx","doc","hwp","hwpx","txt","zip"]);
@@ -76,13 +76,14 @@ function toPublic(row,hash,ownerName){
   };
 }
 async function init(){
+  await pool.query("CREATE SCHEMA IF NOT EXISTS daejeon_sejong_action_hub");
   await pool.query(`CREATE TABLE IF NOT EXISTS app_settings(
     id text primary key default 'main',
     marquee_mode text not null default 'auto',
     marquee_text text not null default '',
     mvp_enabled boolean not null default true,
     mvp_title text not null default '한주 최다 방문 MVP',
-    app_title text not null default '유료DB ACTION HUB',
+    app_title text not null default '대전세종지점 ACTION HUB',
     app_subtitle text not null default '방문 · 학습 · 콜 활동을 한눈에 공유합니다.'
   )`);
   await pool.query(`INSERT INTO app_settings(id) VALUES('main') ON CONFLICT DO NOTHING`);
@@ -118,7 +119,7 @@ async function init(){
     if(fixed&&fixed!==row.file_name) await pool.query("UPDATE library_files SET file_name=$1,updated_at=now() WHERE id=$2",[fixed,row.id]);
   }
   await pool.query(`CREATE TABLE IF NOT EXISTS purged_schedule_ids(schedule_id text primary key, purged_at timestamptz not null default now())`);
-  const old=await pool.query(`SELECT to_regclass('public.deleted_schedules') AS t`);
+  const old=await pool.query(`SELECT to_regclass('daejeon_sejong_action_hub.deleted_schedules') AS t`);
   if(old.rows[0]?.t){
     await pool.query(`INSERT INTO purged_schedule_ids(schedule_id) SELECT schedule_id FROM deleted_schedules ON CONFLICT DO NOTHING`);
     await pool.query(`DROP TABLE deleted_schedules`);
@@ -131,6 +132,7 @@ async function init(){
   }
 }
 async function syncFloot(){
+  if (!FLOOT) return;
   try{
     const r=await fetch(FLOOT+"/hub-data",{signal:AbortSignal.timeout(5000)});
     if(!r.ok) return;
@@ -298,7 +300,7 @@ app.get("/api/admin/settings",auth,async(req,res)=>res.json(await getSettings())
 app.put("/api/admin/settings",auth,async(req,res)=>{
   const s=req.body||{};
   await pool.query(`UPDATE app_settings SET marquee_mode=$1,marquee_text=$2,mvp_enabled=$3,mvp_title=$4,app_title=$5,app_subtitle=$6 WHERE id='main'`,
-    [s.marquee_mode||"auto",s.marquee_text||"",!!s.mvp_enabled,s.mvp_title||"한주 최다 방문 MVP",s.app_title||"유료DB ACTION HUB",s.app_subtitle||""]);
+    [s.marquee_mode||"auto",s.marquee_text||"",!!s.mvp_enabled,s.mvp_title||"한주 최다 방문 MVP",s.app_title||"대전세종지점 ACTION HUB",s.app_subtitle||""]);
   res.json({ok:true});
 });
 app.post("/api/admin/change-password",auth,async(req,res)=>{
