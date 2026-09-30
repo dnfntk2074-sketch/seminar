@@ -13,7 +13,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
 const DATABASE_URL = process.env.DATABASE_URL;
 const JWT_SECRET = process.env.JWT_SECRET || "change-me";
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "dnfntk2074@gmail.com").toLowerCase();
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "dnfntk2074@gmail.com").trim().toLowerCase();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "ChangeMe!2026";
 const FLOOT = "https://guri-leaders-hb-db-hub.floot.app/_api";
 const pool = new Pool({ connectionString: DATABASE_URL, ssl: DATABASE_URL?.includes("railway") ? { rejectUnauthorized:false } : undefined });
@@ -66,12 +66,14 @@ function isTest(s){
   const t=((s.owner_name||s.ownerName||"")+" "+(s.customer_name||s.customerName||"")).toLowerCase();
   return ["테스트","점검","test"].some(w=>t.includes(w));
 }
+function requestOwnerName(req){try{return decodeURIComponent(req.get("x-owner-name")||"").trim()}catch{return ""}}
 function sameOwnerName(a,b){return String(a||"").trim()===String(b||"").trim()}
 function toPublic(row,hash,ownerName){
   return {
     id:String(row.id), ownerName:row.owner_name, customerName:row.customer_name,
     scheduledAt:new Date(row.scheduled_at).toISOString(),
     completed:!!row.completed,
+    completedAt:row.completed_at?new Date(row.completed_at).toISOString():null,
     canEdit:!!hash && !!ownerName && sameOwnerName(row.owner_name,ownerName) && !!row.owner_token_hash && crypto.timingSafeEqual(Buffer.from(hash),Buffer.from(row.owner_token_hash))
   };
 }
@@ -81,9 +83,9 @@ async function init(){
     marquee_mode text not null default 'auto',
     marquee_text text not null default '',
     mvp_enabled boolean not null default true,
-    mvp_title text not null default '한주 최다 방문 MVP',
+    mvp_title text not null default '이번 주 활동왕',
     app_title text not null default '유료DB ACTION HUB',
-    app_subtitle text not null default '방문 · 학습 · 콜 활동을 한눈에 공유합니다.'
+    app_subtitle text not null default '신규상담 · 후속상담 · 고객관리를 한눈에 공유합니다.'
   )`);
   await pool.query(`INSERT INTO app_settings(id) VALUES('main') ON CONFLICT DO NOTHING`);
   await pool.query(`CREATE TABLE IF NOT EXISTS schedules(
@@ -97,6 +99,11 @@ async function init(){
     updated_at timestamptz not null default now()
   )`);
   await pool.query(`ALTER TABLE schedules ADD COLUMN IF NOT EXISTS completed boolean NOT NULL DEFAULT false`);
+  await pool.query("ALTER TABLE schedules ADD COLUMN IF NOT EXISTS completed_at timestamptz");
+  await pool.query("UPDATE schedules SET completed_at=scheduled_at WHERE completed=true AND completed_at IS NULL");
+  await pool.query("UPDATE schedules SET customer_name=replace(replace(customer_name,$1,$2),$3,$4) WHERE customer_name LIKE $5 OR customer_name LIKE $6",["[DB학습회] ","[후속상담] ","[콜번개] ","[고객관리] ","[DB학습회] %","[콜번개] %"]);
+  await pool.query("UPDATE app_settings SET app_subtitle=$1 WHERE id='main' AND app_subtitle=$2",["신규상담 · 후속상담 · 고객관리를 한눈에 공유합니다.","방문 · 학습 · 콜 활동을 한눈에 공유합니다."]);
+  await pool.query("UPDATE app_settings SET mvp_title=$1 WHERE id='main' AND mvp_title IN ($2,$3,$4)",["이번 주 활동왕","한주 최다 방문 MVP","이번 달 방문왕","이번 주 방문왕"]);
   await pool.query(`CREATE TABLE IF NOT EXISTS library_files(
     id text primary key,
     title text not null,
@@ -130,6 +137,7 @@ async function init(){
     await pool.query("INSERT INTO admin_auth(email,password_hash) VALUES($1,$2)",[ADMIN_EMAIL,hash]);
   }
 }
+function normalizeActivityName(name){return String(name||"").replace(/^\[DB학습회\] /,"[후속상담] ").replace(/^\[콜번개\] /,"[고객관리] ")}
 async function syncFloot(){
   try{
     const r=await fetch(FLOOT+"/hub-data",{signal:AbortSignal.timeout(5000)});
@@ -143,7 +151,7 @@ async function syncFloot(){
       await pool.query(`INSERT INTO schedules(id,owner_name,customer_name,scheduled_at,source)
         VALUES($1,$2,$3,$4,'upstream')
         ON CONFLICT(id) DO UPDATE SET owner_name=EXCLUDED.owner_name,customer_name=EXCLUDED.customer_name,scheduled_at=EXCLUDED.scheduled_at,updated_at=now()
-        WHERE schedules.source='upstream'`,[id,s.ownerName,s.customerName,s.scheduledAt]);
+        WHERE schedules.source='upstream'`,[id,s.ownerName,normalizeActivityName(s.customerName),s.scheduledAt]);
     }
   }catch(e){ console.warn("upstream sync skipped",e.message); }
 }
@@ -152,8 +160,8 @@ async function getSettings(){
   return r.rows[0];
 }
 function makeCustomer(type,place){
-  if(type==="study") return "[DB학습회] "+place;
-  if(type==="call") return "[콜번개] "+place;
+  if(type==="study") return "[후속상담] "+place;
+  if(type==="call") return "[고객관리] "+place;
   return place;
 }
 
@@ -162,7 +170,7 @@ app.get("/api/data", async(req,res)=>{
     await syncFloot();
     const [rows,settings]=await Promise.all([pool.query("SELECT * FROM schedules ORDER BY scheduled_at ASC"),getSettings()]);
     const h=req.get("x-owner-token")?tokenHash(req.get("x-owner-token")):"";
-    const ownerName=(req.get("x-owner-name")||"").trim();
+    const ownerName=requestOwnerName(req);
     res.json({schedules:rows.rows.filter(s=>!isTest(s)).map(s=>toPublic(s,h,ownerName)),settings});
   }catch(e){console.error(e);res.status(500).json({error:"load_failed"});}
 });
@@ -184,27 +192,26 @@ app.put("/api/schedules/:id",async(req,res)=>{
   const at=new Date(`${date}T${time}:00+09:00`);
   if(Number.isNaN(at.getTime())) return res.status(400).json({error:"invalid_date"});
   const r=await pool.query("SELECT owner_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
-  const ownerIdentity=(req.get("x-owner-name")||"").trim();
+  const ownerIdentity=requestOwnerName(req);
   if(!r.rowCount||!ownerIdentity||!sameOwnerName(r.rows[0].owner_name,ownerIdentity)||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
-  await pool.query("UPDATE schedules SET owner_name=$1,customer_name=$2,scheduled_at=$3,completed=CASE WHEN $5='visit' THEN completed ELSE false END,updated_at=now() WHERE id=$4",
-    [String(ownerName).trim(),makeCustomer(type,String(place).trim()),at.toISOString(),req.params.id,type]);
+  await pool.query("UPDATE schedules SET owner_name=$1,customer_name=$2,scheduled_at=$3,completed=completed,updated_at=now() WHERE id=$4",
+    [String(ownerName).trim(),makeCustomer(type,String(place).trim()),at.toISOString(),req.params.id]);
   res.json({ok:true});
 });
 app.patch("/api/schedules/:id/complete",async(req,res)=>{
   const ownerToken=req.get("x-owner-token")||"";
-  const ownerIdentity=(req.get("x-owner-name")||"").trim();
+  const ownerIdentity=requestOwnerName(req);
   const completed=req.body?.completed===true;
   const r=await pool.query("SELECT owner_name,customer_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
   if(!r.rowCount||!ownerIdentity||!sameOwnerName(r.rows[0].owner_name,ownerIdentity)||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
   const customer=String(r.rows[0].customer_name||"");
-  if(customer.startsWith("[DB학습회] ")||customer.startsWith("[콜번개] ")) return res.status(400).json({error:"visit_only"});
-  await pool.query("UPDATE schedules SET completed=$1,updated_at=now() WHERE id=$2",[completed,req.params.id]);
+  await pool.query("UPDATE schedules SET completed=$1,completed_at=CASE WHEN $1 THEN COALESCE(completed_at,now()) ELSE NULL END,updated_at=now() WHERE id=$2",[completed,req.params.id]);
   res.json({ok:true,completed});
 });
 app.delete("/api/schedules/:id",async(req,res)=>{
   const ownerToken=req.get("x-owner-token")||req.body?.ownerToken||"";
   const r=await pool.query("SELECT owner_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
-  const ownerIdentity=(req.get("x-owner-name")||"").trim();
+  const ownerIdentity=requestOwnerName(req);
   if(!r.rowCount||!ownerIdentity||!sameOwnerName(r.rows[0].owner_name,ownerIdentity)||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
   await pool.query("DELETE FROM schedules WHERE id=$1",[req.params.id]);
   res.json({ok:true});
@@ -229,7 +236,7 @@ app.get("/api/library/:id/file",async(req,res)=>{
 });
 
 app.post("/api/admin/login",async(req,res)=>{
-  const email=(req.body?.email||"").toLowerCase();
+  const email=(req.body?.email||"").trim().toLowerCase();
   const password=req.body?.password||"";
   if(email!==ADMIN_EMAIL) return res.status(401).json({error:"invalid"});
   const r=await pool.query("SELECT password_hash FROM admin_auth WHERE email=$1",[ADMIN_EMAIL]);
@@ -241,7 +248,7 @@ app.post("/api/admin/login",async(req,res)=>{
 app.post("/api/admin/logout",(req,res)=>{res.setHeader("Set-Cookie","hb_admin=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0");res.json({ok:true})});
 app.get("/api/admin/me",auth,(req,res)=>res.json({email:req.admin.email}));
 app.get("/api/admin/schedules",auth,async(req,res)=>{
-  try{await syncFloot();const r=await pool.query("SELECT id,owner_name AS \"ownerName\",customer_name AS \"customerName\",scheduled_at AS \"scheduledAt\",source FROM schedules ORDER BY scheduled_at DESC LIMIT 100");res.json({schedules:r.rows});}
+  try{await syncFloot();const r=await pool.query("SELECT id,owner_name AS \"ownerName\",customer_name AS \"customerName\",scheduled_at AS \"scheduledAt\",completed,source FROM schedules ORDER BY scheduled_at DESC LIMIT 100");res.json({schedules:r.rows});}
   catch{res.status(500).json({error:"load_failed"});}
 });
 app.delete("/api/admin/schedules/:id",auth,async(req,res)=>{
@@ -298,7 +305,7 @@ app.get("/api/admin/settings",auth,async(req,res)=>res.json(await getSettings())
 app.put("/api/admin/settings",auth,async(req,res)=>{
   const s=req.body||{};
   await pool.query(`UPDATE app_settings SET marquee_mode=$1,marquee_text=$2,mvp_enabled=$3,mvp_title=$4,app_title=$5,app_subtitle=$6 WHERE id='main'`,
-    [s.marquee_mode||"auto",s.marquee_text||"",!!s.mvp_enabled,s.mvp_title||"한주 최다 방문 MVP",s.app_title||"유료DB ACTION HUB",s.app_subtitle||""]);
+    [s.marquee_mode||"auto",s.marquee_text||"",!!s.mvp_enabled,s.mvp_title||"이번 주 활동왕",s.app_title||"유료DB ACTION HUB",s.app_subtitle||""]);
   res.json({ok:true});
 });
 app.post("/api/admin/change-password",auth,async(req,res)=>{
