@@ -71,6 +71,9 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
 .login-card{width:min(420px,100%);background:#fff;border-radius:26px;padding:22px;box-shadow:0 20px 60px #001d5744}
 .login-logo{width:72px;height:72px;border-radius:20px;display:block;margin:0 auto 12px;object-fit:cover}
 .login-title{text-align:center;font-size:22px;font-weight:950}.login-sub{text-align:center;color:#7a8597;font-size:12px;margin:6px 0 18px}
+#loginBtn{display:block;margin-top:20px;min-height:48px;height:auto;line-height:1.4;white-space:normal}
+.login-card input{display:block;min-width:0;font-size:16px}
+.login-wrap{min-height:100svh;padding:24px 20px;overflow-y:auto}
 .msg{font-size:12px;color:#c9353c;margin-top:8px}
 .save-msg{font-size:12px;color:#079b67;margin-top:8px}
 @media(min-width:620px){.stats{grid-template-columns:repeat(4,1fr)}}
@@ -82,8 +85,8 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
     <img class="login-logo" src="/apple-touch-icon.png?v=20260921-2201" alt="">
     <div class="login-title">ACTION HUB 관리자</div>
     <div class="login-sub">대전세종지점 ACTION HUB</div>
-    <div class="field"><label>관리자 이메일</label><input id="email" type="email" value="dnfntk2074@gmail.com" autocomplete="username"></div>
-    <div class="field"><label>비밀번호</label><input id="pw" type="password" placeholder="관리자 비밀번호" autocomplete="current-password"></div>
+    <div class="field"><label for="email">관리자 이메일</label><input id="email" type="email" value="dnfntk2074@gmail.com" autocomplete="username"></div>
+    <div class="field"><label for="pw">비밀번호</label><input id="pw" type="password" placeholder="관리자 비밀번호" autocomplete="current-password"></div>
     <button class="btn primary full" id="loginBtn">관리자 로그인</button>
     <div class="msg" id="loginMsg"></div>
   </div>
@@ -195,7 +198,7 @@ async function api(u,o={}){
   const form=typeof FormData!=="undefined"&&o.body instanceof FormData;
   let headers=form?{...(o.headers||{})}:{"content-type":"application/json",...(o.headers||{})};
   let r=await fetch(u,{...o,headers});
-  if(r.status===401){showLogin();throw new Error("unauthorized")}
+  if(r.status===401&&u!=="/api/admin/login"){showLogin();throw new Error("unauthorized")}
   return r;
 }
 function showLogin(){loginScreen.classList.remove("hidden");app.classList.add("hidden")}
@@ -279,11 +282,21 @@ document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>go(b.dataset.view));
 search.oninput=renderList;typeFilter.onchange=renderList;
 libUpload.onclick=uploadLibrary;
 
-loginBtn.onclick=async()=>{
+async function submitLogin(){
+  if(loginBtn.disabled)return;
   loginMsg.textContent="";
-  let r=await api("/api/admin/login",{method:"POST",body:JSON.stringify({email:email.value,password:pw.value})});
-  if(r.ok){pw.value="";showApp();await load()}else loginMsg.textContent="로그인 정보를 확인해 주세요."
-};
+  const address=email.value.trim(),password=pw.value;
+  if(!address||!password){loginMsg.textContent="이메일과 비밀번호를 입력해 주세요.";return}
+  loginBtn.disabled=true;loginBtn.textContent="로그인 중...";
+  try{
+    const r=await api("/api/admin/login",{method:"POST",body:JSON.stringify({email:address,password})});
+    if(!r.ok){loginMsg.textContent=r.status===401?"이메일 또는 비밀번호를 확인해 주세요.":"로그인 중 오류가 발생했습니다. 다시 시도해 주세요.";return}
+    pw.value="";showApp();await load();
+  }catch{loginMsg.textContent="연결을 확인하고 다시 시도해 주세요."}
+  finally{loginBtn.disabled=false;loginBtn.textContent="관리자 로그인"}
+}
+loginBtn.onclick=submitLogin;
+[email,pw].forEach(el=>el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();submitLogin()}}));
 logout.onclick=async()=>{await api("/api/admin/logout",{method:"POST"});showLogin()};
 save.onclick=async()=>{
   await api("/api/admin/settings",{method:"PUT",body:JSON.stringify({marquee_mode:mode.value,marquee_text:marquee.value,mvp_enabled:mvp.checked,mvp_title:mvpTitle.value,app_title:title.value,app_subtitle:sub.value})});
