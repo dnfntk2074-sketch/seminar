@@ -1,7 +1,7 @@
 {
   "name": "ACTION HUB 관리자",
   "short_name": "HB 관리자",
-  "description": "구리리더스HB 유료DB ACTION HUB 관리자",
+  "description": "대전세종지점 ACTION HUB 관리자",
   "start_url": "/admin",
   "scope": "/",
   "display": "standalone",
