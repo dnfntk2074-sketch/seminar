@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ACTION HUB 관리자</title><meta property="og:type" content="website"><meta property="og:title" content="ACTION HUB 관리자"><meta property="og:description" content="대전세종지점 ACTION HUB 관리자"><meta property="og:url" content="https://daejeon-sejong-action-hub-production.up.railway.app/admin"><meta property="og:image" content="https://daejeon-sejong-action-hub-production.up.railway.app/action-hub-kakao-thumb-v5.jpg"><meta property="og:image:secure_url" content="https://daejeon-sejong-action-hub-production.up.railway.app/action-hub-kakao-thumb-v5.jpg"><meta property="og:image:type" content="image/jpeg"><meta property="og:image:width" content="800"><meta property="og:image:height" content="420"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://daejeon-sejong-action-hub-production.up.railway.app/action-hub-kakao-thumb-v5.jpg">
+<title>ACTION HUB 관리자</title><meta property="og:type" content="website"><meta property="og:title" content="ACTION HUB 관리자"><meta property="og:description" content="대전세종지점 ACTION HUB 관리자"><meta property="og:url" content="https://daejeon-sejong-action-hub-production.up.railway.app/admin"><meta property="og:image" content="https://daejeon-sejong-action-hub-production.up.railway.app/daejeon-thumbnail-v2.jpg"><meta property="og:image:secure_url" content="https://daejeon-sejong-action-hub-production.up.railway.app/daejeon-thumbnail-v2.jpg"><meta property="og:image:type" content="image/jpeg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://daejeon-sejong-action-hub-production.up.railway.app/daejeon-thumbnail-v2.jpg">
 <meta name="theme-color" content="#0b2a66">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="ACTION HUB 관리자">
-<link rel="manifest" href="/admin-manifest.webmanifest?v=4">
-<link rel="apple-touch-icon" sizes="180x180" href="/action-hub-approved-icon-v4.png">
-<link rel="icon" type="image/png" sizes="180x180" href="/action-hub-approved-icon-v4.png">
+<link rel="manifest" href="/admin-manifest.webmanifest?v=ds2">
+<link rel="apple-touch-icon" sizes="180x180" href="/daejeon-icon-180-v2.png">
+<link rel="icon" type="image/png" sizes="180x180" href="/daejeon-icon-180-v2.png">
 <style>
 *{box-sizing:border-box}
 :root{--blue:#0b57e3;--navy:#0d2349;--bg:#f2f6fb;--card:#fff;--muted:#6b7280;--line:#e6ebf2;--danger:#e5484d;--green:#14b86e;--amber:#f5a300;--purple:#7c3aed}
@@ -105,8 +105,8 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
         <div class="stats">
           <div class="stat s1"><span>오늘 일정</span><b id="stToday">0</b></div>
           <div class="stat s2"><span>이번 주 일정</span><b id="stWeek">0</b></div>
-          <div class="stat s3"><span>방문 일정</span><b id="stVisit">0</b></div>
-          <div class="stat s4"><span>DB학습회·콜번개</span><b id="stEtc">0</b></div>
+          <div class="stat s3"><span>초회방문</span><b id="stVisit">0</b></div>
+          <div class="stat s4"><span>보장분석·상품제안</span><b id="stEtc">0</b></div>
         </div>
       </div>
       <div class="card">
@@ -129,7 +129,7 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
         <div class="section-title">📅 일정 관리 <span class="muted" id="scheduleCount"></span></div>
         <div class="filters">
           <input id="search" placeholder="TFA명 · 장소 검색">
-          <select id="typeFilter"><option value="all">전체 유형</option><option value="visit">방문</option><option value="study">DB학습회</option><option value="call">콜번개</option></select>
+          <select id="typeFilter"><option value="all">전체 유형</option><option value="visit">초회방문</option><option value="study">보장분석</option><option value="call">상품제안</option></select>
         </div>
         <div id="list"></div>
       </div>
@@ -202,9 +202,9 @@ function showLogin(){loginScreen.classList.remove("hidden");app.classList.add("h
 function showApp(){loginScreen.classList.add("hidden");app.classList.remove("hidden")}
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function seoulDate(d=new Date()){return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(d)}
-function typeOf(x){let s=x.customerName||"";return s.startsWith("[DB학습회]")?"study":s.startsWith("[콜번개]")?"call":"visit"}
-function placeOf(x){return String(x.customerName||"").replace(/^\[(DB학습회|콜번개)\]\s*/,"")}
-function typeName(t){return t==="study"?"DB학습회":t==="call"?"콜번개":"방문"}
+function typeOf(x){let s=x.customerName||"";return s.startsWith("[보장분석]")?"study":s.startsWith("[상품제안]")?"call":"visit"}
+function placeOf(x){return String(x.customerName||"").replace(/^\[(보장분석|상품제안)\]\s*/,"")}
+function typeName(t){return t==="study"?"보장분석":t==="call"?"상품제안":"초회방문"}
 function badgeClass(t){return t==="study"?"study":t==="call"?"call":"visit"}
 function fmt(iso){return new Intl.DateTimeFormat("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(iso))}
 function weekRange(){

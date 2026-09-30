@@ -85,7 +85,7 @@ async function init(){
     mvp_enabled boolean not null default true,
     mvp_title text not null default '한주 최다 방문 MVP',
     app_title text not null default '대전세종지점 ACTION HUB',
-    app_subtitle text not null default '방문 · 학습 · 콜 활동을 한눈에 공유합니다.'
+    app_subtitle text not null default '초회방문 · 보장분석 · 상품제안을 한눈에 공유합니다.'
   )`);
   await pool.query(`INSERT INTO app_settings(id) VALUES('main') ON CONFLICT DO NOTHING`);
   await pool.query(`CREATE TABLE IF NOT EXISTS schedules(
@@ -99,6 +99,8 @@ async function init(){
     updated_at timestamptz not null default now()
   )`);
   await pool.query(`ALTER TABLE schedules ADD COLUMN IF NOT EXISTS completed boolean NOT NULL DEFAULT false`);
+  await pool.query("UPDATE schedules SET customer_name=replace(replace(customer_name,$1,$2),$3,$4) WHERE customer_name LIKE $5 OR customer_name LIKE $6",["[DB학습회] ","[보장분석] ","[콜번개] ","[상품제안] ","[DB학습회] %","[콜번개] %"]);
+
   await pool.query(`CREATE TABLE IF NOT EXISTS library_files(
     id text primary key,
     title text not null,
@@ -126,6 +128,7 @@ async function init(){
     await pool.query(`DROP TABLE deleted_schedules`);
   }
   await pool.query(`CREATE TABLE IF NOT EXISTS admin_auth(email text primary key, password_hash text not null, updated_at timestamptz default now())`);
+  await pool.query("UPDATE app_settings SET app_subtitle=$1 WHERE id=\'main\' AND app_subtitle=$2",["초회방문 · 보장분석 · 상품제안을 한눈에 공유합니다.","방문 · 학습 · 콜 활동을 한눈에 공유합니다."]);
   const r=await pool.query("SELECT 1 FROM admin_auth WHERE email=$1",[ADMIN_EMAIL]);
   if(!r.rowCount){
     const hash=await bcrypt.hash(ADMIN_PASSWORD,12);
@@ -155,8 +158,8 @@ async function getSettings(){
   return r.rows[0];
 }
 function makeCustomer(type,place){
-  if(type==="study") return "[DB학습회] "+place;
-  if(type==="call") return "[콜번개] "+place;
+  if(type==="study") return "[보장분석] "+place;
+  if(type==="call") return "[상품제안] "+place;
   return place;
 }
 
@@ -200,7 +203,7 @@ app.patch("/api/schedules/:id/complete",async(req,res)=>{
   const r=await pool.query("SELECT owner_name,customer_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
   if(!r.rowCount||!ownerIdentity||!sameOwnerName(r.rows[0].owner_name,ownerIdentity)||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
   const customer=String(r.rows[0].customer_name||"");
-  if(customer.startsWith("[DB학습회] ")||customer.startsWith("[콜번개] ")) return res.status(400).json({error:"visit_only"});
+  if(customer.startsWith("[보장분석] ")||customer.startsWith("[상품제안] ")) return res.status(400).json({error:"visit_only"});
   await pool.query("UPDATE schedules SET completed=$1,updated_at=now() WHERE id=$2",[completed,req.params.id]);
   res.json({ok:true,completed});
 });
