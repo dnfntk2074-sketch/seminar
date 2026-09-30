@@ -13,7 +13,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
 const DATABASE_URL = process.env.DATABASE_URL;
 const JWT_SECRET = process.env.JWT_SECRET || "change-me";
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "dnfntk2074@gmail.com").toLowerCase();
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "dnfntk2074@gmail.com").trim().toLowerCase();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "ChangeMe!2026";
 const FLOOT = "";
 const pool = new Pool({ connectionString: DATABASE_URL, options: "-c search_path=daejeon_sejong_action_hub", ssl: DATABASE_URL?.includes("railway") ? { rejectUnauthorized:false } : undefined });
@@ -141,6 +141,22 @@ async function init(){
     await pool.query("INSERT INTO admin_auth(email,password_hash) VALUES($1,$2)",[ADMIN_EMAIL,hash]);
   }
 }
+// Bootstrap the clone from the existing administrator's current credential once.
+async function migrateAdminCredential(){
+  await pool.query("CREATE TABLE IF NOT EXISTS app_migrations(id text primary key,applied_at timestamptz not null default now())");
+  const migrationId="clone-admin-current-credential-20261001";
+  if((await pool.query("SELECT 1 FROM app_migrations WHERE id=$1",[migrationId])).rowCount)return;
+  const local=await pool.query("SELECT password_hash FROM admin_auth WHERE email=$1",[ADMIN_EMAIL]);
+  const sourceExists=await pool.query("SELECT to_regclass('public.admin_auth') AS t");
+  if(!sourceExists.rows[0]?.t)throw new Error("Original admin credential table missing");
+  const source=await pool.query("SELECT password_hash FROM public.admin_auth WHERE email=$1",[ADMIN_EMAIL]);
+  if(!source.rowCount)throw new Error("Original administrator not found");
+  // Preserve a password already changed specifically for this branch.
+  const useSource=local.rowCount&&await bcrypt.compare(ADMIN_PASSWORD,local.rows[0].password_hash);
+  if(useSource)await pool.query("UPDATE admin_auth SET password_hash=$1,updated_at=now() WHERE email=$2",[source.rows[0].password_hash,ADMIN_EMAIL]);
+  await pool.query("INSERT INTO app_migrations(id) VALUES($1) ON CONFLICT DO NOTHING",[migrationId]);
+  console.log("Admin credential clone migration:",useSource?"copied current original credential":"preserved branch credential");
+}
 async function syncFloot(){
   if (!FLOOT) return;
   try{
@@ -241,7 +257,7 @@ app.get("/api/library/:id/file",async(req,res)=>{
 });
 
 app.post("/api/admin/login",async(req,res)=>{
-  const email=(req.body?.email||"").toLowerCase();
+  const email=(req.body?.email||"").trim().toLowerCase();
   const password=req.body?.password||"";
   if(email!==ADMIN_EMAIL) return res.status(401).json({error:"invalid"});
   const r=await pool.query("SELECT password_hash FROM admin_auth WHERE email=$1",[ADMIN_EMAIL]);
@@ -330,4 +346,4 @@ app.use((err,req,res,next)=>{
 app.get("/admin",(req,res)=>res.sendFile(path.join(__dirname,"public","admin.html")));
 app.get("*",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));
 
-init().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log("HB ACTION HUB listening",PORT))).catch(e=>{console.error(e);process.exit(1);});
+init().then(migrateAdminCredential).then(()=>app.listen(PORT,"0.0.0.0",()=>console.log("HB ACTION HUB listening",PORT))).catch(e=>{console.error(e);process.exit(1);});
