@@ -71,6 +71,9 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
 .login-card{width:min(420px,100%);background:#fff;border-radius:26px;padding:22px;box-shadow:0 20px 60px #001d5744}
 .login-logo{width:72px;height:72px;border-radius:20px;display:block;margin:0 auto 12px;object-fit:cover}
 .login-title{text-align:center;font-size:22px;font-weight:950}.login-sub{text-align:center;color:#7a8597;font-size:12px;margin:6px 0 18px}
+#loginBtn{display:block;margin-top:20px;min-height:48px;height:auto;line-height:1.4;white-space:normal}
+.login-card input{display:block;min-width:0;font-size:16px}
+.login-wrap{min-height:100svh;padding:24px 20px;overflow-y:auto}
 .msg{font-size:12px;color:#c9353c;margin-top:8px}
 .save-msg{font-size:12px;color:#079b67;margin-top:8px}
 @media(min-width:620px){.stats{grid-template-columns:repeat(4,1fr)}}
@@ -82,8 +85,8 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
     <img class="login-logo" src="/apple-touch-icon.png?v=20260921-2201" alt="">
     <div class="login-title">ACTION HUB 관리자</div>
     <div class="login-sub">구리리더스HB 유료DB ACTION HUB</div>
-    <div class="field"><label>관리자 이메일</label><input id="email" type="email" value="dnfntk2074@gmail.com" autocomplete="username"></div>
-    <div class="field"><label>비밀번호</label><input id="pw" type="password" placeholder="관리자 비밀번호" autocomplete="current-password"></div>
+    <div class="field"><label for="email">관리자 이메일</label><input id="email" type="email" value="dnfntk2074@gmail.com" autocomplete="username"></div>
+    <div class="field"><label for="pw">비밀번호</label><input id="pw" type="password" placeholder="관리자 비밀번호" autocomplete="current-password"></div>
     <button class="btn primary full" id="loginBtn">관리자 로그인</button>
     <div class="msg" id="loginMsg"></div>
   </div>
@@ -105,8 +108,8 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
         <div class="stats">
           <div class="stat s1"><span>오늘 일정</span><b id="stToday">0</b></div>
           <div class="stat s2"><span>이번 주 일정</span><b id="stWeek">0</b></div>
-          <div class="stat s3"><span>방문 일정</span><b id="stVisit">0</b></div>
-          <div class="stat s4"><span>DB학습회·콜번개</span><b id="stEtc">0</b></div>
+          <div class="stat s3"><span>신규상담</span><b id="stVisit">0</b></div>
+          <div class="stat s4"><span>후속상담·고객관리</span><b id="stEtc">0</b></div>
         </div>
       </div>
       <div class="card">
@@ -129,7 +132,7 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
         <div class="section-title">📅 일정 관리 <span class="muted" id="scheduleCount"></span></div>
         <div class="filters">
           <input id="search" placeholder="TFA명 · 장소 검색">
-          <select id="typeFilter"><option value="all">전체 유형</option><option value="visit">방문</option><option value="study">DB학습회</option><option value="call">콜번개</option></select>
+          <select id="typeFilter"><option value="all">전체 유형</option><option value="visit">신규상담</option><option value="study">후속상담</option><option value="call">고객관리</option></select>
         </div>
         <div id="list"></div>
       </div>
@@ -140,7 +143,7 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
         <div class="section-title">📺 전광판 · MVP 설정</div>
         <div class="field"><label>전광판 모드</label><select id="mode"><option value="auto">자동 — 가장 가까운 다음 일정</option><option value="manual">직접 문구 입력</option></select></div>
         <div class="field"><label>직접 입력 문구</label><input id="marquee" placeholder="직접 입력 모드에서 노출할 문구"></div>
-        <div class="toggle-row"><div><b>MVP 전광판 표시</b><div class="muted">주간 방문 MVP 영역 표시 여부</div></div><input type="checkbox" id="mvp"></div>
+        <div class="toggle-row"><div><b>MVP 전광판 표시</b><div class="muted">이번 주 완료 활동 MVP 표시 여부</div></div><input type="checkbox" id="mvp"></div>
         <div class="field"><label>MVP 제목</label><input id="mvpTitle"></div>
         <div class="field"><label>앱 제목</label><input id="title"></div>
         <div class="field"><label>앱 부제목</label><input id="sub"></div>
@@ -195,16 +198,16 @@ async function api(u,o={}){
   const form=typeof FormData!=="undefined"&&o.body instanceof FormData;
   let headers=form?{...(o.headers||{})}:{"content-type":"application/json",...(o.headers||{})};
   let r=await fetch(u,{...o,headers});
-  if(r.status===401){showLogin();throw new Error("unauthorized")}
+  if(r.status===401&&u!=="/api/admin/login"){showLogin();throw new Error("unauthorized")}
   return r;
 }
 function showLogin(){loginScreen.classList.remove("hidden");app.classList.add("hidden")}
 function showApp(){loginScreen.classList.add("hidden");app.classList.remove("hidden")}
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function seoulDate(d=new Date()){return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(d)}
-function typeOf(x){let s=x.customerName||"";return s.startsWith("[DB학습회]")?"study":s.startsWith("[콜번개]")?"call":"visit"}
-function placeOf(x){return String(x.customerName||"").replace(/^\[(DB학습회|콜번개)\]\s*/,"")}
-function typeName(t){return t==="study"?"DB학습회":t==="call"?"콜번개":"방문"}
+function typeOf(x){let s=x.customerName||"";return s.startsWith("[후속상담]")?"study":s.startsWith("[고객관리]")?"call":"visit"}
+function placeOf(x){return String(x.customerName||"").replace(/^\[(후속상담|고객관리)\]\s*/,"")}
+function typeName(t){return t==="study"?"후속상담":t==="call"?"고객관리":"신규상담"}
 function badgeClass(t){return t==="study"?"study":t==="call"?"call":"visit"}
 function fmt(iso){return new Intl.DateTimeFormat("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(iso))}
 function weekRange(){
@@ -234,7 +237,7 @@ function renderList(){
   if(!rows.length){list.innerHTML='<div class="empty">조건에 맞는 일정이 없습니다.</div>';return}
   rows.forEach(x=>{
     let t=typeOf(x),d=document.createElement("div");d.className="item";
-    d.innerHTML='<div class="item-top"><div class="item-main"><div class="owner">'+esc(x.ownerName)+' TFA <span class="badge '+badgeClass(t)+'">'+typeName(t)+'</span></div><div class="item-meta">'+fmt(x.scheduledAt)+'<br>'+esc(placeOf(x))+'</div></div></div><div class="item-actions"></div>';
+    d.innerHTML='<div class="item-top"><div class="item-main"><div class="owner">'+esc(x.ownerName)+' TFA <span class="badge '+badgeClass(t)+'">'+typeName(t)+'</span></div><div class="item-meta">'+fmt(x.scheduledAt)+'<br>'+esc(placeOf(x))+'<br><strong>'+(x.completed?'✓ 완료':'예정')+'</strong></div></div></div><div class="item-actions"></div>';
     let b=document.createElement("button");b.className="btn danger";b.textContent="완전 삭제";
     b.onclick=async()=>{if(!confirm("이 일정은 복구할 수 없습니다. 완전히 삭제하시겠습니까?"))return;let r=await api("/api/admin/schedules/"+encodeURIComponent(x.id),{method:"DELETE"});if(r.ok)await load()};
     d.querySelector(".item-actions").appendChild(b);list.appendChild(d)
@@ -279,11 +282,21 @@ document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>go(b.dataset.view));
 search.oninput=renderList;typeFilter.onchange=renderList;
 libUpload.onclick=uploadLibrary;
 
-loginBtn.onclick=async()=>{
+async function submitLogin(){
+  if(loginBtn.disabled)return;
   loginMsg.textContent="";
-  let r=await api("/api/admin/login",{method:"POST",body:JSON.stringify({email:email.value,password:pw.value})});
-  if(r.ok){pw.value="";showApp();await load()}else loginMsg.textContent="로그인 정보를 확인해 주세요."
-};
+  const address=email.value.trim(),password=pw.value;
+  if(!address||!password){loginMsg.textContent="이메일과 비밀번호를 입력해 주세요.";return}
+  loginBtn.disabled=true;loginBtn.textContent="로그인 중...";
+  try{
+    const r=await api("/api/admin/login",{method:"POST",body:JSON.stringify({email:address,password})});
+    if(!r.ok){loginMsg.textContent=r.status===401?"이메일 또는 비밀번호를 확인해 주세요.":"로그인 중 오류가 발생했습니다. 다시 시도해 주세요.";return}
+    pw.value="";showApp();await load();
+  }catch{loginMsg.textContent="연결을 확인하고 다시 시도해 주세요."}
+  finally{loginBtn.disabled=false;loginBtn.textContent="관리자 로그인"}
+}
+loginBtn.onclick=submitLogin;
+[email,pw].forEach(el=>el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();submitLogin()}}));
 logout.onclick=async()=>{await api("/api/admin/logout",{method:"POST"});showLogin()};
 save.onclick=async()=>{
   await api("/api/admin/settings",{method:"PUT",body:JSON.stringify({marquee_mode:mode.value,marquee_text:marquee.value,mvp_enabled:mvp.checked,mvp_title:mvpTitle.value,app_title:title.value,app_subtitle:sub.value})});
