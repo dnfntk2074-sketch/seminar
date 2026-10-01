@@ -74,7 +74,7 @@ function toPublic(row,hash,ownerName){
     scheduledAt:new Date(row.scheduled_at).toISOString(),
     completed:!!row.completed,
     completedAt:row.completed_at?new Date(row.completed_at).toISOString():null,
-    canEdit:!!hash && !!ownerName && sameOwnerName(row.owner_name,ownerName) && !!row.owner_token_hash && crypto.timingSafeEqual(Buffer.from(hash),Buffer.from(row.owner_token_hash))
+    canEdit:!!hash && !!row.owner_token_hash && crypto.timingSafeEqual(Buffer.from(hash),Buffer.from(row.owner_token_hash))
   };
 }
 async function init(){
@@ -193,7 +193,7 @@ app.put("/api/schedules/:id",async(req,res)=>{
   if(Number.isNaN(at.getTime())) return res.status(400).json({error:"invalid_date"});
   const r=await pool.query("SELECT owner_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
   const ownerIdentity=requestOwnerName(req);
-  if(!r.rowCount||!ownerIdentity||!sameOwnerName(r.rows[0].owner_name,ownerIdentity)||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
+  if(!r.rowCount||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
   await pool.query("UPDATE schedules SET owner_name=$1,customer_name=$2,scheduled_at=$3,completed=completed,updated_at=now() WHERE id=$4",
     [String(ownerName).trim(),makeCustomer(type,String(place).trim()),at.toISOString(),req.params.id]);
   res.json({ok:true});
@@ -203,7 +203,7 @@ app.patch("/api/schedules/:id/complete",async(req,res)=>{
   const ownerIdentity=requestOwnerName(req);
   const completed=req.body?.completed===true;
   const r=await pool.query("SELECT owner_name,customer_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
-  if(!r.rowCount||!ownerIdentity||!sameOwnerName(r.rows[0].owner_name,ownerIdentity)||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
+  if(!r.rowCount||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
   const customer=String(r.rows[0].customer_name||"");
   await pool.query("UPDATE schedules SET completed=$1,completed_at=CASE WHEN $1 THEN COALESCE(completed_at,now()) ELSE NULL END,updated_at=now() WHERE id=$2",[completed,req.params.id]);
   res.json({ok:true,completed});
@@ -212,7 +212,7 @@ app.delete("/api/schedules/:id",async(req,res)=>{
   const ownerToken=req.get("x-owner-token")||req.body?.ownerToken||"";
   const r=await pool.query("SELECT owner_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
   const ownerIdentity=requestOwnerName(req);
-  if(!r.rowCount||!ownerIdentity||!sameOwnerName(r.rows[0].owner_name,ownerIdentity)||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
+  if(!r.rowCount||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
   await pool.query("DELETE FROM schedules WHERE id=$1",[req.params.id]);
   res.json({ok:true});
 });
