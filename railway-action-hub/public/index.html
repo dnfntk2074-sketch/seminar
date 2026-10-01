@@ -308,6 +308,7 @@ linear-gradient(135deg,#20194a,#302066);color:#ffd166;min-height:138px;padding:2
 .library-file-frame{display:none}
 .library-file-content{flex:1;min-height:0;overflow:auto;background:#dfe5ec;padding:10px}
 .library-pdf-loading{padding:30px 12px;text-align:center;color:#64748b;font-size:13px;font-weight:850}
+.library-pdf-nav{position:sticky;top:0;z-index:1;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px;background:#fff;border-radius:10px;margin-bottom:10px;font-size:12px}.library-pdf-nav button{border:0;border-radius:8px;padding:10px;background:#2456d8;color:#fff;font-weight:800}.library-pdf-nav button:disabled{opacity:.4}.library-pdf-nav input{width:54px;padding:7px;border:1px solid #cbd5e1;border-radius:7px;text-align:center}
 .library-pdf-page{display:block;width:100%;height:auto;margin:0 auto 10px;background:#fff;box-shadow:0 2px 10px #0002}
 .library-image-preview{display:block;max-width:100%;height:auto;margin:0 auto;background:#fff;box-shadow:0 2px 10px #0002}
 @media(max-width:420px){
@@ -390,38 +391,84 @@ function isPdfLibrary(x){
   const name=String(x.fileName||"").toLowerCase();
   return mime==="application/pdf"||/\.pdf$/.test(name);
 }
+let libraryPdfSession=null;
+let libraryPdfCleanup=Promise.resolve();
+function disposeLibraryPdf(){
+  const session=libraryPdfSession;
+  libraryPdfSession=null;
+  if(!session)return libraryPdfCleanup;
+  session.closed=true;
+  if(session.renderTask)session.renderTask.cancel();
+  libraryPdfCleanup=(async()=>{
+    try{if(session.renderTask)await session.renderTask.promise}catch{}
+    if(session.canvas){session.canvas.width=0;session.canvas.height=0}
+    try{await session.loadingTask?.destroy()}catch{}
+  })();
+  return libraryPdfCleanup;
+}
 async function renderPdfLibrary(x){
-  libraryFileContent.innerHTML='<div class="library-pdf-loading">PDF 전체 페이지를 불러오는 중...</div>';
+  await disposeLibraryPdf();
+  if(libraryFileView.hidden||currentDownloadItem!==x)return;
+  const session={closed:false,pageNo:1,busy:false};
+  libraryPdfSession=session;
+  libraryFileContent.innerHTML='<div class="library-pdf-loading">PDF를 불러오는 중...</div>';
   try{
-    const url="/api/library/"+encodeURIComponent(x.id)+"/file";
-    const buf=await (await fetch(url)).arrayBuffer();
     const pdfjs=await import("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs");
+    if(session.closed)return;
     pdfjs.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs";
-    const pdf=await pdfjs.getDocument({data:buf}).promise;
-    libraryFileContent.innerHTML="";
-    for(let pageNo=1;pageNo<=pdf.numPages;pageNo++){
-      const page=await pdf.getPage(pageNo);
-      const base=page.getViewport({scale:1});
-      const targetWidth=Math.min(window.innerWidth-20,760);
-      const scale=targetWidth/base.width;
-      const viewport=page.getViewport({scale});
-      const canvas=document.createElement("canvas");
-      canvas.className="library-pdf-page";
-      canvas.width=Math.floor(viewport.width*devicePixelRatio);
-      canvas.height=Math.floor(viewport.height*devicePixelRatio);
-      canvas.style.width=Math.floor(viewport.width)+"px";
-      canvas.style.height=Math.floor(viewport.height)+"px";
-      const ctx=canvas.getContext("2d");
-      ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
-      libraryFileContent.appendChild(canvas);
-      await page.render({canvasContext:ctx,viewport}).promise;
+    session.loadingTask=pdfjs.getDocument({url:"/api/library/"+encodeURIComponent(x.id)+"/file",rangeChunkSize:262144});
+    session.pdf=await session.loadingTask.promise;
+    if(session.closed)return;
+    libraryFileContent.innerHTML='<div class="library-pdf-nav"><button type="button" id="libraryPdfPrev">← 이전</button><label>페이지 <input id="libraryPdfNumber" type="number" min="1" value="1" inputmode="numeric" aria-label="PDF 페이지 번호"> / <span id="libraryPdfTotal"></span></label><button type="button" id="libraryPdfNext">다음 →</button></div><div id="libraryPdfStage"></div>';
+    const prev=document.getElementById("libraryPdfPrev"),next=document.getElementById("libraryPdfNext"),number=document.getElementById("libraryPdfNumber"),stage=document.getElementById("libraryPdfStage");
+    document.getElementById("libraryPdfTotal").textContent=session.pdf.numPages;
+    number.max=session.pdf.numPages;
+    async function showPage(requested){
+      if(session.closed||session.busy)return;
+      const pageNo=Math.max(1,Math.min(session.pdf.numPages,Math.floor(Number(requested)||1)));
+      session.busy=true;
+      prev.disabled=next.disabled=number.disabled=true;
+      try{
+        if(session.canvas){session.canvas.width=0;session.canvas.height=0}
+        stage.innerHTML='<div class="library-pdf-loading">페이지를 불러오는 중...</div>';
+        const page=await session.pdf.getPage(pageNo);
+        if(session.closed)return;
+        const base=page.getViewport({scale:1});
+        const targetWidth=Math.max(1,Math.min(libraryFileContent.clientWidth-20,760));
+        const viewport=page.getViewport({scale:targetWidth/base.width});
+        const ratio=Math.min(window.devicePixelRatio||1,1.5,Math.sqrt(2000000/(viewport.width*viewport.height)));
+        const canvas=document.createElement("canvas");
+        session.canvas=canvas;
+        canvas.className="library-pdf-page";
+        canvas.width=Math.max(1,Math.floor(viewport.width*ratio));
+        canvas.height=Math.max(1,Math.floor(viewport.height*ratio));
+        canvas.style.width="100%";
+        canvas.style.maxWidth=Math.floor(viewport.width)+"px";
+        stage.replaceChildren(canvas);
+        session.renderTask=page.render({canvasContext:canvas.getContext("2d"),viewport,transform:[ratio,0,0,ratio,0,0]});
+        await session.renderTask.promise;
+        session.renderTask=null;
+        page.cleanup();
+        session.pageNo=pageNo;
+        number.value=pageNo;
+        libraryFileContent.scrollTop=0;
+      }catch(e){
+        if(!session.closed)stage.innerHTML='<div class="library-pdf-loading">페이지를 열지 못했습니다. 다른 페이지를 선택하거나 파일 저장을 이용해 주세요.</div>';
+      }finally{
+        session.busy=false;
+        if(!session.closed){prev.disabled=session.pageNo<=1;next.disabled=session.pageNo>=session.pdf.numPages;number.disabled=false}
+      }
     }
-    libraryFileContent.scrollTop=0;
+    prev.onclick=()=>showPage(session.pageNo-1);
+    next.onclick=()=>showPage(session.pageNo+1);
+    number.onchange=()=>showPage(number.value);
+    await showPage(1);
   }catch(e){
-    libraryFileContent.innerHTML='<div class="library-pdf-loading">PDF 전체보기를 불러오지 못했습니다.<br>오른쪽의 파일 저장을 이용해 주세요.</div>';
+    if(!session.closed)libraryFileContent.innerHTML='<div class="library-pdf-loading">PDF를 불러오지 못했습니다.<br>오른쪽의 파일 저장을 이용해 주세요.</div>';
   }
 }
 function renderImageLibrary(x){
+  disposeLibraryPdf();
   libraryFileContent.innerHTML="";
   const img=document.createElement("img");
   img.className="library-image-preview";
@@ -443,6 +490,7 @@ async function startLibraryDownload(x){
   triggerLibraryDownload(x);
 }
 libraryFileBack.onclick=()=>{
+  disposeLibraryPdf();
   libraryFileView.hidden=true;
   libraryFileContent.innerHTML='<div class="library-pdf-loading">자료를 불러오는 중...</div>';
   libraryFileFrame.src="about:blank";
