@@ -10,6 +10,39 @@ export function monthsBefore(s,m){const [y,mo,d]=s.split('-').map(Number);const 
 async function table(date){const p=new URLSearchParams({pageUnit:'2000',search_item:'itemTypeProft',search_stdYmd:date});for(const x of MEMBERS)p.append('search_memberCd',x);const r=await fetch(BASE+'?'+p,{signal:AbortSignal.timeout(25000),headers:{'User-Agent':'HB-Fund-Live/2.0','Accept':'text/html'}});if(!r.ok)throw new Error('공시 응답 '+r.status);const rows=parse(await r.text());if(rows.size<20)throw new Error('공시 데이터가 아직 없습니다');return rows;}
 export function build(current,histories,checkedAt){const rows=labels.map(([company,product,fund],i)=>{const x=current.get(CODES[i]);const row={company,product,fund,code:CODES[i],m1:null,m3:null,m6:null,y1:null,y3:null,y5:null,cum:null,annual:null,date:null,status:'확인 필요'};if(!x)return row;Object.assign(row,{y1:x.y1,y3:x.y3,y5:x.y5,cum:x.cum,date:x.date,officialName:x.name,source:BASE+'?search_memberCd='+x.member+'&search_fundNm='+encodeURIComponent(x.name),status:'공시 확인'});for(const [j,k] of ['m1','m3','m6'].entries()){const old=histories[j]?.get(x.code);if(x.price>0&&old?.price>0&&old.date===monthsBefore(x.date,[1,3,6][j]))row[k]=(x.price/old.price-1)*100;}const days=(Date.parse(x.date)-Date.parse(x.start))/86400000;if(days>=365&&x.cum!==null)row.annual=x.cum*365/days;return row;});for(const [i,a,b,w] of [[16,14,15,.5],[23,22,21,.3]]){const x=rows[a],y=rows[b];if(x.date&&x.date===y.date){rows[i].date=x.date;rows[i].status='비중 계산 · 참고';for(const k of ['m1','m3','m6','y1','y3','y5'])if(x[k]!==null&&y[k]!==null)rows[i][k]=x[k]*w+y[k]*(1-w);}}
  const dates=[...new Set(rows.map(x=>x.date).filter(Boolean))].sort();if(!dates.length)throw new Error('추천 펀드의 공시 데이터를 찾지 못했습니다');return {checkedAt,dates,source:'생명보험협회 변액보험 펀드현황',funds:rows,sources:Object.fromEntries([...new Set(labels.map(x=>x[0]))].map(name=>[name,{ok:rows.some(x=>x.company===name&&x.date),count:rows.filter(x=>x.company===name&&x.date).length}]))};}
+const CARDIF='https://www.cardif.co.kr/product/investment-report.do';
+export function parseCardif(html){
+ const block=html.match(/const\s+summaryData\s*=\s*\{([\s\S]*?)\};/)?.[1];
+ const title=html.match(/id=["']summaryChartTitle["'][^>]*>([\s\S]*?)<\/div>/)?.[1];
+ const dateText=clean(title||'').match(/(\d{4})\.(\d{2})\.(\d{2})\s*기준/);
+ if(!block||!dateText)throw new Error('카디프 월간 공시 형식 확인 필요');
+ const date=dateText.slice(1).join('-');
+ if(!Number.isFinite(Date.parse(date))||new Date(date).toISOString().slice(0,10)!==date||date>day())throw new Error('카디프 공시 기준일 확인 필요');
+ const result=new Map();
+ for(const period of ['m1','y1']){
+  const items=block.match(new RegExp('\\b'+period+'\\s*:\\s*\\[([\\s\\S]*?)\\]'))?.[1];
+  if(!items)throw new Error('카디프 월간 수익률 기간 확인 필요');
+  for(const item of items.matchAll(/\{[^{}]*\bname\s*:\s*'([^']+)'[^{}]*\bval\s*:\s*'([+-]?\d+(?:\.\d+)?%)'[^{}]*\}/g)){
+   const name=item[1].replace(/\s/g,'').replace(/Ⅱ/g,'II');
+   if(!result.has(name))result.set(name,{});
+   result.get(name)[period]=Number(item[2].replace('%',''));
+  }
+ }
+ const names=[['스마트베타(적극)','스마트베타 (적극투자형)'],['글로벌자산배분II(적극)','글로벌자산배분Ⅱ (적극투자형)']];
+ const funds=names.map(([key,name])=>{
+  const values=result.get(key);
+  if(!values||!Number.isFinite(values.m1)||!Number.isFinite(values.y1))throw new Error('카디프 공식 EMP 전략 확인 필요');
+  return {name,date,m1:values.m1,y1:values.y1,source:CARDIF};
+ });
+ return {status:'ok',date,source:CARDIF,funds};
+}
+async function cardifMonthly(){
+ try{
+  const r=await fetch(CARDIF,{signal:AbortSignal.timeout(25000),headers:{'Accept':'text/html','User-Agent':'HB-Fund-Live/2.1'}});
+  if(!r.ok)throw new Error('카디프 월간 공시 응답 '+r.status);
+  return parseCardif(await r.text());
+ }catch(e){return {status:'unavailable',source:CARDIF,funds:[],error:'카디프 월간 공시를 확인하지 못했습니다. '+e.message};}
+}
 let cached;let pending;
-export async function refresh(){if(cached&&Date.now()-cached.time<30*60*1000)return cached.data;if(pending)return pending;pending=(async()=>{let current;let sourceDate=day();for(let n=0;n<7;n++){try{current=await table(sourceDate);break;}catch(e){if(n===6)throw e;sourceDate=new Date(Date.parse(sourceDate)-86400000).toISOString().slice(0,10);}}const dates=[...new Set([...current.values()].map(x=>x.date))];if(dates.length!==1)throw new Error('공시 기준일이 일치하지 않습니다');sourceDate=dates[0];const histories=await Promise.all([1,3,6].map(m=>table(monthsBefore(sourceDate,m)).catch(()=>null)));const data=build(current,histories,new Date().toISOString());cached={time:Date.now(),data};return data;})();try{return await pending;}finally{pending=null;}}
+export async function refresh(){if(cached&&Date.now()-cached.time<30*60*1000)return cached.data;if(pending)return pending;pending=(async()=>{let current;let sourceDate=day();for(let n=0;n<7;n++){try{current=await table(sourceDate);break;}catch(e){if(n===6)throw e;sourceDate=new Date(Date.parse(sourceDate)-86400000).toISOString().slice(0,10);}}const dates=[...new Set([...current.values()].map(x=>x.date))];if(dates.length!==1)throw new Error('공시 기준일이 일치하지 않습니다');sourceDate=dates[0];const [histories,monthly]=await Promise.all([Promise.all([1,3,6].map(m=>table(monthsBefore(sourceDate,m)).catch(()=>null))),cardifMonthly()]);const data=build(current,histories,new Date().toISOString());data.cardifMonthly=monthly;for(const i of [10,11]){data.funds[i].status=i===10?'EMP 명칭 확인 필요':'EMP 운용유형 확인 필요';data.funds[i].source=CARDIF;}cached={time:Date.now(),data};return data;})();try{return await pending;}finally{pending=null;}}
 export default async function handler(req,res){res.setHeader('Cache-Control','no-store');try{res.status(200).json(await refresh());}catch(e){res.status(503).json({error:'최신 공시 수익률 조회에 실패했습니다. 이전 값을 최신값으로 바꾸지 않습니다.',detail:e.message});}}
