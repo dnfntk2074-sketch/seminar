@@ -248,8 +248,16 @@ app.post("/api/admin/login",async(req,res)=>{
 app.post("/api/admin/logout",(req,res)=>{res.setHeader("Set-Cookie","hb_admin=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0");res.json({ok:true})});
 app.get("/api/admin/me",auth,(req,res)=>res.json({email:req.admin.email}));
 app.get("/api/admin/schedules",auth,async(req,res)=>{
-  try{await syncFloot();const r=await pool.query("SELECT id,owner_name AS \"ownerName\",customer_name AS \"customerName\",scheduled_at AS \"scheduledAt\",completed,source FROM schedules ORDER BY scheduled_at DESC LIMIT 100");res.json({schedules:r.rows});}
+  try{await syncFloot();const r=await pool.query("SELECT id,owner_name AS \"ownerName\",customer_name AS \"customerName\",scheduled_at AS \"scheduledAt\",completed,completed_at AS \"completedAt\",source FROM schedules ORDER BY scheduled_at DESC LIMIT 100");res.json({schedules:r.rows});}
   catch{res.status(500).json({error:"load_failed"});}
+});
+app.patch("/api/admin/schedules/:id/complete",auth,async(req,res)=>{
+  if(typeof req.body?.completed!=="boolean")return res.status(400).json({error:"invalid_completed"});
+  try{
+    const r=await pool.query("UPDATE schedules SET completed=$1,completed_at=CASE WHEN $1 THEN COALESCE(completed_at,now()) ELSE NULL END,updated_at=now() WHERE id=$2 RETURNING id,completed,completed_at AS \"completedAt\"",[req.body.completed,req.params.id]);
+    if(!r.rowCount)return res.status(404).json({error:"not_found"});
+    res.json({ok:true,...r.rows[0]});
+  }catch(e){console.error(e);res.status(500).json({error:"complete_failed"});}
 });
 app.delete("/api/admin/schedules/:id",auth,async(req,res)=>{
   const r=await pool.query("SELECT source FROM schedules WHERE id=$1",[req.params.id]);
