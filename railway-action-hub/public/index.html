@@ -336,6 +336,13 @@ body.chuseok-day{background:linear-gradient(180deg,#f8f4e8 0,#f4f7fb 380px)}
 }
 .detail-actions[hidden],.complete-btn[hidden]{display:none!important}.calendar-tools{flex-wrap:wrap;gap:8px}.activity-help{font-size:11px;color:#64748b;line-height:1.5;margin:0 0 8px}.complete-btn{cursor:pointer}
 .calendar-card .calendar-tools{display:flex;align-items:center;justify-content:flex-end;flex-wrap:nowrap;gap:0;margin:4px 0 10px}.calendar-card .my-only-btn{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:7px 12px;line-height:1.2;white-space:nowrap;flex:0 0 auto;margin:0}
+
+/* Keep overflow counts visible and allow expanded dates to grow. */
+.calendar-card .grid{grid-auto-rows:minmax(112px,auto)!important}
+.calendar-card .grid[data-weeks="5"]{grid-template-rows:repeat(5,minmax(112px,auto))!important}
+.calendar-card .grid[data-weeks="6"]{grid-template-rows:repeat(6,minmax(112px,auto))!important}
+.calendar-card .day{height:auto!important;min-height:112px!important;max-height:none!important;overflow:visible!important}
+.calendar-card .more-btn{display:block!important;height:auto!important;min-height:24px!important;margin-top:3px!important;padding:4px 1px!important;background:#dbeafe!important;color:#1746a2!important;border-radius:4px!important;font-size:10px!important;line-height:1.25!important;white-space:normal!important}
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
 <div class="card top-card"><img class="brand-logo" src="/brand-logo-user.gif?v=20260921-1935" alt="보험이 착해지다 A+에셋"><div class="title" id="appTitle">유료DB ACTION HUB</div><div class="sub" id="appSub">신규상담 · 후속상담 · 고객관리를 한눈에 공유합니다.</div><div class="top-actions"><button type="button" class="top-action-btn" id="libraryTopBtn">📚 자료실</button><a class="top-action-btn toolbox" href="https://hbtoolbox.vercel.app/">🧰 TOOLBOX</a><button type="button" class="top-action-btn refresh" id="appRefreshBtn">↻ 새로고침</button></div></div>
@@ -585,7 +592,7 @@ function render(){
     el.className="day"+(outside?" outside":"")+(d===today?" today":"");
     el.innerHTML=`<h4 class="${tone}"><span class="day-date">${Number(d.slice(8))}</span>${badge}</h4>`+
       (list.length?shown.map(x=>`<button type="button" class="schedule-chip ${x.type}${x.completed?" completed":""}" data-detail="${x.id}" title="${esc(x.owner)}">${x.completed?"✓ ":""}${esc(x.owner)}</button>`).join("")+
-      (more>0?`<button type="button" class="more-btn" data-more="${d}">+${more}건</button>`:(expanded&&list.length>2?`<button type="button" class="more-btn" data-more="${d}">접기</button>`:"")):"");
+      (more>0?`<button type="button" class="more-btn" data-more="${d}" aria-label="${d} 일정 ${more}건 더보기" aria-expanded="false">+${more}건</button>`:(expanded&&list.length>2?`<button type="button" class="more-btn" data-more="${d}" aria-label="${d} 일정 접기" aria-expanded="true">접기</button>`:"")):"");
     grid.appendChild(el);
   }
 }
