@@ -755,7 +755,7 @@ $('apply').onclick=async()=>{
        name:$('name').value.trim(),
        phone:$('phone').value.replace(/\D/g,''),
        referrer:$('recommender').value.trim(),
-       result:r.title.replace(/^[^ ]+ /,''),
+       result:r.title,
        topics:r.tags,
        answers:selected.map(x=>x.label)
      })
