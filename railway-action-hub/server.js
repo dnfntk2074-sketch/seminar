@@ -85,9 +85,19 @@ async function init(){
     mvp_enabled boolean not null default true,
     mvp_title text not null default '이번 주 활동왕',
     app_title text not null default '유료DB ACTION HUB',
-    app_subtitle text not null default '신규상담 · 후속상담 · 고객관리를 한눈에 공유합니다.'
+    app_subtitle text not null default '신규상담 · 후속상담 · 고객관리를 한눈에 공유합니다.',
+    notice_enabled boolean not null default true,
+    notice_title text not null default 'TFA TOOLBOX 리뉴얼 안내',
+    notice_content text not null default '생보 수수료 계산기 신규 탑재\n\n2026년 10월 자료 기준으로 생명보험 수수료 계산기를 새롭게 탑재했습니다.\n보험사 · 상품 · 납입기간을 선택하고 월 보험료를 입력하면 수수료 · 시책 · 환산을 빠르게 확인할 수 있습니다.',
+    notice_url text not null default 'https://hbtoolbox.vercel.app/',
+    notice_new boolean not null default true
   )`);
   await pool.query(`INSERT INTO app_settings(id) VALUES('main') ON CONFLICT DO NOTHING`);
+  await pool.query("ALTER TABLE app_settings ADD COLUMN IF NOT EXISTS notice_enabled boolean NOT NULL DEFAULT true");
+  await pool.query("ALTER TABLE app_settings ADD COLUMN IF NOT EXISTS notice_title text NOT NULL DEFAULT 'TFA TOOLBOX 리뉴얼 안내'");
+  await pool.query("ALTER TABLE app_settings ADD COLUMN IF NOT EXISTS notice_content text NOT NULL DEFAULT '생보 수수료 계산기 신규 탑재\\n\\n2026년 10월 자료 기준으로 생명보험 수수료 계산기를 새롭게 탑재했습니다.\\n보험사 · 상품 · 납입기간을 선택하고 월 보험료를 입력하면 수수료 · 시책 · 환산을 빠르게 확인할 수 있습니다.'");
+  await pool.query("ALTER TABLE app_settings ADD COLUMN IF NOT EXISTS notice_url text NOT NULL DEFAULT 'https://hbtoolbox.vercel.app/'");
+  await pool.query("ALTER TABLE app_settings ADD COLUMN IF NOT EXISTS notice_new boolean NOT NULL DEFAULT true");
   await pool.query(`CREATE TABLE IF NOT EXISTS schedules(
     id text primary key,
     owner_name text not null,
@@ -156,7 +166,7 @@ async function syncFloot(){
   }catch(e){ console.warn("upstream sync skipped",e.message); }
 }
 async function getSettings(){
-  const r=await pool.query("SELECT marquee_mode,marquee_text,mvp_enabled,mvp_title,app_title,app_subtitle FROM app_settings WHERE id='main'");
+  const r=await pool.query("SELECT marquee_mode,marquee_text,mvp_enabled,mvp_title,app_title,app_subtitle,notice_enabled,notice_title,notice_content,notice_url,notice_new FROM app_settings WHERE id='main'");
   return r.rows[0];
 }
 function makeCustomer(type,place){
@@ -312,8 +322,21 @@ app.delete("/api/admin/library/:id",auth,async(req,res)=>{
 app.get("/api/admin/settings",auth,async(req,res)=>res.json(await getSettings()));
 app.put("/api/admin/settings",auth,async(req,res)=>{
   const s=req.body||{};
-  await pool.query(`UPDATE app_settings SET marquee_mode=$1,marquee_text=$2,mvp_enabled=$3,mvp_title=$4,app_title=$5,app_subtitle=$6 WHERE id='main'`,
-    [s.marquee_mode||"auto",s.marquee_text||"",!!s.mvp_enabled,s.mvp_title||"이번 주 활동왕",s.app_title||"유료DB ACTION HUB",s.app_subtitle||""]);
+  const noticeUrl=s.notice_url===undefined?null:String(s.notice_url||"").trim();
+  if(noticeUrl && !/^https?:\/\//i.test(noticeUrl)) return res.status(400).json({error:"invalid_notice_url"});
+  const noticeTitle=s.notice_title===undefined?null:String(s.notice_title||"").trim().slice(0,120);
+  const noticeContent=s.notice_content===undefined?null:String(s.notice_content||"").trim().slice(0,4000);
+  const noticeEnabled=s.notice_enabled===undefined?null:!!s.notice_enabled;
+  const noticeNew=s.notice_new===undefined?null:!!s.notice_new;
+  await pool.query(`UPDATE app_settings SET
+    marquee_mode=$1,marquee_text=$2,mvp_enabled=$3,mvp_title=$4,app_title=$5,app_subtitle=$6,
+    notice_enabled=COALESCE($7::boolean,notice_enabled),
+    notice_title=COALESCE($8,notice_title),
+    notice_content=COALESCE($9,notice_content),
+    notice_url=COALESCE($10,notice_url),
+    notice_new=COALESCE($11::boolean,notice_new)
+    WHERE id='main'`,
+    [s.marquee_mode||"auto",s.marquee_text||"",!!s.mvp_enabled,s.mvp_title||"이번 주 활동왕",s.app_title||"유료DB ACTION HUB",s.app_subtitle||"",noticeEnabled,noticeTitle,noticeContent,noticeUrl,noticeNew]);
   res.json({ok:true});
 });
 app.post("/api/admin/change-password",auth,async(req,res)=>{
