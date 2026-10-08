@@ -433,6 +433,70 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 }
 @media(max-width:350px){.premium-hub .title{font-size:24px}.premium-action-copy small{display:none}.premium-hub .top-action-btn{height:79px}}
 @media(prefers-reduced-motion:reduce){.premium-hub .top-action-btn{transition:none}}
+
+/* 2026-10-08: compact beside-title announcement on all screen sizes */
+.premium-hero{
+  grid-template-columns:minmax(0,1fr) 172px;
+  align-items:center;
+  gap:12px;
+}
+.premium-hub .notice-trigger{
+  width:100%!important;min-width:0;max-width:172px;
+  height:57px!important;padding:8px 11px!important;
+  border-radius:16px!important;gap:6px;
+}
+.premium-notice-icon{flex:0 0 30px;width:30px}
+.premium-notice-icon .bell{font-size:25px!important}
+.premium-notice-icon small{top:-5px;right:-3px;width:13px;height:13px;font-size:9px}
+.premium-notice-copy{gap:0;min-width:0}
+.premium-notice-copy strong{gap:5px;font-size:14px}
+.premium-notice-copy em{display:none}
+.premium-hub .notice-trigger .new{min-width:28px;height:18px;padding:0 5px;font-size:8px}
+.premium-notice-arrow{font-size:19px;margin-left:auto}
+@media(max-width:720px){
+  .premium-hero{grid-template-columns:minmax(0,1fr) 145px;gap:8px}
+  .premium-hub .notice-trigger{height:50px!important;max-width:145px;padding:6px 8px!important;border-radius:14px!important;gap:5px}
+  .premium-notice-icon{flex-basis:25px;width:25px}
+  .premium-notice-icon .bell{font-size:23px!important}
+  .premium-notice-copy strong{font-size:12px}
+  .premium-hub .notice-trigger .new{min-width:25px;height:17px;font-size:8px}
+  .premium-notice-arrow{font-size:17px}
+}
+@media(max-width:520px){
+  .premium-hero{grid-template-columns:minmax(0,1fr) 112px;align-items:center;gap:7px;margin:8px 0 15px}
+  .premium-hub .title{font-size:clamp(21px,5.8vw,27px);gap:4px;letter-spacing:-.065em}
+  .premium-pill{font-size:11px;padding:5px 7px}
+  .premium-hub .sub{font-size:10.5px;line-height:1.4}
+  .premium-hub .notice-trigger{width:112px!important;max-width:112px;height:44px!important;padding:5px 7px!important;border-radius:13px!important;gap:4px}
+  .premium-notice-icon{flex:0 0 23px;width:23px}
+  .premium-notice-icon .bell{font-size:20px!important}
+  .premium-notice-icon small{width:10px;height:10px;font-size:7px;top:-3px;right:0}
+  .premium-notice-copy strong{gap:3px;font-size:12px}
+  .premium-hub .notice-trigger .new{min-width:22px;height:15px;padding:0 3px;font-size:7px}
+  .premium-notice-arrow{display:none}
+}
+@media(max-width:350px){
+  .premium-hero{grid-template-columns:minmax(0,1fr) 100px;gap:5px}
+  .premium-hub .notice-trigger{width:100px!important;max-width:100px}
+  .premium-notice-copy strong{font-size:11px}
+  .premium-notice-icon{flex-basis:20px;width:20px}
+  .premium-notice-icon .bell{font-size:18px!important}
+}
+/* Readable notice paragraphs: true line breaks, paragraph spacing, no raw slash-n markers */
+.notice-content{
+  margin:14px 0 16px;padding:17px 18px;
+  background:#f8faff;border:1px solid #e5eefa;border-left:3px solid #337bea;
+  border-radius:13px;font-size:14px;line-height:1.9;color:#334155;
+  white-space:normal;overflow-wrap:anywhere;word-break:keep-all;
+}
+.notice-content p{white-space:pre-line;margin:0 0 14px!important;font-size:14px!important;line-height:1.9!important;color:#334155!important;}
+.notice-content p:last-child{margin-bottom:0!important}
+.notice-modal-body h3{font-size:21px;line-height:1.35;letter-spacing:-.035em;word-break:keep-all}
+@media(max-width:520px){
+  .notice-content{padding:15px 14px}
+  .notice-content p{font-size:13px!important;line-height:1.85!important}
+  .notice-modal-body h3{font-size:19px}
+}
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
 <div class="card top-card premium-hub">
@@ -476,6 +540,24 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 const noticeTrigger=document.getElementById("noticeTrigger"),noticeBackdrop=document.getElementById("noticeBackdrop"),noticeClose=document.getElementById("noticeClose"),noticeTriggerNew=document.getElementById("noticeTriggerNew"),noticeModalNew=document.getElementById("noticeModalNew"),noticeTitle=document.getElementById("noticeTitle"),noticeContent=document.getElementById("noticeContent"),noticeLink=document.getElementById("noticeLink");
 function openNotice(){if(noticeTrigger.hidden)return;noticeBackdrop.hidden=false;document.body.style.overflow="hidden"}
 function closeNotice(){noticeBackdrop.hidden=true;document.body.style.overflow=""}
+function formatNoticeText(raw){
+  return String(raw??"")
+    .replace(/\r\n?/g,"\n")
+    .replace(/\\r\\n|\\n|\/n/gi,"\n")
+    .replace(/[ \t]*\n[ \t]*/g,"\n")
+    .replace(/\n{3,}/g,"\n\n")
+    .trim();
+}
+function renderNoticeContent(raw){
+  const cleaned=formatNoticeText(raw);
+  noticeContent.replaceChildren();
+  if(!cleaned){noticeContent.textContent="등록된 공지 내용이 없습니다.";return}
+  for(const text of cleaned.split(/\n{2,}/)){
+    const paragraph=document.createElement("p");
+    paragraph.textContent=text;
+    noticeContent.appendChild(paragraph);
+  }
+}
 function applyNotice(s){
   const enabled=s.notice_enabled!==false&&!!String(s.notice_title||s.notice_content||"").trim();
   noticeTrigger.hidden=!enabled;
@@ -483,7 +565,7 @@ function applyNotice(s){
   const isNew=s.notice_new!==false;
   noticeTriggerNew.hidden=!isNew;noticeModalNew.hidden=!isNew;
   noticeTitle.textContent=s.notice_title||"공지사항";
-  noticeContent.textContent=s.notice_content||"";
+  renderNoticeContent(s.notice_content||"");
   const url=String(s.notice_url||"").trim();
   if(/^https?:\/\//i.test(url)){noticeLink.href=url;noticeLink.hidden=false}else{noticeLink.removeAttribute("href");noticeLink.hidden=true}
 }
