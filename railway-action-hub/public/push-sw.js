@@ -1,0 +1,4 @@
+self.addEventListener('push',event=>{let p={};try{p=event.data?.json()||{}}catch{}event.waitUntil(self.registration.showNotification(p.title||'ACTION HUB',{body:p.body||'새 활동 소식이 있습니다.',icon:'/action-hub-approved-icon-v4.png',badge:'/action-hub-approved-icon-v4.png',tag:p.tag||'action-hub',data:{url:p.url==='/push.html'?'/push.html':'/'}}))});
+self.addEventListener('notificationclick',event=>{event.notification.close();const url=new URL(event.notification.data?.url||'/',self.location.origin).href;event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(async list=>{const found=list.find(c=>c.url===url);if(found)return found.focus();return clients.openWindow(url)}))});
+self.addEventListener('install',()=>self.skipWaiting());
+self.addEventListener('activate',event=>event.waitUntil(clients.claim()));

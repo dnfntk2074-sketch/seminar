@@ -184,7 +184,7 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
       </div>
     </section>
 
-    <section class="view" id="view-more">
+    <section class="view" id="view-more"><div class="card"><div class="section-title">🔔 활동 푸시 알림</div><p class="muted">이충학 지점장 · 이미라 단장 · 이중재 EM · 차지혜 실장 전용입니다. 각자 휴대폰에서 링크를 열고 알림을 허용해야 합니다. 연결 권한은 알림 수신에만 사용됩니다.</p><button class="btn ghost full" id="pushRefresh">연결 상태 확인</button><div id="pushRecipients"></div><p class="muted" id="pushMsg" role="status"></p></div>
       <div class="card">
         <div class="section-title">⚙️ 관리자 설정</div>
         <div class="field"><label>새 비밀번호</label><input id="newpw" type="password" placeholder="8자 이상"></div>
@@ -298,7 +298,15 @@ async function uploadLibrary(){
     else libMsg.textContent=j.error==="file_too_large"?"파일은 30MB 이하로 올려주세요.":j.error==="unsupported_file"?"지원하지 않는 파일 형식입니다.":"업로드에 실패했습니다.";
   }finally{libUpload.disabled=false;libUpload.textContent="자료 업로드"}
 }
+
+async function loadPushRecipients(){
+  try{const r=await api('/api/admin/push');if(!r.ok)throw Error();const j=await r.json();pushRecipients.innerHTML='';
+  j.recipients.forEach(p=>{const box=document.createElement('div');box.className='item';const title=document.createElement('b');title.textContent=p.name;const state=document.createElement('p');state.className='muted';state.textContent=p.connected?'알림 연결됨':'알림 연결 전';const btn=document.createElement('button');btn.className='btn ghost';btn.textContent=p.connected?'연결 링크 다시 만들기':'전용 연결 링크 만들기';btn.onclick=async()=>{if(p.connected&&!confirm('기존 휴대폰 연결을 해제하고 새 링크를 만드시겠습니까?'))return;btn.disabled=true;try{const r=await api('/api/admin/push/invite',{method:'POST',body:JSON.stringify({id:p.id})});if(!r.ok)throw Error();const j=await r.json();const link=location.origin+j.path;const input=document.createElement('input');input.value=link;input.readOnly=true;input.onclick=()=>input.select();const copy=document.createElement('button');copy.className='btn primary';copy.textContent='링크 복사';copy.onclick=async()=>{try{await navigator.clipboard.writeText(link);pushMsg.textContent=p.name+'님 전용 링크를 복사했습니다.'}catch{input.select();pushMsg.textContent='링크를 길게 눌러 복사해주세요.'}};box.append(input,copy);btn.hidden=true;state.textContent='7일 이내 연결해주세요. 이 링크는 해당 수신자에게만 전달해주세요.'}catch{pushMsg.textContent='링크를 만들지 못했습니다. 다시 시도해주세요.';btn.disabled=false}};box.append(title,state,btn);pushRecipients.append(box)})}catch{pushMsg.textContent='연결 상태를 불러오지 못했습니다.'}
+}
+pushRefresh.onclick=loadPushRecipients;
+
 function go(v){
+  if(v==="more")loadPushRecipients();
   document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
   document.getElementById("view-"+v).classList.add("on");
   document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("on",x.dataset.view===v))

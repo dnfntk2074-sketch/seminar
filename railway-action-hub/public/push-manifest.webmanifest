@@ -1,0 +1,1 @@
+{"id":"/activity-alerts","name":"ACTION HUB 활동 알림","short_name":"활동 알림","start_url":"/push.html","scope":"/","display":"standalone","background_color":"#f4f7fb","theme_color":"#2456d8","icons":[{"src":"/action-hub-approved-icon-v4.png","sizes":"180x180","type":"image/png"}]}

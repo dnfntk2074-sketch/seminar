@@ -1,4 +1,6 @@
 import express from "express";
+import { installPush } from "./push.js";
+let notifyActivity=async()=>{};
 import pg from "pg";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -193,6 +195,7 @@ app.post("/api/register", async(req,res)=>{
   const id=crypto.randomUUID();
   await pool.query(`INSERT INTO schedules(id,owner_name,customer_name,scheduled_at,owner_token_hash,source) VALUES($1,$2,$3,$4,$5,'local')`,
     [id,String(ownerName).trim(),makeCustomer(type,String(place).trim()),at.toISOString(),tokenHash(ownerToken)]);
+  await notifyActivity("registered",{id,owner_name:String(ownerName).trim(),customer_name:makeCustomer(type,String(place).trim()),scheduled_at:at.toISOString()});
   res.json({ok:true,id});
 });
 
@@ -212,10 +215,11 @@ app.patch("/api/schedules/:id/complete",async(req,res)=>{
   const ownerToken=req.get("x-owner-token")||"";
   const ownerIdentity=requestOwnerName(req);
   const completed=req.body?.completed===true;
-  const r=await pool.query("SELECT owner_name,customer_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
+  const r=await pool.query("SELECT id,owner_name,customer_name,scheduled_at,owner_token_hash,completed FROM schedules WHERE id=$1",[req.params.id]);
   if(!r.rowCount||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
   const customer=String(r.rows[0].customer_name||"");
-  await pool.query("UPDATE schedules SET completed=$1,completed_at=CASE WHEN $1 THEN COALESCE(completed_at,now()) ELSE NULL END,updated_at=now() WHERE id=$2",[completed,req.params.id]);
+  const changed=await pool.query("UPDATE schedules SET completed=$1,completed_at=CASE WHEN $1 THEN COALESCE(completed_at,now()) ELSE NULL END,updated_at=now() WHERE id=$2 AND completed IS DISTINCT FROM $1 RETURNING id,owner_name,customer_name,scheduled_at",[completed,req.params.id]);
+  if(completed&&changed.rowCount)await notifyActivity("completed",changed.rows[0]);
   res.json({ok:true,completed});
 });
 app.delete("/api/schedules/:id",async(req,res)=>{
@@ -354,6 +358,7 @@ app.use((err,req,res,next)=>{
 });
 
 app.get("/admin",(req,res)=>res.sendFile(path.join(__dirname,"public","admin.html")));
-app.get("*",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));
 
-init().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log("HB ACTION HUB listening",PORT))).catch(e=>{console.error(e);process.exit(1);});
+
+init().then(async()=>{notifyActivity=await installPush(app,pool,auth);app.get("*",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));;app.use((err,req,res,next)=>{console.error("request failed");res.status(500).json({error:"server_error"})})}).then(()=>app.listen(PORT,"0.0.0.0",()=>console.log("HB ACTION HUB listening",PORT))).catch(e=>{console.error(e);process.exit(1);});
+
