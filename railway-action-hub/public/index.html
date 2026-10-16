@@ -562,6 +562,30 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 #memberPushEnable{background:#2456d8;color:#fff}#memberPushEnable:disabled{opacity:.5}
 #memberPushDisable{background:#eef2f7;color:#52677e}#memberPushDisable[hidden]{display:none}
 .member-push-dialog p.member-push-footnote{font-size:11px;color:#708195}
+/* Compact only the resource buttons, next-schedule LED and registration form. */
+.premium-hub .top-action-btn{height:98px;padding-top:8px;padding-bottom:8px}
+.premium-hub .premium-illustration{flex-basis:70px}
+.premium-hub .premium-illustration svg{max-width:70px}
+.premium-hub .refresh svg{width:32px;height:32px}
+.led.schedule-led{min-height:88px!important;padding-top:18px;padding-bottom:18px}
+#actionRegistrationFields[hidden]{display:none!important}
+.action-reg-card .tabs{margin-top:8px}
+@media(max-width:720px){
+ .premium-hub .top-action-btn{height:80px;padding-top:6px;padding-bottom:6px}
+ .premium-hub .premium-illustration{flex-basis:46px}
+ .premium-hub .premium-illustration svg{max-width:46px}
+ .premium-hub .refresh svg{width:25px;height:25px}
+}
+@media(max-width:520px){
+ .premium-hub .top-action-btn{height:74px;padding-top:4px;padding-bottom:4px}
+ .premium-hub .premium-illustration{flex:0 0 29px;width:29px}
+ .premium-hub .premium-illustration svg{max-width:29px}
+ .premium-hub .top-action-btn.refresh{gap:3px}
+ .premium-hub .refresh svg{width:22px;height:22px}
+}
+@media(max-width:420px){.led.schedule-led{min-height:83px!important;padding-top:17px;padding-bottom:17px}}
+@media(max-width:350px){.premium-hub .top-action-btn{height:60px}.premium-hub .premium-illustration{flex-basis:26px;width:26px}.premium-hub .premium-illustration svg{max-width:26px}}
+
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
 <div class="card top-card premium-hub">
@@ -591,11 +615,11 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 </div>
 <div class="led schedule-led"><div class="glow-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="marquee-track ltr" id="scheduleTrack"><span class="marquee-copy" id="marquee">일정을 불러오는 중...</span><span class="marquee-copy mirror" id="marqueeMirror" aria-hidden="true">일정을 불러오는 중...</span><span class="marquee-copy extra" id="marqueeExtra" aria-hidden="true">일정을 불러오는 중...</span></div></div>
 <div class="led mvp"><div class="mvp-marquee-track ltr" id="mvpTrack"><div class="mvp-marquee-copy"><span class="mvp-kicker">👑 WEEKLY ACTIVITY MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitle">이번 주 활동왕</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpName">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCount"></span></div><div class="mvp-marquee-copy mirror" aria-hidden="true"><span class="mvp-kicker">👑 WEEKLY ACTIVITY MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitleMirror">이번 주 활동왕</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpNameMirror">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCountMirror"></span></div><div class="mvp-marquee-copy extra" aria-hidden="true"><span class="mvp-kicker">👑 WEEKLY ACTIVITY MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitleExtra">이번 주 활동왕</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpNameExtra">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCountExtra"></span></div></div><div class="mvp-scan" aria-hidden="true"></div><div class="mvp-ticker top" aria-hidden="true"><span class="ticker-copy">★ WEEKLY ACTIVITY MVP ★ TOP PERFORMANCE ★ WEEKLY ACTIVITY MVP ★</span><span class="ticker-copy">★ WEEKLY ACTIVITY MVP ★ TOP PERFORMANCE ★ WEEKLY ACTIVITY MVP ★</span></div><div class="mvp-ticker bottom" aria-hidden="true"><span class="ticker-copy">★ GURI LEADERS HB ★ WEEKLY CHAMPION ★ GURI LEADERS HB ★</span><span class="ticker-copy">★ GURI LEADERS HB ★ WEEKLY CHAMPION ★ GURI LEADERS HB ★</span></div><div class="mvp-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="fw fw1" aria-hidden="true"><i></i><i></i><i></i></div><div class="fw fw2" aria-hidden="true"><i></i><i></i><i></i></div><div class="fw fw3" aria-hidden="true"><i></i><i></i><i></i></div></div>
-<div class="muted" style="margin:-2px 4px 12px;font-size:11px">MVP: 활동 날짜 기준 월~일(한국시간) · 완료 활동 1건=1점 · 공동 1위 함께 표시</div><div class="card"><b>ACTION 등록</b><div class="tabs" id="tabs"><button class="on" data-t="visit">🤝 신규상담</button><button data-t="study">🔄 후속상담</button><button data-t="call">💙 고객관리</button></div>
+<div class="muted" style="margin:-2px 4px 12px;font-size:11px">MVP: 활동 날짜 기준 월~일(한국시간) · 완료 활동 1건=1점 · 공동 1위 함께 표시</div><div class="card action-reg-card"><b>ACTION 등록</b><div class="tabs" id="tabs"><button type="button" data-t="visit" aria-expanded="false" aria-controls="actionRegistrationFields">🤝 신규상담</button><button type="button" data-t="study" aria-expanded="false" aria-controls="actionRegistrationFields">🔄 후속상담</button><button type="button" data-t="call" aria-expanded="false" aria-controls="actionRegistrationFields">💙 고객관리</button></div><div id="actionRegistrationFields" hidden>
 <div class="field"><label>TFA</label><input class="input" id="owner" placeholder="예: 이충학"></div>
 <div class="field"><label id="placeLabel">상담 장소/메모</label><input class="input" id="place" placeholder="예: 구리OO병원"></div>
 <div class="dt"><div class="field"><label>날짜</label><div class="hint-wrap" id="dateWrap"><input class="input" type="date" id="date"><span class="in-hint">예: 2026-09-21</span></div></div><div class="field"><label>시간</label><div class="hint-wrap" id="timeWrap"><input class="input" type="time" step="300" id="time"><span class="in-hint">예: 14:30</span></div></div></div>
-<button class="submit" id="submit">신규상담 등록</button><div class="muted" id="msg"></div></div>
+<button class="submit" id="submit">신규상담 등록</button></div><div class="muted" id="msg"></div></div>
 <div class="card calendar-card"><div class="calendar-head"><button type="button" class="calendar-nav" id="calendarPrev" aria-label="이전 달">‹</button><b id="calendarTitle">월간 ACTION 스케줄러</b><button type="button" class="calendar-nav" id="calendarNext" aria-label="다음 달">›</button></div><div class="calendar-tools"><button type="button" class="my-only-btn" id="myScheduleToggle">내 일정만 보기</button></div><div class="activity-help">달력에서 본인 일정을 누른 뒤 ‘✓ 활동 완료’를 눌러주세요. 완료 1건 = MVP 1점</div><div class="weekday-row"><span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span></div><div class="grid" id="grid"></div></div>
 <div class="schedule-detail-backdrop" id="scheduleDetailBackdrop" hidden><div class="schedule-detail" role="dialog" aria-modal="true" aria-labelledby="scheduleDetailTitle"><div class="schedule-detail-head"><div><div class="schedule-detail-title" id="scheduleDetailTitle">일정 상세</div><div class="detail-type" id="scheduleDetailType"></div></div><button class="detail-close" id="scheduleDetailClose" type="button" aria-label="닫기">×</button></div><div class="detail-list"><div class="detail-row"><span>등록자</span><strong id="scheduleDetailOwner"></strong></div><div class="detail-row"><span>날짜</span><strong id="scheduleDetailDate"></strong></div><div class="detail-row"><span>시간</span><strong id="scheduleDetailTime"></strong></div><div class="detail-row"><span>장소/주제</span><strong id="scheduleDetailPlace"></strong></div><div class="detail-row" id="scheduleDetailStatusRow" hidden><span>상태</span><strong id="scheduleDetailStatus"></strong></div></div><button class="complete-btn" id="scheduleDetailComplete" type="button" hidden>✓ 활동 완료</button><div id="scheduleDetailOwnerHint" class="activity-help" hidden>완료 처리는 이 일정을 등록한 기기에서 할 수 있습니다.</div><div class="detail-actions" id="scheduleDetailActions" hidden><button class="detail-edit" id="scheduleDetailEdit" type="button">수정</button><button class="detail-delete" id="scheduleDetailDelete" type="button">삭제</button></div></div></div>
 <div class="card editbox" id="editBox" hidden><b>내 일정 수정</b><div class="field"><label>일정 종류</label><select class="input" id="editType"><option value="visit">🤝 신규상담</option><option value="study">🔄 후속상담</option><option value="call">💙 고객관리</option></select></div><div class="field"><label>TFA 이름</label><input class="input" id="editOwner"></div><div class="field"><label>장소/주제</label><input class="input" id="editPlace"></div><div class="dt"><div class="field"><label>날짜</label><input class="input" type="date" id="editDate"></div><div class="field"><label>시간</label><input class="input" type="time" step="300" id="editTime"></div></div><div class="edit-actions"><button class="cancel-btn" id="cancelEdit">취소</button><button class="save-btn" id="saveEdit">수정 저장</button></div></div>
@@ -760,7 +784,17 @@ let ownerToken=localStorage.getItem(OWNER_KEY);if(!ownerToken){ownerToken=crypto
 let ownerIdentity=(localStorage.getItem(OWNER_NAME_KEY)||"").trim();if(ownerIdentity)owner.value=ownerIdentity;
 owner.addEventListener("change",()=>{if(owner.value.trim()){ownerIdentity=owner.value.trim();localStorage.setItem(OWNER_NAME_KEY,ownerIdentity);load()}});
 const meta={visit:["상담 장소/메모","예: 구리OO병원","신규상담 등록"],study:["후속상담 장소/메모","예: 고객 사무실 · 후속상담","후속상담 등록"],call:["고객관리 장소/메모","예: 고객 자택 · 보험금 청구","고객관리 등록"]};
-tabs.onclick=e=>{if(e.target.dataset.t){tab=e.target.dataset.t;[...tabs.children].forEach(b=>b.classList.toggle("on",b.dataset.t===tab));placeLabel.textContent=meta[tab][0];place.placeholder=meta[tab][1];submit.textContent=meta[tab][2]}};
+const actionRegistrationFields=document.getElementById('actionRegistrationFields');
+function setActionRegistrationOpen(open){
+ actionRegistrationFields.hidden=!open;
+ [...tabs.children].forEach(button=>{const selected=open&&button.dataset.t===tab;button.classList.toggle('on',selected);button.setAttribute('aria-expanded',String(selected))});
+ if(!open&&actionRegistrationFields.contains(document.activeElement))tabs.querySelector(`[data-t="${tab}"]`).focus({preventScroll:true});
+}
+tabs.onclick=e=>{
+ const button=e.target.closest('button[data-t]');if(!button||!tabs.contains(button))return;
+ const type=button.dataset.t,open=actionRegistrationFields.hidden||type!==tab;
+ tab=type;placeLabel.textContent=meta[tab][0];place.placeholder=meta[tab][1];submit.textContent=meta[tab][2];setActionRegistrationOpen(open);
+};
 function libBytes(n){n=Number(n||0);if(n<1024)return n+"B";if(n<1024*1024)return (n/1024).toFixed(1)+"KB";return (n/1024/1024).toFixed(1)+"MB"}
 function libDate(iso){try{return new Intl.DateTimeFormat("ko-KR",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(iso))}catch{return""}}
 function isLibraryNew(iso){return Date.now()-new Date(iso).getTime()<7*24*60*60*1000}
@@ -1167,6 +1201,7 @@ submit.onclick=async()=>{
   msg.textContent="등록되었습니다!";
   ownerIdentity=activity.ownerName;localStorage.setItem(OWNER_NAME_KEY,ownerIdentity);
   calendarCursor=activity.date.slice(0,7);expandedDays.clear();place.value="";date.value="";time.value="";
+  setActionRegistrationOpen(false);
   showActivityCheer(activity.type,activity.ownerName);
   try{await load()}catch{msg.textContent="등록되었습니다. 목록은 새로고침해서 확인해 주세요."}
  }catch{msg.textContent="등록 결과를 확인하지 못했습니다. 새로고침으로 목록을 먼저 확인해 주세요."}
