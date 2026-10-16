@@ -1,5 +1,6 @@
 import express from "express";
 import { installPush } from "./push.js";
+import { publishApprovedNotice } from "./approved-notice.js";
 let notifyActivity=async()=>{};
 import pg from "pg";
 import bcrypt from "bcryptjs";
@@ -386,5 +387,5 @@ app.use((err,req,res,next)=>{
 app.get("/admin",(req,res)=>res.sendFile(path.join(__dirname,"public","admin.html")));
 
 
-init().then(async()=>{notifyActivity=await installPush(app,pool,auth);app.get("*",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));;app.use((err,req,res,next)=>{console.error("request failed");res.status(500).json({error:"server_error"})})}).then(()=>app.listen(PORT,"0.0.0.0",()=>console.log("HB ACTION HUB listening",PORT))).catch(e=>{console.error(e);process.exit(1);});
+init().then(async()=>{notifyActivity=await installPush(app,pool,auth);await publishApprovedNotice(pool,notifyActivity);app.get("*",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));;app.use((err,req,res,next)=>{console.error("request failed");res.status(500).json({error:"server_error"})})}).then(()=>app.listen(PORT,"0.0.0.0",()=>console.log("HB ACTION HUB listening",PORT))).catch(e=>{console.error(e);process.exit(1);});
 
