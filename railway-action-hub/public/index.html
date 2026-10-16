@@ -786,7 +786,7 @@ async function memberPushApi(action,extra={}){
  const j=await r.json();if(!r.ok)throw Error(j.error||'failed');return j;
 }
 function memberPushState(connected){
- document.getElementById('memberPushLabel').textContent=connected?'알림 켜짐':'알림 켜기';pushButton.classList.toggle('is-on',connected);pushButton.setAttribute('aria-label',connected?'활동·공지 알림 켜짐 · 설정 열기':'활동·공지 알림 켜기');pushEnable.textContent=connected?'알림 다시 연결':'알림 켜기';pushDisable.hidden=!connected;
+ document.getElementById('memberPushLabel').textContent=connected?'알림 켜짐':'알림 꺼짐';pushButton.classList.toggle('is-on',connected);pushButton.setAttribute('aria-label',connected?'활동·공지 알림 켜짐 · 설정 열기':'활동·공지 알림 꺼짐 · 설정 열기');pushEnable.textContent=connected?'알림 다시 연결':'알림 켜기';pushDisable.hidden=!connected;
 }
 function closeMemberPush(){pushPanel.hidden=true;pushButton.focus({preventScroll:true})}
 document.getElementById('memberPushClose').onclick=closeMemberPush;
