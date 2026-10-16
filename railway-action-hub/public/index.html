@@ -618,28 +618,34 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 .upcoming-visits{margin-bottom:10px}
 .upcoming-visits-label{display:table;margin:0 0 5px 3px;background:#dff3ff;padding:3px 8px;color:#245474;font-size:9px;line-height:1.1;font-weight:650;letter-spacing:.1px;border-radius:20px;border:1px solid #c1e4f5;box-shadow:0 2px 7px #09203b18}
 .led.schedule-led.upcoming-board{position:relative;height:88px;min-height:88px!important;display:block;overflow:hidden;padding:0;margin-bottom:0;background:linear-gradient(120deg,#172b44,#112238);border:1px solid #39516b;border-radius:17px;color:#e4eff9}
-.upcoming-board>.glow-dots{display:none}
+.upcoming-board>.glow-dots{display:block;z-index:0}
+.upcoming-board>.glow-dots i{width:5px;height:5px}
+.upcoming-visit-grid{position:relative;z-index:1}
 .upcoming-visit-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));height:100%;width:100%}
 .upcoming-visit-grid[hidden],.upcoming-board .marquee-track[hidden]{display:none!important}
 .upcoming-visit{position:relative;isolation:isolate;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:12px 6px 9px;text-align:center;text-shadow:none}
 .upcoming-visit+.upcoming-visit:after{position:absolute;content:"";left:0;top:17px;bottom:14px;width:1px;background:#a4c4df20}
 .upcoming-visit:before{content:"";position:absolute;inset:8px 4px;border-radius:12px;z-index:-1;background:radial-gradient(ellipse,#64bbec17,transparent 75%);animation:upcomingPanelGlow 6s ease-in-out infinite;animation-delay:var(--visit-delay)}
-.upcoming-who{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;line-height:1.1;color:#cddceb;white-space:nowrap;max-width:100%}
-.upcoming-rank{font-family:Arial,sans-serif;font-size:9px;font-weight:500;color:#7f9ab3;min-width:8px;flex-shrink:0}
+.upcoming-visit:nth-child(1){--visit-color:#ffe29a;--visit-soft:#d7c49c;--visit-glow:#ffd76a77}
+.upcoming-visit:nth-child(2){--visit-color:#a5f2cf;--visit-soft:#9fcbbb;--visit-glow:#72efb677}
+.upcoming-visit:nth-child(3){--visit-color:#a9dfff;--visit-soft:#9dbed6;--visit-glow:#7dcfff77}
+.upcoming-visit:not(.empty) :is(.upcoming-who,.upcoming-when,.upcoming-place){animation:upcomingLetterBlink 6s linear infinite;animation-delay:var(--visit-delay)}
+.upcoming-who{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;line-height:1.1;color:var(--visit-color);white-space:nowrap;max-width:100%}
+.upcoming-rank{font-family:Arial,sans-serif;font-size:9px;font-weight:500;color:var(--visit-color);min-width:8px;flex-shrink:0}
 .upcoming-owner{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .upcoming-when{display:flex;align-items:baseline;gap:6px;white-space:nowrap;line-height:1}
-.upcoming-date{font-family:Arial,sans-serif;font-size:9px;font-weight:400;color:#859eb7}
-.upcoming-time{font-family:Arial,sans-serif;font-size:19px;font-weight:600;letter-spacing:-.35px;color:#a9dff8;animation:upcomingTextGlow 6s ease-in-out infinite;animation-delay:var(--visit-delay)}
-.upcoming-place{font-size:10px;line-height:1.2;font-weight:400;letter-spacing:.1px;color:#96afc6;max-width:100%;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.upcoming-date{font-family:Arial,sans-serif;font-size:9px;font-weight:400;color:var(--visit-soft)}
+.upcoming-time{font-family:Arial,sans-serif;font-size:19px;font-weight:600;letter-spacing:-.35px;color:var(--visit-color);text-shadow:0 0 7px var(--visit-glow)}
+.upcoming-place{font-size:10px;line-height:1.2;font-weight:400;letter-spacing:.1px;color:var(--visit-soft);max-width:100%;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
 .upcoming-visit.empty .upcoming-time{color:#6d879f;animation:none}
 .upcoming-visit.empty:before{display:none}
 .upcoming-board.is-manual{display:flex;padding:18px 0}
 .upcoming-board.is-manual>.glow-dots{display:block}
 @keyframes upcomingPanelGlow{0%,40%,100%{opacity:.08}15%,25%{opacity:.9}}
-@keyframes upcomingTextGlow{0%,40%,100%{text-shadow:0 0 3px #8adfff15}15%,25%{color:#d0f1ff;text-shadow:0 0 8px #8adfff55}}
+@keyframes upcomingLetterBlink{0%,7%,16%,33%,100%{opacity:1}3%,12%{opacity:.38}22%{opacity:1;text-shadow:0 0 9px var(--visit-glow)}}
 @media(max-width:420px){.led.schedule-led.upcoming-board{height:83px;min-height:83px!important}.upcoming-visit{gap:5px;padding-top:11px;padding-bottom:8px}.upcoming-time{font-size:18px}}
 @media(max-width:350px){.upcoming-visit{padding-left:4px;padding-right:4px}.upcoming-who{font-size:11px;gap:5px}.upcoming-when{gap:4px}.upcoming-time{font-size:17px}.upcoming-date{font-size:9px}}
-@media(prefers-reduced-motion:reduce){.upcoming-visit:before,.upcoming-time{animation:none}}
+@media(prefers-reduced-motion:reduce){.upcoming-visit:before,.upcoming-visit:not(.empty) :is(.upcoming-who,.upcoming-when,.upcoming-place),.upcoming-board>.glow-dots i{animation:none}}
 
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
