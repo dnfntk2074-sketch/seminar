@@ -65,6 +65,9 @@ function auth(req,res,next){
 }
 function tokenHash(token){ return crypto.createHash("sha256").update(String(token||"")).digest("hex"); }
 function isTest(s){
+  // Only suppress legacy imported demo schedules. Every locally registered
+  // activity must remain visible, including notes containing 테스트/점검/test.
+  if(s.source!=="upstream") return false;
   const t=((s.owner_name||s.ownerName||"")+" "+(s.customer_name||s.customerName||"")).toLowerCase();
   return ["테스트","점검","test"].some(w=>t.includes(w));
 }
