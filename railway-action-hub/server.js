@@ -339,7 +339,10 @@ app.put("/api/admin/settings",auth,async(req,res)=>{
   const noticeContent=s.notice_content===undefined?null:String(s.notice_content||"").trim().slice(0,4000);
   const noticeEnabled=s.notice_enabled===undefined?null:!!s.notice_enabled;
   const noticeNew=s.notice_new===undefined?null:!!s.notice_new;
-  await pool.query(`UPDATE app_settings SET
+  const savedNotice=await pool.query(`WITH previous_notice AS (
+    SELECT notice_title AS previous_title,notice_content AS previous_content,notice_url AS previous_url
+    FROM app_settings WHERE id='main' FOR UPDATE
+  ) UPDATE app_settings SET
     marquee_mode=$1,marquee_text=$2,mvp_enabled=$3,mvp_title=$4,app_title=$5,app_subtitle=$6,
     notice_enabled=COALESCE($7::boolean,notice_enabled),
     notice_history=CASE WHEN
@@ -356,8 +359,14 @@ app.put("/api/admin/settings",auth,async(req,res)=>{
     notice_content=COALESCE($9,notice_content),
     notice_url=COALESCE($10,notice_url),
     notice_new=COALESCE($11::boolean,notice_new)
-    WHERE id='main'`,
+    FROM previous_notice WHERE app_settings.id='main'
+    RETURNING notice_title,notice_content,notice_enabled,notice_published_at,
+      (notice_title,notice_content,notice_url) IS DISTINCT FROM (previous_title,previous_content,previous_url) AS notice_changed`,
     [s.marquee_mode||"auto",s.marquee_text||"",!!s.mvp_enabled,s.mvp_title||"이번 주 활동왕",s.app_title||"유료DB ACTION HUB",s.app_subtitle||"",noticeEnabled,noticeTitle,noticeContent,noticeUrl,noticeNew]);
+  const published=savedNotice.rows[0];
+  if(published?.notice_changed&&published.notice_enabled&&String(published.notice_title||published.notice_content||'').trim()){
+    await notifyActivity('notice',{id:new Date(published.notice_published_at).toISOString(),title:published.notice_title,content:published.notice_content});
+  }
   res.json({ok:true,settings:await getSettings()});
 });
 app.post("/api/admin/change-password",auth,async(req,res)=>{

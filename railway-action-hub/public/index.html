@@ -546,6 +546,14 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 .notice-history-content{margin:0 0 12px;padding:12px!important}.notice-history-content p{font-size:13px!important}
 .notice-history-item>.notice-toolbox{margin-bottom:12px}
 
+
+#memberPushButton{display:block;width:100%;border:0;border-top:1px solid #e4edf6;background:transparent;padding:12px 0 0;margin-top:12px;color:#426b9e;font:inherit;font-size:12px;font-weight:700;min-height:40px;cursor:pointer}
+.member-push-dialog{max-height:calc(100dvh - 36px);overflow:auto}
+.member-push-dialog h3{font-size:18px;margin:0;color:#17366e}.member-push-dialog p{font-size:14px;line-height:1.8;color:#52677e;word-break:keep-all}
+#memberPushEnable,#memberPushDisable{width:100%;min-height:46px;padding:12px;border:0;border-radius:12px;font:inherit;font-size:14px;font-weight:800;cursor:pointer;margin-top:8px}
+#memberPushEnable{background:#2456d8;color:#fff}#memberPushEnable:disabled{opacity:.5}
+#memberPushDisable{background:#eef2f7;color:#52677e}#memberPushDisable[hidden]{display:none}
+.member-push-dialog p.member-push-footnote{font-size:11px;color:#708195}
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
 <div class="card top-card premium-hub">
@@ -572,6 +580,7 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
     </a>
     <button type="button" class="top-action-btn refresh" id="appRefreshBtn" aria-label="새로고침"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M39 20a15 15 0 0 0-27-6l-3 4M9 8v10h10M9 28a15 15 0 0 0 27 6l3-4m0 10V30H29" stroke="#607691" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span>새로고침</span></button>
   </div>
+  <button type="button" id="memberPushButton">🔔 활동·공지 알림 켜기</button>
 </div>
 <div class="led schedule-led"><div class="glow-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="marquee-track ltr" id="scheduleTrack"><span class="marquee-copy" id="marquee">일정을 불러오는 중...</span><span class="marquee-copy mirror" id="marqueeMirror" aria-hidden="true">일정을 불러오는 중...</span><span class="marquee-copy extra" id="marqueeExtra" aria-hidden="true">일정을 불러오는 중...</span></div></div>
 <div class="led mvp"><div class="mvp-marquee-track ltr" id="mvpTrack"><div class="mvp-marquee-copy"><span class="mvp-kicker">👑 WEEKLY ACTIVITY MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitle">이번 주 활동왕</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpName">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCount"></span></div><div class="mvp-marquee-copy mirror" aria-hidden="true"><span class="mvp-kicker">👑 WEEKLY ACTIVITY MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitleMirror">이번 주 활동왕</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpNameMirror">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCountMirror"></span></div><div class="mvp-marquee-copy extra" aria-hidden="true"><span class="mvp-kicker">👑 WEEKLY ACTIVITY MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitleExtra">이번 주 활동왕</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpNameExtra">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCountExtra"></span></div></div><div class="mvp-scan" aria-hidden="true"></div><div class="mvp-ticker top" aria-hidden="true"><span class="ticker-copy">★ WEEKLY ACTIVITY MVP ★ TOP PERFORMANCE ★ WEEKLY ACTIVITY MVP ★</span><span class="ticker-copy">★ WEEKLY ACTIVITY MVP ★ TOP PERFORMANCE ★ WEEKLY ACTIVITY MVP ★</span></div><div class="mvp-ticker bottom" aria-hidden="true"><span class="ticker-copy">★ GURI LEADERS HB ★ WEEKLY CHAMPION ★ GURI LEADERS HB ★</span><span class="ticker-copy">★ GURI LEADERS HB ★ WEEKLY CHAMPION ★ GURI LEADERS HB ★</span></div><div class="mvp-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="fw fw1" aria-hidden="true"><i></i><i></i><i></i></div><div class="fw fw2" aria-hidden="true"><i></i><i></i><i></i></div><div class="fw fw3" aria-hidden="true"><i></i><i></i><i></i></div></div>
@@ -590,6 +599,8 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
   <div class="activity-cheer-copy"><div id="cheerName"></div><h2 id="cheerTitle"></h2><p id="cheerMessage"></p><div class="activity-cheer-status"><span aria-hidden="true">✓</span><span id="cheerStatus"></span></div><div class="activity-cheer-footer"><span>구리리더스HB가 함께 응원합니다<br><small>4초 후 자동으로 닫힙니다</small></span><button id="cheerClose" type="button">닫기</button></div></div>
  </section>
 </div>
+
+<div class="schedule-detail-backdrop" id="memberPushPanel" hidden><section class="schedule-detail member-push-dialog" role="dialog" aria-modal="true" aria-labelledby="memberPushTitle"><div class="schedule-detail-head"><h3 id="memberPushTitle">🔔 활동·공지 알림</h3><button type="button" class="detail-close" id="memberPushClose" aria-label="알림 설정 닫기">×</button></div><p>새 공지와 TFA님들의 활동 등록·완료 소식을 휴대폰으로 받아보세요.</p><p id="memberPushMessage" role="status"></p><button type="button" id="memberPushEnable" disabled>알림 켜기</button><button type="button" id="memberPushDisable" hidden>이 휴대폰 알림 끄기</button><p class="member-push-footnote">고객 정보와 상담 장소는 활동 알림에 표시하지 않습니다.</p></section></div>
 
 <script>
 
@@ -665,6 +676,73 @@ noticeTrigger?.addEventListener("click",openNotice);
 noticeClose?.addEventListener("click",closeNotice);
 noticeBackdrop?.addEventListener("click",e=>{if(e.target===noticeBackdrop)closeNotice()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!noticeBackdrop.hidden)closeNotice()});
+
+// Notification permission is requested only after the user presses 알림 켜기.
+const memberPush={registration:null,publicKey:null,busy:false};
+navigator.serviceWorker?.addEventListener('message',e=>{if(e.data?.type==='action-hub-refresh')load()});
+const pushButton=document.getElementById('memberPushButton'),pushPanel=document.getElementById('memberPushPanel'),pushMessage=document.getElementById('memberPushMessage'),pushEnable=document.getElementById('memberPushEnable'),pushDisable=document.getElementById('memberPushDisable');
+function memberPushToken(){
+ let token=localStorage.getItem('hb_push_device_token_v1');
+ if(!/^[A-Za-z0-9_-]{43}$/.test(token||'')){const bytes=crypto.getRandomValues(new Uint8Array(32));token=btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');localStorage.setItem('hb_push_device_token_v1',token)}
+ return token;
+}
+async function memberPushApi(action,extra={}){
+ const r=await fetch('/api/push/member/'+action,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({deviceToken:memberPushToken(),...extra})});
+ const j=await r.json();if(!r.ok)throw Error(j.error||'failed');return j;
+}
+function memberPushState(connected){
+ pushButton.textContent=connected?'🔔 활동·공지 알림 켜짐':'🔔 활동·공지 알림 켜기';pushEnable.textContent=connected?'알림 다시 연결':'알림 켜기';pushDisable.hidden=!connected;
+}
+function closeMemberPush(){pushPanel.hidden=true;pushButton.focus({preventScroll:true})}
+document.getElementById('memberPushClose').onclick=closeMemberPush;
+pushPanel.addEventListener('click',e=>{if(e.target===pushPanel)closeMemberPush()});
+pushPanel.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();closeMemberPush()}});
+async function prepareMemberPush(){
+ pushEnable.disabled=true;pushMessage.textContent='이 휴대폰의 알림 연결 상태를 확인하고 있습니다.';
+ const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),standalone=window.matchMedia?.('(display-mode: standalone)').matches||navigator.standalone===true;
+ if(isIOS&&!standalone){pushMessage.textContent='아이폰은 Safari에서 액션허브를 열고 공유 → 홈 화면에 추가한 뒤, 추가된 아이콘에서 알림을 켜주세요.';return}
+ if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){pushMessage.textContent='이 브라우저에서는 휴대폰 알림을 지원하지 않습니다. Chrome 또는 홈 화면에 추가한 앱에서 열어주세요.';return}
+ if(Notification.permission==='denied'){pushMessage.textContent='현재 알림이 차단되어 있습니다. 휴대폰 또는 브라우저 설정에서 액션허브 알림을 허용한 뒤 다시 열어주세요.';return}
+ try{
+  const r=await fetch('/api/push/public-key');if(!r.ok)throw Error();const j=await r.json();memberPush.publicKey=j.publicKey;
+  memberPush.registration=await navigator.serviceWorker.register('/push-sw.js');await navigator.serviceWorker.ready;
+  const sub=await memberPush.registration.pushManager.getSubscription(),state=await memberPushApi('status');
+  const connected=!!sub&&Notification.permission==='granted'&&state.connected;
+  memberPushState(connected);pushEnable.disabled=false;
+  pushMessage.textContent=connected?'새 활동 등록 · 활동 완료 · 새 공지 알림이 연결되어 있습니다.':'아래 알림 켜기를 누른 뒤 알림을 허용해 주세요.';
+ }catch{pushMessage.textContent='연결 상태를 확인하지 못했습니다. 잠시 후 다시 열어주세요.'}
+}
+pushButton.onclick=()=>{pushPanel.hidden=false;document.getElementById('memberPushClose').focus({preventScroll:true});prepareMemberPush()};
+pushEnable.onclick=async()=>{
+ if(memberPush.busy||!memberPush.registration||!memberPush.publicKey)return;
+ memberPush.busy=true;pushEnable.disabled=true;pushDisable.disabled=true;
+ try{
+  const permission=await Notification.requestPermission();
+  if(permission!=='granted'){pushMessage.textContent='알림이 허용되지 않았습니다. 원하실 때 다시 켜실 수 있어요.';return}
+  let sub=await memberPush.registration.pushManager.getSubscription();
+  if(!sub){const key=memberPush.publicKey.replace(/-/g,'+').replace(/_/g,'/'),raw=atob(key+'='.repeat((4-key.length%4)%4));sub=await memberPush.registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:Uint8Array.from(raw,c=>c.charCodeAt(0))})}
+  await memberPushApi('subscribe',{name:owner.value.trim()||ownerIdentity||'TFA',subscription:sub.toJSON()});memberPushState(true);
+  pushMessage.textContent='알림 연결 완료! 앞으로 새 공지와 TFA님들의 활동 등록·완료 소식을 받으실 수 있습니다.';
+ }catch{pushMessage.textContent='연결하지 못했습니다. 네트워크와 휴대폰 알림 설정을 확인해 주세요.'}
+ finally{memberPush.busy=false;pushEnable.disabled=false;pushDisable.disabled=false}
+};
+pushDisable.onclick=async()=>{
+ if(memberPush.busy)return;memberPush.busy=true;pushDisable.disabled=true;pushEnable.disabled=true;
+ try{await memberPushApi('unsubscribe');const sub=await memberPush.registration?.pushManager.getSubscription();if(sub)await sub.unsubscribe();memberPushState(false);pushMessage.textContent='이 휴대폰의 활동·공지 알림을 껐습니다.'}
+ catch{pushMessage.textContent='알림 해제를 확인하지 못했습니다. 다시 시도해 주세요.'}
+ finally{memberPush.busy=false;pushDisable.disabled=false;pushEnable.disabled=false}
+};
+// Display the notice that was tapped, including an older notice if a newer one arrived.
+if(navigator.serviceWorker?.getRegistration)navigator.serviceWorker.getRegistration('/').then(reg=>reg?.update()).catch(()=>{});
+if(localStorage.getItem('hb_push_device_token_v1'))memberPushApi('status').then(state=>memberPushState(state.connected&&typeof Notification!=='undefined'&&Notification.permission==='granted')).catch(()=>{});
+let openedNoticePush=false;
+function handleNoticePush(settings){
+ if(openedNoticePush)return;const requested=new URLSearchParams(location.search).get('notice');if(!requested)return;
+ openedNoticePush=true;openNotice();
+ const target=new Date(requested).getTime(),history=Array.isArray(settings.notice_history)?settings.notice_history:[];
+ const index=history.findIndex(n=>new Date(n.published_at).getTime()===target);
+ if(index>=0){const detail=document.querySelectorAll('#noticeHistoryList details')[index];if(detail){detail.open=true;setTimeout(()=>detail.scrollIntoView({block:'nearest'}),80)}}
+}
 
 // 한국 시간 2026년 추석 연휴(9월 24일~9월 27일)에만 장식을 표시합니다.
 function updateChuseokTheme(){const parts=new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());const date=Object.fromEntries(parts.map(p=>[p.type,p.value]));const ymd=`${date.year}-${date.month}-${date.day}`;document.body.classList.toggle("chuseok-day",ymd>="2026-09-24"&&ymd<="2026-09-27")}
@@ -872,7 +950,7 @@ function week(){let t=seoulDate(),d=new Date(t+"T00:00:00Z"),dow=d.getUTCDay(),b
 function seoulNowKey(){let d=new Date();let date=seoulDate(d);let time=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hour12:false}).format(d);return date+"T"+time}
 function activityWeek(now=new Date()){const day=seoulDate(now),midnight=Date.parse(day+"T00:00:00+09:00"),weekday=new Date(midnight+9*60*60*1000).getUTCDay(),start=midnight-((weekday+6)%7)*86400000;return {start,end:start+7*86400000}}
 function weeklyActivityCounts(items,now=new Date()){let week=activityWeek(now),counts={};items.filter(x=>x.completed&&x.at>=week.start&&x.at<week.end).forEach(x=>counts[x.owner]=(counts[x.owner]||0)+1);return counts}
-async function load(){let r=await fetch("/api/data",{headers:{"x-owner-token":ownerToken,"x-owner-name":encodeURIComponent(ownerIdentity)}}),j=await r.json();let s=j.settings||{};if((s.app_title||"유료DB ACTION HUB").trim()==="유료DB ACTION HUB"){appTitle.innerHTML='<span class="premium-pill">유료DB</span><span class="premium-action">ACTION</span> <span class="premium-hub-blue">HUB</span>'}else{appTitle.textContent=s.app_title||"유료DB ACTION HUB"};appSub.textContent=s.app_subtitle||"";applyNotice(s);mvpTitle.textContent=s.mvp_title||"이번 주 활동왕";mvpTitleMirror.textContent=s.mvp_title||"이번 주 활동왕";mvpTitleExtra.textContent=s.mvp_title||"이번 주 활동왕";document.querySelector(".mvp").style.display=s.mvp_enabled===false?"none":"flex";data=(j.schedules||[]).map(parse).sort((a,b)=>a.at-b.at);let nowKey=seoulNowKey();let n=data.find(x=>(x.date+"T"+x.time)>=nowKey);let typeName=n?(n.type==="visit"?"신규상담":n.type==="study"?"후속상담":"고객관리"):"";let marqueeText=s.marquee_mode==="manual"&&s.marquee_text?s.marquee_text:(n?`다음 일정 · ${typeName} · ${n.date} ${n.time} · ${n.owner} TFA · ${n.place}`:"등록된 다음 일정이 없습니다");marquee.textContent=marqueeText;marqueeMirror.textContent=marqueeText;marqueeExtra.textContent=marqueeText;let c=weeklyActivityCounts(data);let vals=Object.entries(c);if(!vals.length){mvpName.textContent="이번 주 완료 활동 없음";mvpCount.textContent="";mvpNameMirror.textContent="이번 주 완료 활동 없음";mvpCountMirror.textContent="";mvpNameExtra.textContent="이번 주 완료 활동 없음";mvpCountExtra.textContent=""}else{let mx=Math.max(...vals.map(x=>x[1]));let names=vals.filter(x=>x[1]===mx).map(x=>x[0]).join(" · ");mvpName.textContent=names+" TFA";mvpCount.textContent="완료 "+mx+"건";mvpNameMirror.textContent=names+" TFA";mvpCountMirror.textContent="완료 "+mx+"건";mvpNameExtra.textContent=names+" TFA";mvpCountExtra.textContent="완료 "+mx+"건"}render()}
+async function load(){let r=await fetch("/api/data",{headers:{"x-owner-token":ownerToken,"x-owner-name":encodeURIComponent(ownerIdentity)}}),j=await r.json();let s=j.settings||{};if((s.app_title||"유료DB ACTION HUB").trim()==="유료DB ACTION HUB"){appTitle.innerHTML='<span class="premium-pill">유료DB</span><span class="premium-action">ACTION</span> <span class="premium-hub-blue">HUB</span>'}else{appTitle.textContent=s.app_title||"유료DB ACTION HUB"};appSub.textContent=s.app_subtitle||"";applyNotice(s);mvpTitle.textContent=s.mvp_title||"이번 주 활동왕";mvpTitleMirror.textContent=s.mvp_title||"이번 주 활동왕";mvpTitleExtra.textContent=s.mvp_title||"이번 주 활동왕";document.querySelector(".mvp").style.display=s.mvp_enabled===false?"none":"flex";data=(j.schedules||[]).map(parse).sort((a,b)=>a.at-b.at);let nowKey=seoulNowKey();let n=data.find(x=>(x.date+"T"+x.time)>=nowKey);let typeName=n?(n.type==="visit"?"신규상담":n.type==="study"?"후속상담":"고객관리"):"";let marqueeText=s.marquee_mode==="manual"&&s.marquee_text?s.marquee_text:(n?`다음 일정 · ${typeName} · ${n.date} ${n.time} · ${n.owner} TFA · ${n.place}`:"등록된 다음 일정이 없습니다");marquee.textContent=marqueeText;marqueeMirror.textContent=marqueeText;marqueeExtra.textContent=marqueeText;let c=weeklyActivityCounts(data);let vals=Object.entries(c);if(!vals.length){mvpName.textContent="이번 주 완료 활동 없음";mvpCount.textContent="";mvpNameMirror.textContent="이번 주 완료 활동 없음";mvpCountMirror.textContent="";mvpNameExtra.textContent="이번 주 완료 활동 없음";mvpCountExtra.textContent=""}else{let mx=Math.max(...vals.map(x=>x[1]));let names=vals.filter(x=>x[1]===mx).map(x=>x[0]).join(" · ");mvpName.textContent=names+" TFA";mvpCount.textContent="완료 "+mx+"건";mvpNameMirror.textContent=names+" TFA";mvpCountMirror.textContent="완료 "+mx+"건";mvpNameExtra.textContent=names+" TFA";mvpCountExtra.textContent="완료 "+mx+"건"}render();handleNoticePush(s)}
 const KR_HOLIDAYS_2026=new Set(["2026-01-01","2026-02-16","2026-02-17","2026-02-18","2026-03-01","2026-03-02","2026-05-01","2026-05-05","2026-05-24","2026-05-25","2026-06-03","2026-06-06","2026-07-17","2026-08-15","2026-08-17","2026-09-24","2026-09-25","2026-09-26","2026-10-03","2026-10-05","2026-10-09","2026-12-25"]);
 const SPECIAL_DAYS_2026={"2026-01-01":"🎉 신정","2026-02-16":"🧧 설 연휴","2026-02-17":"🧧 설날","2026-02-18":"🧧 설 연휴","2026-03-01":"🇰🇷 삼일절","2026-03-02":"🇰🇷 대체공휴일","2026-05-01":"🌿 근로자의 날","2026-05-05":"🎈 어린이날","2026-05-24":"🙏 부처님오신날","2026-05-25":"🙏 대체공휴일","2026-06-03":"🗳️ 지방선거","2026-06-06":"🇰🇷 현충일","2026-07-17":"📜 제헌절","2026-08-15":"🇰🇷 광복절","2026-08-17":"🇰🇷 대체공휴일","2026-09-24":"🌕 추석 연휴","2026-09-25":"🌕 추석","2026-09-26":"🌕 추석 연휴","2026-10-03":"🇰🇷 개천절","2026-10-05":"🇰🇷 대체공휴일","2026-10-09":"✍️ 한글날","2026-12-25":"🎄 성탄절"};
 function dayTone(iso){let dow=new Date(iso+"T00:00:00Z").getUTCDay();if(dow===0||KR_HOLIDAYS_2026.has(iso))return"holiday";if(dow===6)return"saturday";return""}
