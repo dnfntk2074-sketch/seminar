@@ -547,7 +547,15 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 .notice-history-item>.notice-toolbox{margin-bottom:12px}
 
 
-#memberPushButton{display:block;width:100%;border:0;border-top:1px solid #e4edf6;background:transparent;padding:12px 0 0;margin-top:12px;color:#426b9e;font:inherit;font-size:12px;font-weight:700;min-height:40px;cursor:pointer}
+.premium-brand{justify-content:space-between;align-items:center;gap:12px}
+.premium-hub .premium-brand .brand-logo{min-width:0;max-width:min(calc(100% - 100px),340px)!important}
+#memberPushButton{position:relative;display:inline-flex;flex-shrink:0;align-items:center;justify-content:center;gap:6px;width:88px;min-height:38px;margin:0;padding:8px 9px;border:1px solid #e1eaf7;border-radius:13px;background:#f4f8ff;color:#527299;font:inherit;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer;transition:background .2s,color .2s}
+#memberPushButton svg{width:16px;height:16px;flex-shrink:0}
+#memberPushButton.is-on{color:#267b61;background:#edf8f2;border-color:#d8eee3}
+.push-status-dot{display:none;position:absolute;right:7px;top:7px;width:5px;height:5px;border-radius:50%;background:#37a57a;box-shadow:0 0 0 2px #edf8f2}
+#memberPushButton.is-on .push-status-dot{display:block}
+@media(pointer:coarse){#memberPushButton{min-height:44px}}
+
 .member-push-dialog{max-height:calc(100dvh - 36px);overflow:auto}
 .member-push-dialog h3{font-size:18px;margin:0;color:#17366e}.member-push-dialog p{font-size:14px;line-height:1.8;color:#52677e;word-break:keep-all}
 #memberPushEnable,#memberPushDisable{width:100%;min-height:46px;padding:12px;border:0;border-radius:12px;font:inherit;font-size:14px;font-weight:800;cursor:pointer;margin-top:8px}
@@ -557,7 +565,7 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
 <div class="card top-card premium-hub">
-  <div class="premium-brand"><img class="brand-logo" src="/brand-logo-user.gif?v=20260921-1935" alt="보험이 착해지다 A+에셋"></div>
+  <div class="premium-brand"><img class="brand-logo" src="/brand-logo-user.gif?v=20260921-1935" alt="보험이 착해지다 A+에셋"><button type="button" id="memberPushButton" aria-label="활동·공지 알림 설정" aria-haspopup="dialog" aria-controls="memberPushPanel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="memberPushLabel">알림 켜기</span><span class="push-status-dot" aria-hidden="true"></span></button></div>
   <div class="premium-hero">
     <div class="premium-lead">
       <div class="title" id="appTitle"><span class="premium-pill">유료DB</span><span class="premium-action">ACTION</span> <span class="premium-hub-blue">HUB</span></div>
@@ -580,7 +588,6 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
     </a>
     <button type="button" class="top-action-btn refresh" id="appRefreshBtn" aria-label="새로고침"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M39 20a15 15 0 0 0-27-6l-3 4M9 8v10h10M9 28a15 15 0 0 0 27 6l3-4m0 10V30H29" stroke="#607691" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span>새로고침</span></button>
   </div>
-  <button type="button" id="memberPushButton">🔔 활동·공지 알림 켜기</button>
 </div>
 <div class="led schedule-led"><div class="glow-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="marquee-track ltr" id="scheduleTrack"><span class="marquee-copy" id="marquee">일정을 불러오는 중...</span><span class="marquee-copy mirror" id="marqueeMirror" aria-hidden="true">일정을 불러오는 중...</span><span class="marquee-copy extra" id="marqueeExtra" aria-hidden="true">일정을 불러오는 중...</span></div></div>
 <div class="led mvp"><div class="mvp-marquee-track ltr" id="mvpTrack"><div class="mvp-marquee-copy"><span class="mvp-kicker">👑 WEEKLY ACTIVITY MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitle">이번 주 활동왕</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpName">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCount"></span></div><div class="mvp-marquee-copy mirror" aria-hidden="true"><span class="mvp-kicker">👑 WEEKLY ACTIVITY MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitleMirror">이번 주 활동왕</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpNameMirror">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCountMirror"></span></div><div class="mvp-marquee-copy extra" aria-hidden="true"><span class="mvp-kicker">👑 WEEKLY ACTIVITY MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitleExtra">이번 주 활동왕</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpNameExtra">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCountExtra"></span></div></div><div class="mvp-scan" aria-hidden="true"></div><div class="mvp-ticker top" aria-hidden="true"><span class="ticker-copy">★ WEEKLY ACTIVITY MVP ★ TOP PERFORMANCE ★ WEEKLY ACTIVITY MVP ★</span><span class="ticker-copy">★ WEEKLY ACTIVITY MVP ★ TOP PERFORMANCE ★ WEEKLY ACTIVITY MVP ★</span></div><div class="mvp-ticker bottom" aria-hidden="true"><span class="ticker-copy">★ GURI LEADERS HB ★ WEEKLY CHAMPION ★ GURI LEADERS HB ★</span><span class="ticker-copy">★ GURI LEADERS HB ★ WEEKLY CHAMPION ★ GURI LEADERS HB ★</span></div><div class="mvp-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="fw fw1" aria-hidden="true"><i></i><i></i><i></i></div><div class="fw fw2" aria-hidden="true"><i></i><i></i><i></i></div><div class="fw fw3" aria-hidden="true"><i></i><i></i><i></i></div></div>
@@ -691,7 +698,7 @@ async function memberPushApi(action,extra={}){
  const j=await r.json();if(!r.ok)throw Error(j.error||'failed');return j;
 }
 function memberPushState(connected){
- pushButton.textContent=connected?'🔔 활동·공지 알림 켜짐':'🔔 활동·공지 알림 켜기';pushEnable.textContent=connected?'알림 다시 연결':'알림 켜기';pushDisable.hidden=!connected;
+ document.getElementById('memberPushLabel').textContent=connected?'알림 켜짐':'알림 켜기';pushButton.classList.toggle('is-on',connected);pushButton.setAttribute('aria-label',connected?'활동·공지 알림 켜짐 · 설정 열기':'활동·공지 알림 켜기');pushEnable.textContent=connected?'알림 다시 연결':'알림 켜기';pushDisable.hidden=!connected;
 }
 function closeMemberPush(){pushPanel.hidden=true;pushButton.focus({preventScroll:true})}
 document.getElementById('memberPushClose').onclick=closeMemberPush;
