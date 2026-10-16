@@ -618,8 +618,11 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 .upcoming-visits{margin-bottom:10px}
 .upcoming-visits-label{display:table;margin:0 0 5px 3px;background:#dff3ff;padding:3px 8px;color:#245474;font-size:9px;line-height:1.1;font-weight:650;letter-spacing:.1px;border-radius:20px;border:1px solid #c1e4f5;box-shadow:0 2px 7px #09203b18}
 .led.schedule-led.upcoming-board{position:relative;height:88px;min-height:88px!important;display:block;overflow:hidden;padding:0;margin-bottom:0;background:linear-gradient(120deg,#172b44,#112238);border:1px solid #39516b;border-radius:17px;color:#e4eff9}
-.upcoming-board>.glow-dots{display:block;z-index:0}
-.upcoming-board>.glow-dots i{width:5px;height:5px}
+.upcoming-board>.glow-dots{display:block;z-index:0;-webkit-mask-image:linear-gradient(to bottom,#000 0 7px,transparent 7px calc(100% - 7px),#000 calc(100% - 7px));mask-image:linear-gradient(to bottom,#000 0 7px,transparent 7px calc(100% - 7px),#000 calc(100% - 7px))}
+.upcoming-board>.glow-dots i{width:4px;height:4px;box-shadow:0 0 5px 1px #ffe66d77;animation-name:upcomingEdgeFirefly}
+.upcoming-board>.glow-dots i:nth-child(odd){top:2px;bottom:auto}
+.upcoming-board>.glow-dots i:nth-child(even){top:auto;bottom:2px}
+@keyframes upcomingEdgeFirefly{0%,100%{opacity:.16;transform:translateX(0) scale(.75)}40%{opacity:.95;transform:translateX(5px) scale(1)}75%{opacity:.3;transform:translateX(-4px) scale(.85)}}
 .upcoming-visit-grid{position:relative;z-index:1}
 .upcoming-visit-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));height:100%;width:100%}
 .upcoming-visit-grid[hidden],.upcoming-board .marquee-track[hidden]{display:none!important}
