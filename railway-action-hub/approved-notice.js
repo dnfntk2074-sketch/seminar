@@ -42,6 +42,24 @@ export async function publishApprovedNotice(pool,notify,publication=approvedNoti
      WHERE id='main'`,[publication.title,publication.content,publication.url||'',payload.id]);
    await client.query(`INSERT INTO notice_publications(id,payload) VALUES($1,$2)`,[publication.id,JSON.stringify(payload)]);
   }
+  // Owner-approved edit of the existing notice; preserve its publication date and history.
+  const revisionId='action-hub-update-20261017-design-visits-edit-v1';
+  const revision=await client.query(`SELECT id FROM notice_publications WHERE id=$1`,[revisionId]);
+  if(!revision.rows.length){
+   const content=publication.content
+    .replace('① 활동 등록·완료 시 응원 팝업','③ 활동 등록·완료 시 응원 팝업')
+    .replace('② 활동·공지 알림을 전체 TFA로 확대','④ 활동·공지 알림을 전체 TFA로 확대')
+    .replace('③ 공지사항 누적 보관','⑤ 공지사항 누적 보관')
+    .replace('③ 활동 등록·완료 시 응원 팝업',`① 더 간결해진 화면 디자인
+자료실·TOOLBOX와 활동 입력란의 높이와 배치를 정리해, 휴대폰에서 더 편하게 이용하실 수 있도록 바꿨습니다.
+
+② 다가오는 방문 일정 3건 한눈에 확인
+가까운 미완료 일정 3건을 시간순으로 표시합니다. 순서별 글자색과 깜빡임으로 구분하고, 완료되거나 시간이 지난 일정은 다음 일정으로 자동 전환됩니다.
+
+③ 활동 등록·완료 시 응원 팝업`);
+   const edited=await client.query(`UPDATE app_settings SET notice_content=$1 WHERE id='main' AND notice_published_at=$2::timestamptz AND notice_title=$3 AND notice_content=$4 RETURNING id`,[content,payload.id,publication.title,publication.content]);
+   if(edited.rowCount)await client.query(`INSERT INTO notice_publications(id,payload) VALUES($1,$2)`,[revisionId,JSON.stringify({id:payload.id,title:publication.title,content})]);
+  }
   await client.query('COMMIT');
  }catch(e){await client.query('ROLLBACK');throw e}finally{client.release()}
  // The normal notification queue deduplicates this same event on every restart.
