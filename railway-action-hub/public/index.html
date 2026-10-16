@@ -858,7 +858,18 @@ function openDetail(x){detailId=x.id;scheduleDetailTitle.textContent=x.owner+" T
 function closeDetail(){detailId="";scheduleDetailBackdrop.hidden=true}
 scheduleDetailClose.onclick=closeDetail;
 scheduleDetailBackdrop.onclick=e=>{if(e.target===scheduleDetailBackdrop)closeDetail()};
-scheduleDetailComplete.onclick=async()=>{let x=data.find(v=>v.id===detailId);if(!x||!x.canEdit)return;let r=await fetch("/api/schedules/"+encodeURIComponent(x.id)+"/complete",{method:"PATCH",headers:{"content-type":"application/json","x-owner-token":ownerToken,"x-owner-name":encodeURIComponent(ownerIdentity)},body:JSON.stringify({completed:!x.completed})});if(r.ok){await load();let updated=data.find(v=>v.id===x.id);if(updated)openDetail(updated)}else alert("활동 완료 상태를 변경하지 못했습니다.")};
+scheduleDetailComplete.onclick=async()=>{
+ const x=data.find(v=>v.id===detailId);if(!x||!x.canEdit||scheduleDetailComplete.disabled)return;
+ const completed=!x.completed;scheduleDetailComplete.disabled=true;
+ try{
+  const r=await fetch("/api/schedules/"+encodeURIComponent(x.id)+"/complete",{method:"PATCH",headers:{"content-type":"application/json","x-owner-token":ownerToken,"x-owner-name":encodeURIComponent(ownerIdentity)},body:JSON.stringify({completed})});
+  if(!r.ok){alert("활동 완료 상태를 변경하지 못했습니다.");return}
+  x.completed=completed;render();if(detailId===x.id)openDetail(x);
+  if(completed)showActivityCheer(x.type,x.owner,true);
+  try{await load();const updated=data.find(v=>v.id===x.id);if(updated&&detailId===x.id)openDetail(updated)}catch{msg.textContent="완료 상태는 저장되었습니다. 목록은 새로고침해서 확인해 주세요."}
+ }catch{alert("변경 결과를 확인하지 못했습니다. 새로고침으로 완료 상태를 먼저 확인해 주세요.")}
+ finally{scheduleDetailComplete.disabled=false}
+};
 scheduleDetailEdit.onclick=()=>{let x=data.find(v=>v.id===detailId);if(!x||!x.canEdit)return;closeDetail();openEdit(x)};
 scheduleDetailDelete.onclick=async()=>{let x=data.find(v=>v.id===detailId);if(!x||!x.canEdit)return;if(!confirm("정말 삭제할까요?"))return;let r=await fetch("/api/schedules/"+encodeURIComponent(x.id),{method:"DELETE",headers:{"x-owner-token":ownerToken,"x-owner-name":encodeURIComponent(ownerIdentity)}});if(r.ok){if(editingId===x.id)closeEdit();closeDetail();await load()}else alert("삭제하지 못했습니다.")};
 grid.onclick=e=>{let more=e.target.dataset.more;if(more){expandedDays.has(more)?expandedDays.delete(more):expandedDays.add(more);render();return}let id=e.target.dataset.detail;if(!id)return;let x=data.find(v=>v.id===id);if(x)openDetail(x)};
@@ -935,10 +946,56 @@ const activityCheers={
  ['당신의 정성을 응원합니다','고객을 소중히 여기는 마음이 이번 활동에도 편안하게 전해지길 바라요. 함께 응원할게요.']
  ]
 };
+const completedActivityCheers={
+ visit:[
+ ['오늘 상담도 수고하셨어요','새로운 고객과 마주하고 이야기를 나누느라 애쓰셨어요. 오늘 내디딘 발걸음에 따뜻한 박수를 보냅니다.'],
+ ['첫 만남을 마친 당신에게','낯선 만남을 준비하고 다녀오느라 수고 많으셨어요. 이제 잠시 숨을 고르고 당신도 챙겨 주세요.'],
+ ['당신의 용기를 응원해요','처음 만나는 고객에게 다가간 오늘, 그 용기와 정성이 참 소중합니다. 수고하셨습니다.'],
+ ['오늘의 한 걸음, 참 멋져요','고객을 만나고 마음을 나눈 시간, 결과와 관계없이 오늘의 수고를 알아드리고 싶어요.'],
+ ['진심을 전하느라 애쓰셨어요','고객의 이야기에 귀 기울인 당신, 오늘도 마음을 다해 주셔서 고맙습니다.'],
+ ['편안히 쉬어 가세요','첫 상담을 마치기까지 준비도 긴장도 있었겠지요. 애쓴 자신에게도 다정한 한마디를 건네 주세요.'],
+ ['완벽하지 않아도 괜찮아요','마음처럼 풀리지 않은 순간이 있었어도 괜찮아요. 직접 만나고 배운 오늘의 경험이 소중합니다.'],
+ ['오늘의 만남을 응원해요','한 사람을 더 이해하려고 시간을 낸 당신, 그 따뜻한 마음에 응원을 보냅니다.'],
+ ['당신의 발걸음에 박수를','고객을 만나러 움직이고 상담을 마친 오늘, 그 수고를 그냥 지나치지 않고 응원할게요.'],
+ ['오늘도 참 애쓰셨어요','새로운 인연을 만나느라 쓴 시간과 마음, 모두 소중합니다. 잠시 어깨의 힘을 내려놓으세요.'],
+ ['당신의 속도면 괜찮아요','다른 사람과 비교하지 않아도 괜찮아요. 오늘 당신이 내디딘 한 걸음을 따뜻하게 응원합니다.'],
+ ['함께 응원하고 있어요','첫 만남을 마친 당신에게 작은 응원을 보냅니다. 구리리더스HB가 당신의 하루를 응원합니다.']
+ ],
+ study:[
+ ['다시 만나는 정성이 참 좋아요','한 번의 만남으로 끝내지 않고 다시 살피느라 수고하셨어요. 인연을 이어가는 당신을 응원합니다.'],
+ ['오늘도 귀 기울여 주셨네요','고객의 이야기를 다시 듣고 함께 생각하느라 애쓰셨어요. 그 세심한 정성이 참 소중합니다.'],
+ ['차근차근, 잘 걸어가고 있어요','서두르지 않고 대화를 이어간 오늘, 고객의 속도를 존중하는 당신을 응원합니다.'],
+ ['이어가는 마음에 박수를','다시 연락하고 다시 만나는 일에도 용기가 필요하지요. 오늘의 꾸준한 발걸음에 박수를 보냅니다.'],
+ ['오늘 상담도 수고하셨어요','고객의 궁금함을 함께 풀어가느라 마음을 쓰셨지요. 이제 당신에게도 잠깐의 여유를 주세요.'],
+ ['작은 약속을 지킨 당신','다시 챙기려던 마음을 행동으로 옮긴 오늘, 그 정성을 따뜻하게 응원합니다.'],
+ ['결과가 더뎌도 괜찮아요','바로 결론이 나지 않아도 괜찮아요. 한 번 더 만나고 이해하려고 애쓴 오늘이 소중합니다.'],
+ ['한결같은 관심을 응원해요','지난 이야기를 기억하고 다시 챙기느라 수고하셨어요. 당신의 따뜻한 관심에 응원을 보냅니다.'],
+ ['마음을 잇느라 애쓰셨어요','고객과 대화를 이어가는 데 들인 시간과 마음, 그 수고를 알아드리고 싶어요.'],
+ ['다시 한 걸음, 수고하셨어요','다음 대화를 위해 준비하고 다녀온 당신, 오늘만큼은 스스로에게도 수고했다고 말해 주세요.'],
+ ['당신의 정성이 참 든든해요','고객 곁에서 함께 알아보고 생각해 준 오늘, 그 다정한 수고를 응원합니다.'],
+ ['당신도 쉬어 가세요','인연을 이어가려 애쓴 하루였지요. 잠시 숨을 고르고, 당신의 마음도 따뜻하게 챙겨 주세요.']
+ ],
+ call:[
+ ['챙겨 주는 마음이 참 따뜻해요','고객의 안부와 필요를 살피느라 수고하셨어요. 그 다정한 관심에 따뜻한 응원을 보냅니다.'],
+ ['고객 곁을 지킨 당신에게','필요한 도움을 함께 살펴봐 준 오늘, 그 시간과 정성이 참 소중합니다. 수고하셨습니다.'],
+ ['작은 관심에도 마음이 담겨요','한 번 더 묻고 한 번 더 확인하느라 애쓰셨어요. 당신의 세심함을 따뜻하게 응원합니다.'],
+ ['오늘의 다정함에 박수를','잊지 않고 고객을 챙기는 일, 당연한 일이 아니지요. 마음 써 주신 당신에게 박수를 보냅니다.'],
+ ['당신도 꼭 챙겨 주세요','다른 사람을 살피느라 애쓴 당신, 오늘은 당신의 마음에도 작은 여유와 다정함을 건네 주세요.'],
+ ['안부를 나눠 주셨네요','고객을 기억하고 시간을 내느라 수고하셨어요. 그 따뜻한 마음을 응원합니다.'],
+ ['오늘도 참 고맙습니다','고객의 불편함은 없는지 함께 살펴준 당신, 보이지 않는 정성까지 소중하게 응원할게요.'],
+ ['곁에 있어 주는 마음','누군가에게 도움이 되려고 마음을 쓴 하루, 그 수고를 알아드리고 싶어요. 애쓰셨습니다.'],
+ ['세심한 배려를 응원해요','작은 부분도 놓치지 않으려 애쓴 당신, 오늘의 정성이 참 따뜻합니다.'],
+ ['당신의 관심이 소중해요','특별한 일이 없어도 잊지 않고 살핀 오늘, 꾸준히 마음을 쓰는 당신을 응원합니다.'],
+ ['수고한 마음, 쉬어 가세요','고객을 챙기느라 쓴 시간과 에너지, 이제 잠시 당신을 위해 쉬어 가셔도 괜찮아요.'],
+ ['오늘의 정성에 응원을','고객의 일상을 함께 살펴준 당신, 오늘도 수고 많으셨습니다. 구리리더스HB가 함께 응원합니다.']
+ ]
+};
+
 let cheerTimer,cheerReturnFocus;
 const cheerOverlay=document.getElementById('activityCheer'),cheerClose=document.getElementById('cheerClose');
-function nextActivityCheer(type){
- const pool=activityCheers[type]||activityCheers.visit,key='hb_cheer_bag_v1_'+type;
+function nextActivityCheer(type,completed=false){
+ const groups=completed?completedActivityCheers:activityCheers;
+ const pool=groups[type]||groups.visit,key=(completed?'hb_cheer_completed_bag_v1_':'hb_cheer_bag_v1_')+type;
  let bag=[];try{bag=JSON.parse(localStorage.getItem(key)||'[]')}catch{}
  if(!Array.isArray(bag)||!bag.length||bag.some(i=>!Number.isInteger(i)||i<0||i>=pool.length)){
   bag=Array.from({length:pool.length},(_,i)=>i);
@@ -949,12 +1006,12 @@ function nextActivityCheer(type){
  return pool[index];
 }
 function closeActivityCheer(){clearTimeout(cheerTimer);cheerOverlay.hidden=true;if(cheerReturnFocus?.isConnected)cheerReturnFocus.focus({preventScroll:true})}
-function showActivityCheer(type,name){
- clearTimeout(cheerTimer);const [title,message]=nextActivityCheer(type);
+function showActivityCheer(type,name,completed=false){
+ clearTimeout(cheerTimer);const [title,message]=nextActivityCheer(type,completed);
  document.getElementById('cheerName').textContent=name.replace(/\s*TFA\s*$/i,'')+' TFA님';
  document.getElementById('cheerTitle').textContent=title;
  document.getElementById('cheerMessage').textContent=message;
- document.getElementById('cheerStatus').textContent=scheduleTypeName(type)+' 일정이 등록되었습니다';
+ document.getElementById('cheerStatus').textContent=scheduleTypeName(type)+(completed?' 활동 완료가 반영되었습니다':' 일정이 등록되었습니다');
  cheerReturnFocus=document.activeElement;cheerOverlay.hidden=false;cheerClose.focus({preventScroll:true});
  cheerTimer=setTimeout(closeActivityCheer,4000);
 }
