@@ -514,6 +514,22 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
     text-align:center;
   }
 }
+/* Fresh, warm registration encouragement — mobile first. */
+.activity-cheer-overlay{position:fixed;inset:0;z-index:3000;background:#dcebe5bd;backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto;overscroll-behavior:contain}
+.activity-cheer-overlay[hidden]{display:none}
+.activity-cheer-card{width:min(350px,100%);max-height:calc(100dvh - 36px);overflow:auto;flex-shrink:0;background:#fff;color:#173e35;border-radius:28px;box-shadow:0 18px 55px #254d3433;animation:activity-cheer-in .3s ease-out;text-align:left}
+.activity-cheer-hero{height:148px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;background:linear-gradient(125deg,#e1f8e9,#edffcf 58%,#fff3c5)}
+.activity-cheer-label{position:absolute;left:20px;top:18px;background:#fff;padding:7px 11px;border-radius:20px;color:#477253;font-size:11px;font-weight:800;letter-spacing:.5px}
+.activity-cheer-clap{font-size:60px;transform:rotate(-10deg);margin-top:25px;filter:drop-shadow(0 8px 10px #63934c22)}
+.activity-cheer-spark{position:absolute;color:#4d9f72;font-size:23px}.activity-cheer-spark.spark-a{left:25%;top:38%}.activity-cheer-spark.spark-b{right:24%;bottom:17%;font-size:16px}
+.activity-cheer-confetti{position:absolute;width:8px;height:15px;border-radius:3px}.activity-cheer-confetti.confetti-a{left:15%;bottom:20%;background:#7fcab0;transform:rotate(-28deg)}.activity-cheer-confetti.confetti-b{right:17%;top:28%;background:#efb989;transform:rotate(35deg)}.activity-cheer-confetti.confetti-c{right:11%;bottom:16%;background:#c1c97f;transform:rotate(-35deg)}
+.activity-cheer-copy{padding:24px 24px 12px}#cheerName{font-size:14px;font-weight:700;color:#587b69;margin-bottom:10px;overflow-wrap:anywhere}#cheerTitle{font-size:25px;font-weight:900;line-height:1.4;letter-spacing:-1px;word-break:keep-all;overflow-wrap:anywhere;margin:0 0 15px;color:#173e35}#cheerMessage{font-size:16px;line-height:1.85;color:#526e63;word-break:keep-all;overflow-wrap:anywhere;margin:0 0 20px}
+.activity-cheer-status{display:flex;gap:8px;align-items:center;background:#f0f8f3;padding:12px;border-radius:14px;color:#237651;font-size:12px;font-weight:800}.activity-cheer-status>span:first-child{font-size:18px}
+.activity-cheer-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;color:#647c70;font-size:11px;line-height:1.8}.activity-cheer-footer small{font-size:11px;color:#74877c}#cheerClose{flex-shrink:0;border:0;background:transparent;color:#496b59;padding:10px 8px;min-width:44px;min-height:44px;font:inherit;font-size:13px;cursor:pointer}#cheerClose:focus-visible{outline:2px solid #207953;outline-offset:2px;border-radius:8px}
+@keyframes activity-cheer-in{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.activity-cheer-card{animation:none}}
+@media(max-height:570px){.activity-cheer-hero{height:95px}.activity-cheer-clap{font-size:40px}.activity-cheer-copy{padding:16px 20px 8px}#cheerTitle{font-size:22px;margin-bottom:10px}#cheerMessage{font-size:14px;margin-bottom:12px}}
+
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
 <div class="card top-card premium-hub">
@@ -552,7 +568,14 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 <div class="schedule-detail-backdrop" id="scheduleDetailBackdrop" hidden><div class="schedule-detail" role="dialog" aria-modal="true" aria-labelledby="scheduleDetailTitle"><div class="schedule-detail-head"><div><div class="schedule-detail-title" id="scheduleDetailTitle">일정 상세</div><div class="detail-type" id="scheduleDetailType"></div></div><button class="detail-close" id="scheduleDetailClose" type="button" aria-label="닫기">×</button></div><div class="detail-list"><div class="detail-row"><span>등록자</span><strong id="scheduleDetailOwner"></strong></div><div class="detail-row"><span>날짜</span><strong id="scheduleDetailDate"></strong></div><div class="detail-row"><span>시간</span><strong id="scheduleDetailTime"></strong></div><div class="detail-row"><span>장소/주제</span><strong id="scheduleDetailPlace"></strong></div><div class="detail-row" id="scheduleDetailStatusRow" hidden><span>상태</span><strong id="scheduleDetailStatus"></strong></div></div><button class="complete-btn" id="scheduleDetailComplete" type="button" hidden>✓ 활동 완료</button><div id="scheduleDetailOwnerHint" class="activity-help" hidden>완료 처리는 이 일정을 등록한 기기에서 할 수 있습니다.</div><div class="detail-actions" id="scheduleDetailActions" hidden><button class="detail-edit" id="scheduleDetailEdit" type="button">수정</button><button class="detail-delete" id="scheduleDetailDelete" type="button">삭제</button></div></div></div>
 <div class="card editbox" id="editBox" hidden><b>내 일정 수정</b><div class="field"><label>일정 종류</label><select class="input" id="editType"><option value="visit">🤝 신규상담</option><option value="study">🔄 후속상담</option><option value="call">💙 고객관리</option></select></div><div class="field"><label>TFA 이름</label><input class="input" id="editOwner"></div><div class="field"><label>장소/주제</label><input class="input" id="editPlace"></div><div class="dt"><div class="field"><label>날짜</label><input class="input" type="date" id="editDate"></div><div class="field"><label>시간</label><input class="input" type="time" step="300" id="editTime"></div></div><div class="edit-actions"><button class="cancel-btn" id="cancelEdit">취소</button><button class="save-btn" id="saveEdit">수정 저장</button></div></div>
 <div class="library-backdrop" id="libraryBackdrop" hidden><div class="library-panel" role="dialog" aria-modal="true" aria-labelledby="libraryTitle"><div class="library-head"><div><div class="library-head-title" id="libraryTitle">📚 영업 자료실</div><div class="muted">필요한 자료를 열어보거나 내려받을 수 있습니다.</div></div><button type="button" class="library-close" id="libraryClose">×</button></div><div class="library-filters"><input id="librarySearch" placeholder="자료 제목 검색"><select id="libraryCategory"><option value="all">전체 카테고리</option><option>영업자료</option><option>상품자료</option><option>교육자료</option><option>서식</option><option>전사시책</option><option>상품환산</option><option>수수료예시</option></select></div><div id="libraryList"><div class="library-empty">자료를 불러오는 중...</div></div></div></div><div class="library-file-view" id="libraryFileView" hidden><div class="library-file-toolbar"><button type="button" class="library-file-back" id="libraryFileBack">← ACTION HUB 복귀</button><div class="library-file-title" id="libraryFileTitle">자료 보기</div><button type="button" class="library-file-save" id="libraryFileSave" title="아이폰에서는 공유창에서 파일에 저장을 선택하세요">파일 저장</button></div><div class="library-file-content" id="libraryFileContent"><div class="library-pdf-loading">자료를 불러오는 중...</div></div><iframe class="library-file-frame" id="libraryFileFrame" title="자료 보기"></iframe></div><div class="library-download-view" id="libraryDownloadView" hidden><div class="library-download-card"><div class="library-download-icon">⬇️</div><div class="library-download-title">자료 다운로드</div><div class="library-download-desc">파일 저장 화면이 열리면 저장 후 닫아주세요.<br>다시 ACTION HUB로 바로 돌아올 수 있습니다.</div><div class="library-download-name" id="libraryDownloadName"></div><button type="button" class="library-download-home" id="libraryDownloadHome">← ACTION HUB로 돌아가기</button><button type="button" class="library-download-again" id="libraryDownloadAgain">다운로드 다시 시작</button></div></div>
-<div class="notice-backdrop" id="noticeBackdrop" hidden><section class="notice-modal" role="dialog" aria-modal="true" aria-labelledby="noticeTitle"><div class="notice-modal-head"><strong>🔔 공지사항 <span class="new" id="noticeModalNew">NEW</span></strong><button type="button" class="notice-close" id="noticeClose" aria-label="공지 닫기">×</button></div><div class="notice-modal-body"><h3 id="noticeTitle">공지사항</h3><div class="notice-content" id="noticeContent"></div><a class="notice-toolbox" id="noticeLink" href="#" hidden>🔗 바로가기 ›</a></div></section></div></div><script>
+<div class="notice-backdrop" id="noticeBackdrop" hidden><section class="notice-modal" role="dialog" aria-modal="true" aria-labelledby="noticeTitle"><div class="notice-modal-head"><strong>🔔 공지사항 <span class="new" id="noticeModalNew">NEW</span></strong><button type="button" class="notice-close" id="noticeClose" aria-label="공지 닫기">×</button></div><div class="notice-modal-body"><h3 id="noticeTitle">공지사항</h3><div class="notice-content" id="noticeContent"></div><a class="notice-toolbox" id="noticeLink" href="#" hidden>🔗 바로가기 ›</a></div></section></div></div><div id="activityCheer" class="activity-cheer-overlay" hidden>
+ <section class="activity-cheer-card" role="dialog" aria-modal="true" aria-labelledby="cheerTitle" aria-describedby="cheerName cheerMessage cheerStatus">
+  <div class="activity-cheer-hero" aria-hidden="true"><span class="activity-cheer-label">마음을 담아 응원해요</span><span class="activity-cheer-spark spark-a">✦</span><span class="activity-cheer-spark spark-b">✧</span><span class="activity-cheer-clap">👏</span><span class="activity-cheer-confetti confetti-a"></span><span class="activity-cheer-confetti confetti-b"></span><span class="activity-cheer-confetti confetti-c"></span></div>
+  <div class="activity-cheer-copy"><div id="cheerName"></div><h2 id="cheerTitle"></h2><p id="cheerMessage"></p><div class="activity-cheer-status"><span aria-hidden="true">✓</span><span id="cheerStatus"></span></div><div class="activity-cheer-footer"><span>구리리더스HB가 함께 응원합니다<br><small>4초 후 자동으로 닫힙니다</small></span><button id="cheerClose" type="button">닫기</button></div></div>
+ </section>
+</div>
+
+<script>
 
 const noticeTrigger=document.getElementById("noticeTrigger"),noticeBackdrop=document.getElementById("noticeBackdrop"),noticeClose=document.getElementById("noticeClose"),noticeTriggerNew=document.getElementById("noticeTriggerNew"),noticeModalNew=document.getElementById("noticeModalNew"),noticeTitle=document.getElementById("noticeTitle"),noticeContent=document.getElementById("noticeContent"),noticeLink=document.getElementById("noticeLink");
 function openNotice(){if(noticeTrigger.hidden)return;noticeBackdrop.hidden=false;document.body.style.overflow="hidden"}
@@ -843,6 +866,118 @@ function openEdit(x){editingId=x.id;editType.value=x.type;editOwner.value=x.owne
 function closeEdit(){editingId="";editBox.hidden=true}
 cancelEdit.onclick=closeEdit;
 saveEdit.onclick=async()=>{if(!editingId)return;let body={type:editType.value,ownerName:editOwner.value.trim(),place:editPlace.value.trim(),date:editDate.value,time:editTime.value,ownerToken};if(!body.ownerName||!body.place||!body.date||!body.time){alert("모든 항목을 입력해 주세요.");return}let r=await fetch("/api/schedules/"+encodeURIComponent(editingId),{method:"PUT",headers:{"content-type":"application/json","x-owner-name":encodeURIComponent(ownerIdentity)},body:JSON.stringify(body)});if(r.ok){calendarCursor=editDate.value.slice(0,7);expandedDays.clear();closeEdit();await load()}else alert("수정하지 못했습니다.")};
-submit.onclick=async()=>{msg.textContent="";if(!owner.value||!place.value||!date.value||!time.value){msg.textContent="모든 항목을 입력해 주세요.";return}let r=await fetch("/api/register",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({ownerName:owner.value.trim(),place:place.value.trim(),date:date.value,time:time.value,type:tab,ownerToken})});msg.textContent=r.ok?"등록되었습니다!":"등록에 실패했습니다.";if(r.ok){{ownerIdentity=owner.value.trim();localStorage.setItem(OWNER_NAME_KEY,ownerIdentity)}calendarCursor=date.value.slice(0,7);expandedDays.clear();place.value="";date.value="";time.value="";await load()}}
+// Warm encouragement after a confirmed activity registration. No customer data is stored here.
+const activityCheers={
+ visit:[
+ ['첫 만남을 응원합니다','새로운 고객에게 먼저 다가가는 마음, 그 용기를 응원합니다. 편안한 만남이 되길 바라요.'],
+ ['좋은 인연의 시작','고객의 이야기를 들으려는 마음에서 좋은 인연이 시작됩니다. 오늘도 함께 응원할게요.'],
+ ['한 걸음이면 충분해요','처음부터 완벽하지 않아도 괜찮아요. 진심을 담아 내딛는 한 걸음이 소중합니다.'],
+ ['당신의 진심을 믿어요','새로운 만남을 준비하는 정성이 고객에게 따뜻하게 전해지길 바랍니다.'],
+ ['당신의 속도로 걸어요','첫 만남이 조금 떨려도 괜찮아요. 서두르지 않고 고객의 이야기에 귀 기울여 주세요.'],
+ ['따뜻한 시작을 응원해요','한 사람을 더 이해하려는 마음, 그 따뜻한 시작을 응원합니다.'],
+ ['오늘의 용기에 박수를','낯선 만남을 준비하는 데에도 용기가 필요하지요. 먼저 손 내미는 당신을 응원합니다.'],
+ ['함께 응원하고 있어요','새로운 만남 앞에서 혼자 애쓰지 않으셔도 돼요. 구리리더스HB가 함께 응원합니다.'],
+ ['편안한 만남이 되길','멋진 말보다 편안하게 들어주는 마음이 힘이 될 때가 있어요. 따뜻한 상담 되세요.'],
+ ['작은 시작도 소중해요','오늘 준비한 만남 하나에도 당신의 시간과 정성이 담겨 있어요. 그 마음을 응원합니다.'],
+ ['당신다운 상담을 응원해요','누군가의 방식에 맞추기보다 당신의 진심으로 만나 주세요. 그 마음이면 좋은 시작이에요.'],
+ ['좋은 대화가 되길','고객의 걱정을 천천히 듣고 함께 생각하는 시간, 서로에게 편안한 대화가 되길 바라요.'],
+ ['첫인사에 마음을 담아','가벼운 인사 한마디가 마음의 문을 열기도 하지요. 새로운 인연을 따뜻하게 맞아 주세요.'],
+ ['준비하는 마음도 빛나요','고객과의 만남을 위해 시간을 내고 준비하는 당신, 그 정성부터 이미 소중합니다.'],
+ ['한 사람을 향한 진심','많은 말보다 한 사람을 이해하려는 마음. 당신의 따뜻한 시작을 응원합니다.'],
+ ['부담은 잠시 내려놓아요','모든 답을 한 번에 드리지 않아도 괜찮아요. 함께 알아가겠다는 마음으로 시작해 보세요.'],
+ ['오늘도 당신 편이에요','새로운 고객을 만나는 길에 작은 응원을 보냅니다. 당신의 진심이 편안히 전해지길 바라요.'],
+ ['만남의 설렘을 담아','새로운 이야기를 만나러 가는 길, 작은 설렘과 여유가 함께하길 바랍니다.'],
+ ['차근차근 시작해요','고객을 알아가는 일은 서두르지 않아도 돼요. 한 번의 대화부터 차근차근 응원합니다.'],
+ ['당신의 마음이 닿기를','고객에게 도움이 되고 싶은 마음, 그 진심이 이번 만남에 따뜻하게 닿길 바랍니다.']
+ ],
+ study:[
+ ['다시 챙기는 마음이 참 좋아요','한 번의 만남을 소중히 이어가려는 정성, 그 따뜻한 마음을 응원합니다.'],
+ ['인연을 이어가는 당신','다시 연락하고 다시 살피는 일에 마음이 필요하지요. 그 꾸준한 정성을 응원할게요.'],
+ ['서두르지 않아도 괜찮아요','고객이 충분히 생각하고 이야기할 수 있도록, 당신의 속도에도 작은 여유를 주세요.'],
+ ['기억해 주는 마음의 힘','지난 이야기를 기억하고 다시 챙기는 마음이 고객에게 든든함이 되길 바랍니다.'],
+ ['대화를 이어가는 정성','한 번 더 묻고 한 번 더 귀 기울이려는 마음, 그 세심함이 참 소중합니다.'],
+ ['오늘도 함께 응원할게요','다시 만날 약속을 준비하는 당신에게 따뜻한 응원을 보냅니다. 편안한 대화 되세요.'],
+ ['천천히 가까워져도 좋아요','신뢰에는 저마다의 속도가 있지요. 고객의 마음을 존중하는 당신을 응원합니다.'],
+ ['한 번 더 살피는 따뜻함','고객에게 남은 궁금함을 함께 풀어가려는 마음, 그 정성을 알아드리고 싶어요.'],
+ ['이어가는 발걸음에 박수를','다음 만남을 준비하는 작은 실천에도 수고가 담겨 있어요. 당신의 꾸준함을 응원합니다.'],
+ ['기다려 주는 마음도 소중해요','고객이 자신의 속도로 결정할 수 있도록 곁을 지키는 일, 참 따뜻한 배려입니다.'],
+ ['다시 만나는 반가움','지난 만남에 이어 또 한 번 이야기를 나눌 시간, 서로에게 편안한 만남이 되길 바라요.'],
+ ['고객의 이야기를 이어서','지난번에 다 듣지 못한 마음까지 천천히 들어 주세요. 당신의 세심한 관심을 응원합니다.'],
+ ['작은 약속을 소중하게','다시 챙기겠다는 마음을 일정으로 옮긴 당신, 그 정성 어린 준비를 응원합니다.'],
+ ['당신의 꾸준함을 응원해요','눈에 띄는 변화가 더디더라도 괜찮아요. 정성껏 이어가는 만남 자체가 소중합니다.'],
+ ['다음 대화도 따뜻하게','고객의 궁금함 하나를 더 이해하는 시간이 되길 바라요. 당신의 발걸음에 응원을 보냅니다.'],
+ ['혼자 조급해하지 마세요','모든 만남에 같은 속도가 필요한 건 아니에요. 차분히 이어가는 당신을 응원합니다.'],
+ ['마음을 잇는 작은 노력','한 번의 연락, 한 번의 확인에도 정성이 담기지요. 인연을 챙기는 당신의 마음이 참 좋아요.'],
+ ['한결같은 마음을 응원해요','고객을 다시 살피는 따뜻한 관심이 이번 상담에도 편안하게 전해지길 바랍니다.'],
+ ['함께 알아가는 시간','바로 답을 정하기보다 고객과 함께 생각해 보는 시간, 그 대화를 응원합니다.'],
+ ['이어지는 인연을 응원해요','다음 만남을 준비하는 오늘의 정성이 서로를 조금 더 이해하는 계기가 되길 바라요.']
+ ],
+ call:[
+ ['챙겨 주는 마음이 참 따뜻해요','고객의 안부와 필요를 살피려는 마음, 그 다정한 관심을 응원합니다.'],
+ ['곁을 지키는 당신','필요할 때 떠올릴 수 있는 사람이 되려는 정성, 그 따뜻한 마음이 참 소중합니다.'],
+ ['작은 안부가 큰 위로로','어떻게 지내시는지 묻는 한마디가 반가운 위로가 되기도 해요. 오늘의 관심을 응원합니다.'],
+ ['세심한 관심에 박수를','그냥 지나칠 수 있는 일도 다시 챙기려는 당신, 그 세심함을 응원합니다.'],
+ ['잊지 않고 챙기는 마음','고객을 기억하고 시간을 내는 정성, 그 마음이 따뜻하게 전해지길 바라요.'],
+ ['고객의 일상을 응원하며','필요한 도움을 함께 살피려는 당신에게도 응원을 보냅니다. 당신의 하루도 편안하길 바라요.'],
+ ['오늘의 다정함을 응원해요','먼저 안부를 묻고 불편한 점은 없는지 살피는 마음, 참 든든한 관심입니다.'],
+ ['도움이 되고 싶은 마음','고객이 혼자 어렵게 느끼는 일을 함께 살펴보려는 정성, 그 마음을 응원합니다.'],
+ ['따뜻한 관심을 전하는 날','거창한 일이 아니어도 괜찮아요. 고객을 한 번 더 생각하는 마음이 소중합니다.'],
+ ['당신도 챙기는 하루 되세요','다른 사람을 살피느라 애쓰는 당신, 오늘은 당신의 마음에도 작은 여유를 주세요.'],
+ ['오래 이어갈 마음을 담아','한 번의 만남 뒤에도 꾸준히 살피려는 마음, 그 다정한 정성을 응원합니다.'],
+ ['한 사람을 기억하는 정성','고객의 상황을 기억하고 필요한 때를 챙기려는 당신, 그 마음이 참 따뜻합니다.'],
+ ['작은 도움이 되기를','오늘 준비하는 관심과 도움이 고객의 일상에 작은 안심이 되길 바랍니다.'],
+ ['안부를 나누는 따뜻함','잘 지내시는지 묻고 이야기를 듣는 시간, 서로에게 반가운 순간이 되길 바라요.'],
+ ['꾸준한 관심을 응원해요','특별한 일이 없어도 잊지 않고 챙기는 정성이 참 소중해요. 오늘도 응원합니다.'],
+ ['당신의 배려가 반갑습니다','고객의 입장에서 한 번 더 생각하는 마음, 그 작은 배려를 알아드리고 싶어요.'],
+ ['곁에 있다는 든든함','필요한 순간에 함께 알아봐 주려는 당신의 마음이 고객에게 힘이 되길 바랍니다.'],
+ ['마음을 쓰는 당신에게','누군가를 챙기는 일에도 시간과 에너지가 들지요. 그 정성에 따뜻한 응원을 보냅니다.'],
+ ['한 번 더 살피는 당신','불편한 점은 없을지, 도움이 필요하지는 않을지. 한 번 더 생각하는 마음을 응원합니다.'],
+ ['당신의 정성을 응원합니다','고객을 소중히 여기는 마음이 이번 활동에도 편안하게 전해지길 바라요. 함께 응원할게요.']
+ ]
+};
+let cheerTimer,cheerReturnFocus;
+const cheerOverlay=document.getElementById('activityCheer'),cheerClose=document.getElementById('cheerClose');
+function nextActivityCheer(type){
+ const pool=activityCheers[type]||activityCheers.visit,key='hb_cheer_bag_v1_'+type;
+ let bag=[];try{bag=JSON.parse(localStorage.getItem(key)||'[]')}catch{}
+ if(!Array.isArray(bag)||!bag.length||bag.some(i=>!Number.isInteger(i)||i<0||i>=pool.length)){
+  bag=Array.from({length:pool.length},(_,i)=>i);
+  for(let i=bag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bag[i],bag[j]]=[bag[j],bag[i]]}
+  try{if(bag[0]===Number(localStorage.getItem(key+'_last')))[bag[0],bag[1]]=[bag[1],bag[0]]}catch{}
+ }
+ const index=bag.shift();try{localStorage.setItem(key,JSON.stringify(bag));localStorage.setItem(key+'_last',String(index))}catch{}
+ return pool[index];
+}
+function closeActivityCheer(){clearTimeout(cheerTimer);cheerOverlay.hidden=true;if(cheerReturnFocus?.isConnected)cheerReturnFocus.focus({preventScroll:true})}
+function showActivityCheer(type,name){
+ clearTimeout(cheerTimer);const [title,message]=nextActivityCheer(type);
+ document.getElementById('cheerName').textContent=name.replace(/\s*TFA\s*$/i,'')+' TFA님';
+ document.getElementById('cheerTitle').textContent=title;
+ document.getElementById('cheerMessage').textContent=message;
+ document.getElementById('cheerStatus').textContent=scheduleTypeName(type)+' 일정이 등록되었습니다';
+ cheerReturnFocus=document.activeElement;cheerOverlay.hidden=false;cheerClose.focus({preventScroll:true});
+ cheerTimer=setTimeout(closeActivityCheer,4000);
+}
+cheerClose.addEventListener('click',closeActivityCheer);
+cheerOverlay.addEventListener('click',e=>{if(e.target===cheerOverlay)closeActivityCheer()});
+cheerOverlay.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();closeActivityCheer()}else if(e.key==='Tab'){e.preventDefault();cheerClose.focus()}});
+
+submit.onclick=async()=>{
+ msg.textContent="";
+ const activity={ownerName:owner.value.trim(),place:place.value.trim(),date:date.value,time:time.value,type:tab,ownerToken};
+ if(!activity.ownerName||!activity.place||!activity.date||!activity.time){msg.textContent="모든 항목을 입력해 주세요.";return}
+ if(submit.disabled)return;submit.disabled=true;
+ try{
+  const r=await fetch("/api/register",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(activity)});
+  if(!r.ok){msg.textContent="등록에 실패했습니다.";return}
+  msg.textContent="등록되었습니다!";
+  ownerIdentity=activity.ownerName;localStorage.setItem(OWNER_NAME_KEY,ownerIdentity);
+  calendarCursor=activity.date.slice(0,7);expandedDays.clear();place.value="";date.value="";time.value="";
+  showActivityCheer(activity.type,activity.ownerName);
+  try{await load()}catch{msg.textContent="등록되었습니다. 목록은 새로고침해서 확인해 주세요."}
+ }catch{msg.textContent="등록 결과를 확인하지 못했습니다. 새로고침으로 목록을 먼저 확인해 주세요."}
+ finally{submit.disabled=false}
+};
+
 function syncHint(input,wrap){let f=()=>wrap.classList.toggle("has-value",!!input.value);input.addEventListener("input",f);input.addEventListener("change",f);f()}syncHint(date,dateWrap);syncHint(time,timeWrap);date.removeAttribute("min");date.removeAttribute("max");editDate.removeAttribute("min");editDate.removeAttribute("max");date.addEventListener("change",()=>{if(date.value){calendarCursor=date.value.slice(0,7);expandedDays.clear();render()}});load();setInterval(load,60000);
 </script></body></html>
