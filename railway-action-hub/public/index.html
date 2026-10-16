@@ -530,6 +530,22 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 @media(prefers-reduced-motion:reduce){.activity-cheer-card{animation:none}}
 @media(max-height:570px){.activity-cheer-hero{height:95px}.activity-cheer-clap{font-size:40px}.activity-cheer-copy{padding:16px 20px 8px}#cheerTitle{font-size:22px;margin-bottom:10px}#cheerMessage{font-size:14px;margin-bottom:12px}}
 
+/* Latest notice stays expanded; earlier notices are compact and independently scrollable. */
+.notice-modal{max-height:calc(100dvh - 36px);display:flex;flex-direction:column}
+.notice-modal-head{flex-shrink:0}.notice-modal-body{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.notice-latest-label{display:inline-block;color:#2163bc;background:#edf5ff;border-radius:20px;font-size:11px;font-weight:800;padding:4px 9px;margin-bottom:10px}
+.notice-published-at{display:block;margin-top:9px;font-size:12px;color:#69798c}
+.notice-history-section{margin-top:22px;border-top:1px solid #e3eaf2;padding-top:16px}.notice-history-section[hidden],#noticeLatest[hidden]{display:none}
+.notice-history-section h4#noticeHistoryHeading{font-size:13px;color:#64748b;margin:0 0 10px}
+.notice-history-list{max-height:260px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.notice-history-item{border-bottom:1px solid #e6edf4;padding:0 2px}
+.notice-history-item>summary{cursor:pointer;padding:12px 2px;min-height:52px;color:#334155;list-style:none;position:relative;padding-right:22px}
+.notice-history-item>summary::-webkit-details-marker{display:none}.notice-history-item>summary:after{content:'⌄';position:absolute;right:3px;top:15px;color:#64748b}.notice-history-item[open]>summary:after{content:'⌃'}
+.notice-history-summary{display:block;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-size:13px;font-weight:700;min-width:0}
+.notice-history-time{display:block;margin-top:5px;font-size:11px;color:#64748b}
+.notice-history-content{margin:0 0 12px;padding:12px!important}.notice-history-content p{font-size:13px!important}
+.notice-history-item>.notice-toolbox{margin-bottom:12px}
+
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
 <div class="card top-card premium-hub">
@@ -568,7 +584,7 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 <div class="schedule-detail-backdrop" id="scheduleDetailBackdrop" hidden><div class="schedule-detail" role="dialog" aria-modal="true" aria-labelledby="scheduleDetailTitle"><div class="schedule-detail-head"><div><div class="schedule-detail-title" id="scheduleDetailTitle">일정 상세</div><div class="detail-type" id="scheduleDetailType"></div></div><button class="detail-close" id="scheduleDetailClose" type="button" aria-label="닫기">×</button></div><div class="detail-list"><div class="detail-row"><span>등록자</span><strong id="scheduleDetailOwner"></strong></div><div class="detail-row"><span>날짜</span><strong id="scheduleDetailDate"></strong></div><div class="detail-row"><span>시간</span><strong id="scheduleDetailTime"></strong></div><div class="detail-row"><span>장소/주제</span><strong id="scheduleDetailPlace"></strong></div><div class="detail-row" id="scheduleDetailStatusRow" hidden><span>상태</span><strong id="scheduleDetailStatus"></strong></div></div><button class="complete-btn" id="scheduleDetailComplete" type="button" hidden>✓ 활동 완료</button><div id="scheduleDetailOwnerHint" class="activity-help" hidden>완료 처리는 이 일정을 등록한 기기에서 할 수 있습니다.</div><div class="detail-actions" id="scheduleDetailActions" hidden><button class="detail-edit" id="scheduleDetailEdit" type="button">수정</button><button class="detail-delete" id="scheduleDetailDelete" type="button">삭제</button></div></div></div>
 <div class="card editbox" id="editBox" hidden><b>내 일정 수정</b><div class="field"><label>일정 종류</label><select class="input" id="editType"><option value="visit">🤝 신규상담</option><option value="study">🔄 후속상담</option><option value="call">💙 고객관리</option></select></div><div class="field"><label>TFA 이름</label><input class="input" id="editOwner"></div><div class="field"><label>장소/주제</label><input class="input" id="editPlace"></div><div class="dt"><div class="field"><label>날짜</label><input class="input" type="date" id="editDate"></div><div class="field"><label>시간</label><input class="input" type="time" step="300" id="editTime"></div></div><div class="edit-actions"><button class="cancel-btn" id="cancelEdit">취소</button><button class="save-btn" id="saveEdit">수정 저장</button></div></div>
 <div class="library-backdrop" id="libraryBackdrop" hidden><div class="library-panel" role="dialog" aria-modal="true" aria-labelledby="libraryTitle"><div class="library-head"><div><div class="library-head-title" id="libraryTitle">📚 영업 자료실</div><div class="muted">필요한 자료를 열어보거나 내려받을 수 있습니다.</div></div><button type="button" class="library-close" id="libraryClose">×</button></div><div class="library-filters"><input id="librarySearch" placeholder="자료 제목 검색"><select id="libraryCategory"><option value="all">전체 카테고리</option><option>영업자료</option><option>상품자료</option><option>교육자료</option><option>서식</option><option>전사시책</option><option>상품환산</option><option>수수료예시</option></select></div><div id="libraryList"><div class="library-empty">자료를 불러오는 중...</div></div></div></div><div class="library-file-view" id="libraryFileView" hidden><div class="library-file-toolbar"><button type="button" class="library-file-back" id="libraryFileBack">← ACTION HUB 복귀</button><div class="library-file-title" id="libraryFileTitle">자료 보기</div><button type="button" class="library-file-save" id="libraryFileSave" title="아이폰에서는 공유창에서 파일에 저장을 선택하세요">파일 저장</button></div><div class="library-file-content" id="libraryFileContent"><div class="library-pdf-loading">자료를 불러오는 중...</div></div><iframe class="library-file-frame" id="libraryFileFrame" title="자료 보기"></iframe></div><div class="library-download-view" id="libraryDownloadView" hidden><div class="library-download-card"><div class="library-download-icon">⬇️</div><div class="library-download-title">자료 다운로드</div><div class="library-download-desc">파일 저장 화면이 열리면 저장 후 닫아주세요.<br>다시 ACTION HUB로 바로 돌아올 수 있습니다.</div><div class="library-download-name" id="libraryDownloadName"></div><button type="button" class="library-download-home" id="libraryDownloadHome">← ACTION HUB로 돌아가기</button><button type="button" class="library-download-again" id="libraryDownloadAgain">다운로드 다시 시작</button></div></div>
-<div class="notice-backdrop" id="noticeBackdrop" hidden><section class="notice-modal" role="dialog" aria-modal="true" aria-labelledby="noticeTitle"><div class="notice-modal-head"><strong>🔔 공지사항 <span class="new" id="noticeModalNew">NEW</span></strong><button type="button" class="notice-close" id="noticeClose" aria-label="공지 닫기">×</button></div><div class="notice-modal-body"><h3 id="noticeTitle">공지사항</h3><div class="notice-content" id="noticeContent"></div><a class="notice-toolbox" id="noticeLink" href="#" hidden>🔗 바로가기 ›</a></div></section></div></div><div id="activityCheer" class="activity-cheer-overlay" hidden>
+<div class="notice-backdrop" id="noticeBackdrop" hidden><section class="notice-modal" role="dialog" aria-modal="true" aria-labelledby="noticeTitle"><div class="notice-modal-head"><strong>🔔 공지사항 <span class="new" id="noticeModalNew">NEW</span></strong><button type="button" class="notice-close" id="noticeClose" aria-label="공지 닫기">×</button></div><div class="notice-modal-body"><article id="noticeLatest"><span class="notice-latest-label">최신 공지</span><h3 id="noticeTitle">공지사항</h3><time class="notice-published-at" id="noticePublishedAt"></time><div class="notice-content" id="noticeContent"></div><a class="notice-toolbox" id="noticeLink" href="#" hidden>🔗 바로가기 ›</a></article><section id="noticeHistorySection" class="notice-history-section" hidden><h4 id="noticeHistoryHeading">이전 공지</h4><div id="noticeHistoryList" class="notice-history-list" role="region" aria-label="이전 공지 목록" tabindex="0"></div></section></div></section></div></div><div id="activityCheer" class="activity-cheer-overlay" hidden>
  <section class="activity-cheer-card" role="dialog" aria-modal="true" aria-labelledby="cheerTitle" aria-describedby="cheerName cheerMessage cheerStatus">
   <div class="activity-cheer-hero" aria-hidden="true"><span class="activity-cheer-label">마음을 담아 응원해요</span><span class="activity-cheer-spark spark-a">✦</span><span class="activity-cheer-spark spark-b">✧</span><span class="activity-cheer-clap">👏</span><span class="activity-cheer-confetti confetti-a"></span><span class="activity-cheer-confetti confetti-b"></span><span class="activity-cheer-confetti confetti-c"></span></div>
   <div class="activity-cheer-copy"><div id="cheerName"></div><h2 id="cheerTitle"></h2><p id="cheerMessage"></p><div class="activity-cheer-status"><span aria-hidden="true">✓</span><span id="cheerStatus"></span></div><div class="activity-cheer-footer"><span>구리리더스HB가 함께 응원합니다<br><small>4초 후 자동으로 닫힙니다</small></span><button id="cheerClose" type="button">닫기</button></div></div>
@@ -598,17 +614,53 @@ function renderNoticeContent(raw){
     noticeContent.appendChild(paragraph);
   }
 }
-function applyNotice(s){
-  const enabled=s.notice_enabled!==false&&!!String(s.notice_title||s.notice_content||"").trim();
-  noticeTrigger.hidden=!enabled;
-  if(!enabled){if(!noticeBackdrop.hidden)closeNotice();return}
-  const isNew=s.notice_new!==false;
-  noticeTriggerNew.hidden=!isNew;noticeModalNew.hidden=!isNew;
-  noticeTitle.textContent=s.notice_title||"공지사항";
-  renderNoticeContent(s.notice_content||"");
-  const url=String(s.notice_url||"").trim();
-  if(/^https?:\/\//i.test(url)){noticeLink.href=url;noticeLink.hidden=false}else{noticeLink.removeAttribute("href");noticeLink.hidden=true}
+function noticePublishedLabel(value){
+ if(!value)return '게시 시각 미기록';
+ const date=new Date(value);if(Number.isNaN(date.getTime()))return '게시 시각 미기록';
+ const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(date).map(p=>[p.type,p.value]));
+ return `${parts.year}.${parts.month}.${parts.day} ${parts.hour}:${parts.minute}`;
 }
+function noticeParagraphs(container,raw){
+ container.replaceChildren();const cleaned=formatNoticeText(raw);
+ if(!cleaned){container.textContent='등록된 공지 내용이 없습니다.';return}
+ for(const text of cleaned.split(/\n{2,}/)){const p=document.createElement('p');p.textContent=text;container.appendChild(p)}
+}
+let noticeHistorySignature='';
+function renderNoticeHistory(items){
+ const rows=Array.isArray(items)?items:[],container=document.getElementById('noticeHistoryList'),section=document.getElementById('noticeHistorySection');
+ section.hidden=!rows.length;
+ document.getElementById('noticeHistoryHeading').textContent=`이전 공지 · ${rows.length}건`;
+ const signature=JSON.stringify(rows);if(signature===noticeHistorySignature)return;noticeHistorySignature=signature;
+ container.replaceChildren();
+ for(const item of rows){
+  const details=document.createElement('details');details.className='notice-history-item';
+  const summary=document.createElement('summary');
+  const text=document.createElement('span');text.className='notice-history-summary';
+  text.textContent=(item.title||'공지사항')+' · '+formatNoticeText(item.content).replace(/\s+/g,' ');
+  const when=document.createElement('time');when.className='notice-history-time';when.textContent=noticePublishedLabel(item.published_at);if(item.published_at)when.dateTime=item.published_at;
+  summary.append(text,when);details.appendChild(summary);
+  const content=document.createElement('div');content.className='notice-content notice-history-content';noticeParagraphs(content,item.content);details.appendChild(content);
+  if(/^https?:\/\//i.test(item.url||'')){const link=document.createElement('a');link.className='notice-toolbox';link.textContent='🔗 바로가기 ›';link.href=item.url;details.appendChild(link)}
+  container.appendChild(details);
+ }
+}
+function applyNotice(s){
+ const history=Array.isArray(s.notice_history)?s.notice_history:[];
+ const hasLatest=!!String(s.notice_title||s.notice_content||'').trim();
+ const enabled=s.notice_enabled!==false&&(hasLatest||history.length>0);
+ noticeTrigger.hidden=!enabled;
+ if(!enabled){if(!noticeBackdrop.hidden)closeNotice();return}
+ const isNew=s.notice_new!==false&&hasLatest;
+ noticeTriggerNew.hidden=!isNew;noticeModalNew.hidden=!isNew;
+ document.getElementById('noticeLatest').hidden=!hasLatest;
+ noticeTitle.textContent=s.notice_title||'공지사항';
+ noticeParagraphs(noticeContent,s.notice_content||'');
+ const published=document.getElementById('noticePublishedAt');published.textContent=noticePublishedLabel(s.notice_published_at);if(s.notice_published_at)published.dateTime=s.notice_published_at;else published.removeAttribute('datetime');
+ const url=String(s.notice_url||'').trim();
+ if(/^https?:\/\//i.test(url)){noticeLink.href=url;noticeLink.hidden=false}else{noticeLink.removeAttribute('href');noticeLink.hidden=true}
+ renderNoticeHistory(history);
+}
+
 noticeTrigger?.addEventListener("click",openNotice);
 noticeClose?.addEventListener("click",closeNotice);
 noticeBackdrop?.addEventListener("click",e=>{if(e.target===noticeBackdrop)closeNotice()});

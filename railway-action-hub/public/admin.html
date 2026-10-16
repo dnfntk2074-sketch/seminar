@@ -77,6 +77,14 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
 .msg{font-size:12px;color:#c9353c;margin-top:8px}
 .save-msg{font-size:12px;color:#079b67;margin-top:8px}
 @media(min-width:620px){.stats{grid-template-columns:repeat(4,1fr)}}
+
+#adminNoticeHistory{max-height:280px;overflow-y:auto;overscroll-behavior:contain}
+#adminNoticeHistory details{border-bottom:1px solid #e6ebf2;padding:12px 0}
+#adminNoticeHistory summary{cursor:pointer;list-style:none;padding-right:12px}
+#adminNoticeHistory summary span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:700}
+#adminNoticeHistory summary small{display:block;font-size:11px;color:#64748b;margin-top:5px}
+#adminNoticeHistory details p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.8;color:#475569}
+#adminNoticeHistorySection[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -156,14 +164,14 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
     <section class="view" id="view-notice">
       <div class="card">
         <div class="section-title">📢 공지 관리</div>
-        <div class="muted">저장하면 사용자 ACTION HUB 우측 상단 🔔 공지에 바로 반영됩니다.</div>
+        <div class="muted">새 공지를 게시하면 현재 공지는 날짜·시간과 함께 이전 공지로 자동 보관됩니다. 내용이 같으면 중복 저장하지 않습니다.</div>
         <div class="toggle-row"><div><b>공지 게시</b><div class="muted">끄면 사용자 화면에서 공지 버튼이 숨겨집니다.</div></div><input type="checkbox" id="noticeEnabled"></div>
         <div class="toggle-row"><div><b>NEW 표시</b><div class="muted">새 공지일 때 빨간 NEW 배지를 표시합니다.</div></div><input type="checkbox" id="noticeNew"></div>
-        <div class="field"><label>공지 제목</label><input id="noticeTitleInput" maxlength="120" placeholder="예: TFA TOOLBOX 리뉴얼 안내"></div>
+        <div id="noticeCurrentDate" class="muted" style="margin-top:12px"></div><button type="button" class="btn full" id="newNoticeDraft">＋ 새 공지 작성</button><div class="field"><label>공지 제목</label><input id="noticeTitleInput" maxlength="120" placeholder="예: TFA TOOLBOX 리뉴얼 안내"></div>
         <div class="field"><label>공지 내용</label><textarea id="noticeContentInput" maxlength="4000" placeholder="공지 내용을 입력해 주세요."></textarea></div>
         <div class="field"><label>바로가기 링크 · 선택</label><input id="noticeUrlInput" type="url" placeholder="https://..."></div>
-        <button class="btn primary full" id="saveNotice">공지 저장</button>
-        <div class="save-msg" id="noticeMsg"></div>
+        <button class="btn primary full" id="saveNotice">공지 게시 · 이전 공지 보관</button>
+        <div class="save-msg" id="noticeMsg"></div><section id="adminNoticeHistorySection" hidden><h3 style="font-size:14px;margin-top:22px">이전 공지</h3><div id="adminNoticeHistory"></div></section>
       </div>
     </section>
 
@@ -315,8 +323,29 @@ function openUserApp(){location.href="/"}
 document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>go(b.dataset.view));
 search.oninput=renderList;typeFilter.onchange=renderList;
 libUpload.onclick=uploadLibrary;
+function adminNoticeDate(value){
+ if(!value)return '게시 시각 미기록';const date=new Date(value);if(Number.isNaN(date.getTime()))return '게시 시각 미기록';
+ const p=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(date).map(x=>[x.type,x.value]));
+ return `${p.year}.${p.month}.${p.day} ${p.hour}:${p.minute}`;
+}
+function renderAdminNoticeHistory(){
+ document.getElementById('noticeCurrentDate').textContent='현재 공지 · '+adminNoticeDate(settings.notice_published_at);
+ const history=Array.isArray(settings.notice_history)?settings.notice_history:[],list=document.getElementById('adminNoticeHistory');list.replaceChildren();
+ document.getElementById('adminNoticeHistorySection').hidden=!history.length;
+ for(const item of history){
+  const entry=document.createElement('details'),summary=document.createElement('summary'),text=document.createElement('span'),when=document.createElement('small'),body=document.createElement('p');
+  text.textContent=(item.title||'공지사항')+' · '+String(item.content||'').replace(/\\r\\n|\\n|\/n/gi,' ').replace(/\s+/g,' ');
+  when.textContent=adminNoticeDate(item.published_at);summary.append(text,when);
+  body.textContent=String(item.content||'').replace(/\\r\\n|\\n|\/n/gi,'\n');entry.append(summary,body);list.appendChild(entry);
+ }
+}
+document.getElementById('newNoticeDraft').onclick=()=>{
+ noticeTitleInput.value='';noticeContentInput.value='';noticeUrlInput.value='';noticeEnabled.checked=true;noticeNew.checked=true;noticeMsg.textContent='새 공지를 작성한 뒤 게시해 주세요. 이전 공지는 자동으로 보관됩니다.';noticeTitleInput.focus();
+};
+
 saveNotice.onclick=async()=>{
   noticeMsg.textContent="";
+  if(noticeEnabled.checked&&(!noticeTitleInput.value.trim()||!noticeContentInput.value.trim())){noticeMsg.textContent="공지 제목과 내용을 입력해 주세요.";return}
   const url=noticeUrlInput.value.trim();
   if(url&&!/^https?:\/\//i.test(url)){noticeMsg.textContent="바로가기 링크는 http:// 또는 https://로 입력해 주세요.";return}
   saveNotice.disabled=true;saveNotice.textContent="저장 중...";
@@ -326,10 +355,10 @@ saveNotice.onclick=async()=>{
       notice_enabled:noticeEnabled.checked,notice_title:noticeTitleInput.value.trim(),notice_content:noticeContentInput.value.trim(),notice_url:url,notice_new:noticeNew.checked
     })});
     const j=await r.json().catch(()=>({}));
-    noticeMsg.textContent=r.ok?"공지사항이 저장되었습니다.":"공지 저장에 실패했습니다.";
-    if(r.ok)settings={...settings,notice_enabled:noticeEnabled.checked,notice_title:noticeTitleInput.value.trim(),notice_content:noticeContentInput.value.trim(),notice_url:url,notice_new:noticeNew.checked};
+    noticeMsg.textContent=r.ok?"공지사항이 저장되었습니다. 이전 공지도 보관되었습니다.":"공지 저장에 실패했습니다.";
+    if(r.ok){settings=j.settings||{...settings,notice_enabled:noticeEnabled.checked,notice_title:noticeTitleInput.value.trim(),notice_content:noticeContentInput.value.trim(),notice_url:url,notice_new:noticeNew.checked};renderAdminNoticeHistory()};
   }catch(e){if(e.message!=="unauthorized")noticeMsg.textContent="연결을 확인하고 다시 시도해 주세요."}
-  finally{saveNotice.disabled=false;saveNotice.textContent="공지 저장"}
+  finally{saveNotice.disabled=false;saveNotice.textContent="공지 게시 · 이전 공지 보관"}
 };
 
 async function submitLogin(){
@@ -361,7 +390,7 @@ async function load(){
   showApp();
   settings=await (await api("/api/admin/settings")).json();
   mode.value=settings.marquee_mode;marquee.value=settings.marquee_text||"";mvp.checked=!!settings.mvp_enabled;mvpTitle.value=settings.mvp_title||"";title.value=settings.app_title||"";sub.value=settings.app_subtitle||"";
-  noticeEnabled.checked=settings.notice_enabled!==false;noticeNew.checked=settings.notice_new!==false;noticeTitleInput.value=settings.notice_title||"";noticeContentInput.value=settings.notice_content||"";noticeUrlInput.value=settings.notice_url||"";
+  noticeEnabled.checked=settings.notice_enabled!==false;noticeNew.checked=settings.notice_new!==false;noticeTitleInput.value=settings.notice_title||"";noticeContentInput.value=settings.notice_content||"";noticeUrlInput.value=settings.notice_url||"";renderAdminNoticeHistory();
   let j=await (await api("/api/admin/schedules")).json();schedules=j.schedules||[];
   renderStats();renderList();await loadLibraryAdmin()
 }
