@@ -653,9 +653,8 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 
 /* Fixed clipping windows with two equal tiles: each loop resets to an identical image. */
 .mvp-ticker.top,.mvp-ticker.bottom{display:block;width:auto;animation:none;transform:none;will-change:auto;container-type:inline-size;color:#ffd166;text-shadow:0 0 6px currentColor}
-.mvp-ticker .ticker-track{display:flex;width:max-content;gap:0;will-change:transform;backface-visibility:hidden;animation:tickerSeamlessLTR 26s linear infinite,tickerTwoColors 52s steps(1,end) infinite}
-.mvp-ticker.bottom .ticker-track{animation-duration:30s,60s}
-.mvp-ticker .ticker-copy{display:block;flex:0 0 auto;min-width:100cqw;padding-right:42px;white-space:nowrap}
+.mvp-ticker .ticker-track{display:flex;width:max-content;gap:0;will-change:transform;backface-visibility:hidden;animation:tickerSeamlessLTR 30s linear infinite,tickerTwoColors 60s steps(1,end) infinite}
+.mvp-ticker .ticker-copy{display:block;flex:0 0 auto;width:var(--ticker-tile-width,max-content);min-width:100cqw;padding-right:42px;white-space:nowrap}
 @keyframes tickerSeamlessLTR{from{transform:translate3d(-50%,0,0)}to{transform:translate3d(0,0,0)}}
 @keyframes tickerTwoColors{0%{color:#ffd166}50%{color:#9fdcff}100%{color:#ffd166}}
 </style></head><body><div class="wrap">
@@ -1303,4 +1302,16 @@ submit.onclick=async()=>{
 };
 
 function syncHint(input,wrap){let f=()=>wrap.classList.toggle("has-value",!!input.value);input.addEventListener("input",f);input.addEventListener("change",f);f()}syncHint(date,dateWrap);syncHint(time,timeWrap);date.removeAttribute("min");date.removeAttribute("max");editDate.removeAttribute("min");editDate.removeAttribute("max");date.addEventListener("change",()=>{if(date.value){calendarCursor=date.value.slice(0,7);expandedDays.clear();render()}});load();setInterval(load,60000);
+
+// Equal travel distance and duration keep both ticker rows at the same pixel speed.
+const tickerBoard=document.querySelector('.led.mvp');
+function syncTickerWidths(){
+ tickerBoard.style.removeProperty('--ticker-tile-width');
+ const tiles=[...tickerBoard.querySelectorAll('.ticker-copy')];
+ const width=Math.ceil(Math.max(...tiles.map(tile=>tile.getBoundingClientRect().width)));
+ if(width>0)tickerBoard.style.setProperty('--ticker-tile-width',width+'px');
+}
+syncTickerWidths();
+new ResizeObserver(syncTickerWidths).observe(tickerBoard);
+if(document.fonts)document.fonts.ready.then(syncTickerWidths);
 </script></body></html>
