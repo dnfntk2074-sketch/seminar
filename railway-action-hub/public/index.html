@@ -841,6 +841,29 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 
 /* Match the completed-count type size to the weekly MVP caption. */
 .led.mvp .mvp-count{font-size:12px!important}
+
+/* The live MVP leads, followed by compact monthly weekly winners. */
+.top-card.premium-hub{margin-bottom:8px!important}
+.led.mvp{margin-bottom:8px}
+.led.mvp+.muted{margin:0 4px 5px!important;font-size:9px!important}
+.upcoming-visits{margin-bottom:8px!important}
+.hall-toolbar{display:flex;align-items:center;justify-content:space-between;min-height:18px;margin-bottom:2px}
+.hall-toolbar .upcoming-visits-label{font-size:9px;line-height:13px;margin:0 0 0 4px}
+.hall-month-controls{display:flex;gap:4px}
+.hall-month-controls button{width:21px;height:18px;border:1px solid #d6e3f1;border-radius:5px;background:#fff;color:#55718d;font-size:16px;line-height:1;padding:0;cursor:pointer}
+#upcomingVisitBoard{height:104px!important;min-height:104px!important}
+#upcomingVisitGrid{grid-template-columns:repeat(var(--hall-columns,4),minmax(0,1fr))}
+.hall-week{min-width:0;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 4px;text-align:center;text-shadow:none;color:#d8e5f3}
+.hall-week+.hall-week{border-left:1px solid #9ab5cf22}
+.hall-week.is-current{background:linear-gradient(180deg,#7dd3fc12,#7dd3fc03)}
+.hall-week-title{font-size:11px;font-weight:800;color:#f3dc9e}
+.hall-week-range{font-size:9px;color:#93abc3}
+.hall-week-winner{width:100%;font-size:13px;line-height:1.15;font-weight:850;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;color:#fff}
+.hall-week-score{font-size:10px;color:#ffe19b}
+.hall-week-state{font-size:8px;color:#94b4cc}
+.is-current .hall-week-state{color:#a5f2cf}
+.is-future .hall-week-winner,.is-future .hall-week-score{color:#7790aa}
+@media(max-width:420px){.hall-week{gap:4px;padding:7px 3px}.hall-week-winner{font-size:11px}.hall-week-range{font-size:8px}.hall-week-score{font-size:9px}.hall-week-title{font-size:10px}}
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
 <div class="card top-card premium-hub">
@@ -863,9 +886,10 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
     <button type="button" class="top-action-btn refresh" id="appRefreshBtn" aria-label="새로고침"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M39 20a15 15 0 0 0-27-6l-3 4M9 8v10h10M9 28a15 15 0 0 0 27 6l3-4m0 10V30H29" stroke="#607691" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span>새로고침</span></button>
   </div>
 </div>
-<section class="upcoming-visits" aria-label="다가오는 방문"><div class="upcoming-visits-label">다가오는 방문</div><div class="led schedule-led upcoming-board" id="upcomingVisitBoard"><div class="upcoming-visit-grid" id="upcomingVisitGrid"></div><div class="glow-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="marquee-track ltr" id="scheduleTrack" hidden><span class="marquee-copy" id="marquee">일정을 불러오는 중...</span><span class="marquee-copy mirror" id="marqueeMirror" aria-hidden="true">일정을 불러오는 중...</span><span class="marquee-copy extra" id="marqueeExtra" aria-hidden="true">일정을 불러오는 중...</span></div></div></section>
+
 <div class="led mvp"><div class="mvp-ambient" aria-hidden="true"></div><div class="mvp-marquee-track ltr" id="mvpTrack"><div class="mvp-marquee-copy"><span class="mvp-kicker" aria-hidden="true">👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitle">2주차 활동 MVP</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpName">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCount"></span></div><div class="mvp-marquee-copy mirror" aria-hidden="true"><span class="mvp-kicker">👑 WEEKLY ACTIVITY MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitleMirror">2주차 활동 MVP</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpNameMirror">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCountMirror"></span></div><div class="mvp-marquee-copy extra" aria-hidden="true"><span class="mvp-kicker">👑 WEEKLY ACTIVITY MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitleExtra">2주차 활동 MVP</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpNameExtra">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCountExtra"></span></div></div><div class="mvp-scan" aria-hidden="true"></div><div class="mvp-ticker top" aria-hidden="true"><div class="ticker-track"><span class="ticker-copy"><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span></span><span class="ticker-copy"><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span></span></div></div><div class="mvp-ticker bottom" aria-hidden="true"><div class="ticker-track"><span class="ticker-copy"><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span></span><span class="ticker-copy"><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span></span></div></div><div class="mvp-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="fw fw1" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="fw fw2" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="fw fw3" aria-hidden="true"><i></i><i></i><i></i></div></div>
-<div class="muted" style="margin:-2px 4px 12px;font-size:11px">MVP: 활동 날짜 기준 월~일(한국시간) · 완료 활동 1건=1점 · 공동 1위 함께 표시</div><div class="card action-reg-card"><b>ACTION 등록</b><div class="tabs" id="tabs"><button type="button" data-t="visit" aria-expanded="false" aria-controls="actionRegistrationFields">🤝 신규상담</button><button type="button" data-t="study" aria-expanded="false" aria-controls="actionRegistrationFields">🔄 후속상담</button><button type="button" data-t="call" aria-expanded="false" aria-controls="actionRegistrationFields">💙 고객관리</button></div><div id="actionRegistrationFields" hidden>
+<div class="muted" style="margin:-2px 4px 12px;font-size:11px">MVP: 활동 날짜 기준 · 완료 활동 1건=1점 · 주차별 집계 · 공동 MVP 함께 표시</div><section class="upcoming-visits" aria-label="주차별 명예의 전당"><div class="hall-toolbar"><div class="upcoming-visits-label" id="hallMonthTitle">주차별 명예의 전당</div><div class="hall-month-controls"><button type="button" id="hallPrev" aria-label="명예의 전당 이전 달">‹</button><button type="button" id="hallNext" aria-label="명예의 전당 다음 달">›</button></div></div><div class="led schedule-led upcoming-board" id="upcomingVisitBoard"><div class="upcoming-visit-grid" id="upcomingVisitGrid"></div><div class="glow-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="marquee-track ltr" id="scheduleTrack" hidden><span class="marquee-copy" id="marquee">일정을 불러오는 중...</span><span class="marquee-copy mirror" id="marqueeMirror" aria-hidden="true">일정을 불러오는 중...</span><span class="marquee-copy extra" id="marqueeExtra" aria-hidden="true">일정을 불러오는 중...</span></div></div></section>
+<div class="card action-reg-card"><b>ACTION 등록</b><div class="tabs" id="tabs"><button type="button" data-t="visit" aria-expanded="false" aria-controls="actionRegistrationFields">🤝 신규상담</button><button type="button" data-t="study" aria-expanded="false" aria-controls="actionRegistrationFields">🔄 후속상담</button><button type="button" data-t="call" aria-expanded="false" aria-controls="actionRegistrationFields">💙 고객관리</button></div><div id="actionRegistrationFields" hidden>
 <div class="dt"><div class="field"><label for="owner">TFA</label><input class="input" id="owner" placeholder="성함을 입력해 주세요" autocomplete="off"></div>
 <div class="field"><label id="placeLabel" for="place">지역/장소</label><input class="input" id="place" placeholder="예: 구리 · 고객 사무실"></div></div>
 <div class="dt"><div class="field"><label>날짜</label><div class="hint-wrap" id="dateWrap"><input class="input" type="date" id="date"><span class="in-hint">예: 2026-09-21</span></div></div><div class="field"><label>시간</label><div class="hint-wrap" id="timeWrap"><input class="input" type="time" step="300" id="time"><span class="in-hint">예: 14:30</span></div></div></div>
@@ -1239,35 +1263,65 @@ function add(iso,n){let d=new Date(iso+"T00:00:00Z");d.setUTCDate(d.getUTCDate()
 function parse(s){let d=new Date(s.scheduledAt),name=s.customerName||"",type="visit",p=name;if(name.startsWith("[후속상담] ")){type="study";p=name.slice("[후속상담] ".length)}else if(name.startsWith("[고객관리] ")){type="call";p=name.slice("[고객관리] ".length)}return{id:String(s.id),owner:s.ownerName||"",place:p,type,date:seoulDate(d),time:new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hour12:false}).format(d),at:d.getTime(),completed:!!s.completed,completedAt:s.completedAt?new Date(s.completedAt).getTime():null,canEdit:!!s.canEdit}}
 function week(){let t=seoulDate(),d=new Date(t+"T00:00:00Z"),dow=d.getUTCDay(),back=dow===0?6:dow-1;let m=add(t,-back);return[m,add(m,6)]}
 function seoulNowKey(){let d=new Date();let date=seoulDate(d);let time=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hour12:false}).format(d);return date+"T"+time}
-function activityWeek(now=new Date()){const day=seoulDate(now),midnight=Date.parse(day+"T00:00:00+09:00"),weekday=new Date(midnight+9*60*60*1000).getUTCDay(),start=midnight-((weekday+6)%7)*86400000;return {start,end:start+7*86400000}}
-function currentActivityWeekTitle(){
- const monday=new Date(activityWeek().start+9*60*60*1000);
- return (Math.floor((monday.getUTCDate()-1)/7)+1)+'주차 활동 MVP';
+
+function monthActivityWeeks(month=seoulDate(new Date()).slice(0,7)){
+ const [year,monthNumber]=month.split('-').map(Number);
+ const lastDay=new Date(Date.UTC(year,monthNumber,0)).getUTCDate();
+ const weekdayOfSeventh=new Date(Date.UTC(year,monthNumber-1,7)).getUTCDay();
+ const firstEnd=7+(7-weekdayOfSeventh)%7;
+ const dayKey=day=>month+'-'+String(day).padStart(2,'0');
+ const periods=[];
+ for(let first=1,last=firstEnd;first<=lastDay;first=last+1,last=Math.min(last+7,lastDay)){
+  last=Math.min(last,lastDay);
+  const from=dayKey(first),through=dayKey(last);
+  periods.push({month,index:periods.length+1,startDay:first,endDay:last,from,through,start:Date.parse(from+'T00:00:00+09:00'),end:Date.parse(through+'T00:00:00+09:00')+86400000});
+  if(last===lastDay)break;
+ }
+ return periods;
 }
-function weeklyActivityCounts(items,now=new Date()){let week=activityWeek(now),counts={};items.filter(x=>x.completed&&x.at>=week.start&&x.at<week.end).forEach(x=>counts[x.owner]=(counts[x.owner]||0)+1);return counts}
-function renderUpcomingVisits(items,settings={},nowKey=seoulNowKey()){
+function activityWeek(now=new Date()){
+ const day=seoulDate(now);
+ return monthActivityWeeks(day.slice(0,7)).find(week=>day>=week.from&&day<=week.through);
+}
+function currentActivityWeekTitle(){return activityWeek().index+'주차 활동 MVP'}
+function weeklyActivityCounts(items,now=new Date()){
+ const week=activityWeek(now),counts={};
+ items.filter(x=>x.completed&&x.at>=week.start&&x.at<week.end).forEach(x=>counts[x.owner]=(counts[x.owner]||0)+1);
+ return counts;
+}
+let hallMonth=seoulDate(new Date()).slice(0,7);
+function renderWeeklyHallOfFame(items){
  const panel=document.getElementById('upcomingVisitGrid'),track=document.getElementById('scheduleTrack'),board=document.getElementById('upcomingVisitBoard');
- const manual=settings.marquee_mode==='manual'&&!!String(settings.marquee_text||'').trim();
- panel.hidden=manual;track.hidden=!manual;board.classList.toggle('is-manual',manual);
- if(manual)return;
- const next=items.filter(x=>!x.completed&&(x.date+'T'+x.time)>=nowKey).sort((a,b)=>a.at-b.at).slice(0,3);
- const fragment=document.createDocumentFragment();
- for(let i=0;i<3;i++){
-  const visit=next[i],card=document.createElement('article');card.className='upcoming-visit'+(visit?'':' empty');card.style.setProperty('--visit-delay',i*2+'s');
-  const who=document.createElement('div');who.className='upcoming-who';
-  const rank=document.createElement('span');rank.className='upcoming-rank';rank.textContent=String(i+1);rank.setAttribute('aria-label',(i+1)+'번째');
-  const owner=document.createElement('span');owner.className='upcoming-owner';owner.textContent=visit?visit.owner:'일정 대기';who.append(rank,owner);
-  const when=document.createElement('div');when.className='upcoming-when';
-  const dateText=document.createElement('span');dateText.className='upcoming-date';dateText.textContent=visit?visit.date.slice(5).replace('-','.'):'';
-  const timeText=document.createElement('span');timeText.className='upcoming-time';timeText.textContent=visit?visit.time:'—';when.append(dateText,timeText);
-  const placeText=document.createElement('div');placeText.className='upcoming-place';placeText.textContent=visit?visit.place:'등록된 일정 없음';
-  if(visit){card.title=`${i+1}번째 · ${visit.owner} TFA · ${visit.date} ${visit.time} · ${visit.place}`;card.setAttribute('aria-label',card.title)}
-  card.append(who,when,placeText);fragment.appendChild(card);
+ panel.hidden=false;track.hidden=true;board.classList.remove('is-manual');
+ const periods=monthActivityWeeks(hallMonth),now=Date.now(),fragment=document.createDocumentFragment();
+ document.getElementById('hallMonthTitle').textContent=Number(hallMonth.slice(5))+'월 주차별 명예의 전당';
+ panel.style.setProperty('--hall-columns',periods.length);
+ for(const week of periods){
+  const counts={};
+  items.filter(x=>x.completed&&x.at>=week.start&&x.at<week.end).forEach(x=>counts[x.owner]=(counts[x.owner]||0)+1);
+  const entries=Object.entries(counts),maximum=entries.length?Math.max(...entries.map(x=>x[1])):0;
+  const names=entries.filter(x=>x[1]===maximum).map(x=>x[0]).sort((a,b)=>a.localeCompare(b,'ko'));
+  const future=now<week.start,current=now>=week.start&&now<week.end;
+  const card=document.createElement('article');card.className='hall-week'+(current?' is-current':'')+(future?' is-future':'');
+  const heading=document.createElement('div');heading.className='hall-week-title';heading.textContent=week.index+'주차';
+  const range=document.createElement('div');range.className='hall-week-range';range.textContent=week.startDay+'~'+week.endDay+'일';
+  const winner=document.createElement('div');winner.className='hall-week-winner';winner.textContent=future?'집계 예정':names.length?names.join(' · '):current?'활동을 기다려요':'완료 활동 없음';
+  const score=document.createElement('div');score.className='hall-week-score';score.textContent=future?'—':maximum?'완료 '+maximum+'건':'—';
+  const state=document.createElement('div');state.className='hall-week-state';state.textContent=future?'예정':current?'진행 중':maximum?'👑 확정 MVP':'집계 종료';
+  card.append(heading,range,winner,score,state);
+  card.title=hallMonth+' '+week.index+'주차 ('+week.startDay+'~'+week.endDay+'일) · '+winner.textContent+' · '+score.textContent+' · '+state.textContent;
+  card.setAttribute('aria-label',card.title);fragment.appendChild(card);
  }
  panel.replaceChildren(fragment);
 }
+function moveHallMonth(offset){
+ const [year,monthNumber]=hallMonth.split('-').map(Number),date=new Date(Date.UTC(year,monthNumber-1+offset,1));
+ hallMonth=date.toISOString().slice(0,7);renderWeeklyHallOfFame(data);
+}
+document.getElementById('hallPrev').onclick=()=>moveHallMonth(-1);
+document.getElementById('hallNext').onclick=()=>moveHallMonth(1);
 
-async function load(){let r=await fetch("/api/data",{headers:{"x-owner-token":ownerToken,"x-owner-name":encodeURIComponent(ownerIdentity)}}),j=await r.json();let s=j.settings||{};if((s.app_title||"유료DB ACTION HUB").trim()==="유료DB ACTION HUB"){appTitle.innerHTML='<span class="premium-pill">유료DB</span><span class="premium-action">ACTION</span> <span class="premium-hub-blue">HUB</span>'}else{appTitle.textContent=s.app_title||"유료DB ACTION HUB"};appSub.textContent=s.app_subtitle||"";applyNotice(s);mvpTitle.textContent=currentActivityWeekTitle();mvpTitleMirror.textContent=currentActivityWeekTitle();mvpTitleExtra.textContent=currentActivityWeekTitle();document.querySelector(".mvp").style.display=s.mvp_enabled===false?"none":"flex";data=(j.schedules||[]).map(parse).sort((a,b)=>a.at-b.at);let nowKey=seoulNowKey();let n=data.find(x=>(x.date+"T"+x.time)>=nowKey);let typeName=n?(n.type==="visit"?"신규상담":n.type==="study"?"후속상담":"고객관리"):"";let marqueeText=s.marquee_mode==="manual"&&s.marquee_text?s.marquee_text:(n?`다음 일정 · ${typeName} · ${n.date} ${n.time} · ${n.owner} TFA · ${n.place}`:"등록된 다음 일정이 없습니다");marquee.textContent=marqueeText;marqueeMirror.textContent=marqueeText;marqueeExtra.textContent=marqueeText;renderUpcomingVisits(data,s,nowKey);let c=weeklyActivityCounts(data);let vals=Object.entries(c);if(!vals.length){mvpName.textContent="이번 주 완료 활동 없음";mvpCount.textContent="";mvpNameMirror.textContent="이번 주 완료 활동 없음";mvpCountMirror.textContent="";mvpNameExtra.textContent="이번 주 완료 활동 없음";mvpCountExtra.textContent=""}else{let mx=Math.max(...vals.map(x=>x[1]));let names=vals.filter(x=>x[1]===mx).map(x=>x[0]).join(" · ");mvpName.textContent=names+" TFA";mvpCount.textContent="완료 "+mx+"건";mvpNameMirror.textContent=names+" TFA";mvpCountMirror.textContent="완료 "+mx+"건";mvpNameExtra.textContent=names+" TFA";mvpCountExtra.textContent="완료 "+mx+"건"}render();handleNoticePush(s)}
+async function load(){let r=await fetch("/api/data",{headers:{"x-owner-token":ownerToken,"x-owner-name":encodeURIComponent(ownerIdentity)}}),j=await r.json();let s=j.settings||{};if((s.app_title||"유료DB ACTION HUB").trim()==="유료DB ACTION HUB"){appTitle.innerHTML='<span class="premium-pill">유료DB</span><span class="premium-action">ACTION</span> <span class="premium-hub-blue">HUB</span>'}else{appTitle.textContent=s.app_title||"유료DB ACTION HUB"};appSub.textContent=s.app_subtitle||"";applyNotice(s);mvpTitle.textContent=currentActivityWeekTitle();mvpTitleMirror.textContent=currentActivityWeekTitle();mvpTitleExtra.textContent=currentActivityWeekTitle();document.querySelector(".mvp").style.display=s.mvp_enabled===false?"none":"flex";data=(j.schedules||[]).map(parse).sort((a,b)=>a.at-b.at);let nowKey=seoulNowKey();let n=data.find(x=>(x.date+"T"+x.time)>=nowKey);let typeName=n?(n.type==="visit"?"신규상담":n.type==="study"?"후속상담":"고객관리"):"";let marqueeText=s.marquee_mode==="manual"&&s.marquee_text?s.marquee_text:(n?`다음 일정 · ${typeName} · ${n.date} ${n.time} · ${n.owner} TFA · ${n.place}`:"등록된 다음 일정이 없습니다");marquee.textContent=marqueeText;marqueeMirror.textContent=marqueeText;marqueeExtra.textContent=marqueeText;renderWeeklyHallOfFame(data);let c=weeklyActivityCounts(data);let vals=Object.entries(c);if(!vals.length){mvpName.textContent="이번 주 완료 활동 없음";mvpCount.textContent="";mvpNameMirror.textContent="이번 주 완료 활동 없음";mvpCountMirror.textContent="";mvpNameExtra.textContent="이번 주 완료 활동 없음";mvpCountExtra.textContent=""}else{let mx=Math.max(...vals.map(x=>x[1]));let names=vals.filter(x=>x[1]===mx).map(x=>x[0]).join(" · ");mvpName.textContent=names+" TFA";mvpCount.textContent="완료 "+mx+"건";mvpNameMirror.textContent=names+" TFA";mvpCountMirror.textContent="완료 "+mx+"건";mvpNameExtra.textContent=names+" TFA";mvpCountExtra.textContent="완료 "+mx+"건"}render();handleNoticePush(s)}
 const KR_HOLIDAYS_2026=new Set(["2026-01-01","2026-02-16","2026-02-17","2026-02-18","2026-03-01","2026-03-02","2026-05-01","2026-05-05","2026-05-24","2026-05-25","2026-06-03","2026-06-06","2026-07-17","2026-08-15","2026-08-17","2026-09-24","2026-09-25","2026-09-26","2026-10-03","2026-10-05","2026-10-09","2026-12-25"]);
 const SPECIAL_DAYS_2026={"2026-01-01":"🎉 신정","2026-02-16":"🧧 설 연휴","2026-02-17":"🧧 설날","2026-02-18":"🧧 설 연휴","2026-03-01":"🇰🇷 삼일절","2026-03-02":"🇰🇷 대체공휴일","2026-05-01":"🌿 근로자의 날","2026-05-05":"🎈 어린이날","2026-05-24":"🙏 부처님오신날","2026-05-25":"🙏 대체공휴일","2026-06-03":"🗳️ 지방선거","2026-06-06":"🇰🇷 현충일","2026-07-17":"📜 제헌절","2026-08-15":"🇰🇷 광복절","2026-08-17":"🇰🇷 대체공휴일","2026-09-24":"🌕 추석 연휴","2026-09-25":"🌕 추석","2026-09-26":"🌕 추석 연휴","2026-10-03":"🇰🇷 개천절","2026-10-05":"🇰🇷 대체공휴일","2026-10-09":"✍️ 한글날","2026-12-25":"🎄 성탄절"};
 function dayTone(iso){let dow=new Date(iso+"T00:00:00Z").getUTCDay();if(dow===0||KR_HOLIDAYS_2026.has(iso))return"holiday";if(dow===6)return"saturday";return""}
