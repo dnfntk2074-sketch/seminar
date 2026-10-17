@@ -726,20 +726,64 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 @keyframes mvpAmbientGlow{0%,100%{opacity:.45}50%{opacity:1}}
 @media(max-width:420px){.led.mvp .fw{width:29%!important;max-width:100px}.led.mvp .fw i{width:2.5px;height:2.5px}}
 @media(prefers-reduced-motion:reduce){.mvp-ambient{animation:none;opacity:.7}}
+
+/* Compact four-button toolbar; notification settings occupy the former notice space. */
+.top-card.premium-hub{padding:20px 20px 18px!important}
+.premium-brand{height:auto;min-height:44px;justify-content:flex-start}
+.premium-hub .premium-brand .brand-logo{max-width:min(100%,340px)!important;max-height:54px!important}
+.premium-hero{grid-template-columns:minmax(0,1fr) 94px;min-height:80px;gap:12px;margin:6px 0 14px}
+.premium-hero #memberPushButton{width:94px;min-height:38px;justify-self:end;align-self:center;font-size:11px}
+.premium-hub .top-actions{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:stretch}
+.premium-hub .top-actions .top-action-btn{position:relative!important;inset:auto!important;width:100%!important;max-width:none!important;height:57px!important;min-height:0;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:7px;padding:7px!important;border-radius:14px!important;box-shadow:0 3px 10px #64a7de12!important;text-align:center;white-space:nowrap;text-decoration:none}
+.premium-hub .top-actions .premium-illustration{width:26px;max-width:26px;flex:0 0 26px;filter:none}
+.premium-hub .top-actions .premium-illustration svg{width:26px;max-width:26px;height:26px}
+.premium-hub .top-actions .premium-action-copy{flex:0 1 auto;display:block;border:0!important;padding:0}
+.premium-hub .top-actions .premium-action-copy strong{font-size:14px;line-height:1.2;letter-spacing:-.04em}
+.premium-hub .top-actions .premium-action-copy small,.premium-hub .top-actions .premium-action-copy strong>span{display:none!important}
+.premium-hub .top-actions .premium-notice-icon{width:23px;flex:0 0 23px}
+.premium-hub .top-actions .premium-notice-icon .bell{font-size:22px!important}
+.premium-hub .top-actions .premium-notice-icon small,.premium-hub .top-actions .premium-notice-arrow,.premium-hub .top-actions .premium-notice-copy em{display:none!important}
+.premium-hub .top-actions .premium-notice-copy strong{font-size:14px;line-height:1.2;letter-spacing:-.04em}
+.premium-hub .top-actions .notice-trigger .new{position:absolute;right:4px;top:-6px;min-width:24px;height:15px;font-size:7px;padding:0 3px}
+.premium-hub .top-actions .refresh svg{width:22px;height:22px;flex:0 0 22px}
+.premium-hub .top-actions .refresh span{font-size:14px;line-height:1.2;letter-spacing:-.04em}
+@media(max-width:720px){.premium-hub .top-actions .top-action-btn{height:50px!important}}
+@media(max-width:520px){
+ .top-card.premium-hub{padding:15px 12px!important}
+ .premium-brand{min-height:36px}
+ .premium-hub .premium-brand .brand-logo{max-width:100%!important;max-height:44px!important}
+ .premium-hero{grid-template-columns:minmax(0,1fr) 85px;gap:7px;min-height:64px;margin:6px 0 12px}
+ .premium-hero #memberPushButton{width:85px;min-height:36px;font-size:10px;padding:7px;gap:4px}
+ .premium-hero #memberPushButton svg{width:14px;height:14px}
+ .premium-hub .top-actions{gap:5px}
+ .premium-hub .top-actions .top-action-btn{height:44px!important;padding:5px 3px!important;gap:4px;border-radius:11px!important}
+ .premium-hub .top-actions .premium-illustration{width:20px;max-width:20px;flex-basis:20px}
+ .premium-hub .top-actions .premium-illustration svg{width:20px;height:20px}
+ .premium-hub .top-actions .premium-action-copy strong,.premium-hub .top-actions .premium-notice-copy strong,.premium-hub .top-actions .refresh span{font-size:12px}
+ .premium-hub .top-actions .premium-notice-icon{width:18px;flex-basis:18px}
+ .premium-hub .top-actions .premium-notice-icon .bell{font-size:18px!important}
+ .premium-hub .top-actions .refresh svg{width:17px;height:17px;flex-basis:17px}
+ .premium-hub .top-actions .notice-trigger .new{min-width:21px;height:13px;font-size:6px}
+}
+@media(max-width:350px){
+ .premium-hero{grid-template-columns:minmax(0,1fr) 78px}
+ .premium-hero #memberPushButton{width:78px;font-size:9px}
+ .premium-hub .top-actions{gap:4px}
+ .premium-hub .top-actions .top-action-btn{gap:3px}
+ .premium-hub .top-actions .premium-action-copy strong,.premium-hub .top-actions .premium-notice-copy strong,.premium-hub .top-actions .refresh span{font-size:11px}
+ .premium-hub .top-actions .premium-illustration{flex-basis:17px;width:17px;max-width:17px}
+ .premium-hub .top-actions .premium-illustration svg{width:17px;height:17px}
+}
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
 <div class="card top-card premium-hub">
-  <div class="premium-brand"><img class="brand-logo" src="/brand-logo-user.gif?v=20260921-1935" alt="보험이 착해지다 A+에셋"><button type="button" id="memberPushButton" aria-label="활동·공지 알림 설정" aria-haspopup="dialog" aria-controls="memberPushPanel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="memberPushLabel">알림 켜기</span><span class="push-status-dot" aria-hidden="true"></span></button></div>
+  <div class="premium-brand"><img class="brand-logo" src="/brand-logo-user.gif?v=20260921-1935" alt="보험이 착해지다 A+에셋"></div>
   <div class="premium-hero">
     <div class="premium-lead">
       <div class="title" id="appTitle"><span class="premium-pill">유료DB</span><span class="premium-action">ACTION</span> <span class="premium-hub-blue">HUB</span></div>
       <div class="sub" id="appSub">신규상담 · 후속상담 · 고객관리를 한눈에 공유합니다.</div>
     </div>
-    <button type="button" class="notice-trigger" id="noticeTrigger" aria-haspopup="dialog" aria-controls="noticeBackdrop" aria-label="공지 보기" hidden>
-      <span class="premium-notice-icon"><span class="bell">🔔</span><small>!</small></span>
-      <span class="premium-notice-copy"><strong>공지사항 <span class="new" id="noticeTriggerNew">NEW</span></strong><em>새로운 소식을 확인하세요!</em></span>
-      <span class="premium-notice-arrow" aria-hidden="true">›</span>
-    </button>
+    <button type="button" id="memberPushButton" aria-label="활동·공지 알림 설정" aria-haspopup="dialog" aria-controls="memberPushPanel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="memberPushLabel">알림 켜기</span><span class="push-status-dot" aria-hidden="true"></span></button>
   </div>
   <div class="top-actions">
     <button type="button" class="top-action-btn premium-library" id="libraryTopBtn">
@@ -748,8 +792,13 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
     </button>
     <a class="top-action-btn toolbox" href="https://hbtoolbox.vercel.app/">
       <span class="premium-illustration"><svg viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="toolGreen" x1="0" x2="1" y2="1"><stop stop-color="#3ee5a4"/><stop offset="1" stop-color="#009266"/></linearGradient></defs><path d="M29 33V22q0-9 9-9h20q9 0 9 9v11" stroke="#00a47a" stroke-width="9" stroke-linecap="round"/><rect x="10" y="32" width="75" height="53" rx="10" fill="url(#toolGreen)" stroke="#0b946d" stroke-width="2"/><path d="M10 50h75" stroke="#0b996f" stroke-width="3"/><rect x="45" y="44" width="12" height="25" rx="4" fill="#dcfdf3"/><path d="m74 64 4-3 5 3 5-1 1 6 4 3-2 5 2 5-4 4-1 5-6-1-4 3-5-3-6 2-2-5-6-2 2-5-2-5 5-3 1-5 5 1Z" fill="#f1fbff" stroke="#b8ccd5" stroke-width="2"/><circle cx="76" cy="78" r="5" fill="#119977"/></svg></span>
-      <span class="premium-action-copy"><strong>TOOLBOX <span aria-hidden="true">›</span></strong><small>보험 · 금융 · 업무지원</small></span>
+      <span class="premium-action-copy"><strong>툴박스 <span aria-hidden="true">›</span></strong><small>보험 · 금융 · 업무지원</small></span>
     </a>
+<button type="button" class="notice-trigger top-action-btn header-notice" id="noticeTrigger" aria-haspopup="dialog" aria-controls="noticeBackdrop" aria-label="공지 보기" hidden>
+      <span class="premium-notice-icon"><span class="bell">🔔</span><small>!</small></span>
+      <span class="premium-notice-copy"><strong>공지사항 <span class="new" id="noticeTriggerNew">NEW</span></strong><em>새로운 소식을 확인하세요!</em></span>
+      <span class="premium-notice-arrow" aria-hidden="true">›</span>
+    </button>
     <button type="button" class="top-action-btn refresh" id="appRefreshBtn" aria-label="새로고침"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M39 20a15 15 0 0 0-27-6l-3 4M9 8v10h10M9 28a15 15 0 0 0 27 6l3-4m0 10V30H29" stroke="#607691" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg><span>새로고침</span></button>
   </div>
 </div>
