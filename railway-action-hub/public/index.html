@@ -811,6 +811,13 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 .premium-hub .top-actions .toolbox .menu-label{font-size:12px;letter-spacing:-.02em}
 @media(max-width:520px){.premium-hub .top-actions .toolbox .menu-label{font-size:10px}}
 @media(max-width:350px){.premium-hub .top-actions .toolbox .menu-label{font-size:9px}}
+
+/* Match the spacing above and below upcoming visits, including cell padding. */
+.top-card.premium-hub{margin-bottom:10px}
+.upcoming-visits{margin-bottom:10px}
+.upcoming-visit{padding-top:9px;padding-bottom:9px}
+.upcoming-visit+.upcoming-visit:after{top:14px;bottom:14px}
+@media(max-width:420px){.upcoming-visit{padding-top:8px;padding-bottom:8px}}
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
 <div class="card top-card premium-hub">
