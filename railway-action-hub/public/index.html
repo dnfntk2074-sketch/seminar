@@ -653,8 +653,8 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 
 /* Fixed clipping windows with two equal tiles: each loop resets to an identical image. */
 .mvp-ticker.top,.mvp-ticker.bottom{display:block;width:auto;animation:none;transform:none;will-change:auto;container-type:inline-size;color:#ffd166;text-shadow:0 0 6px currentColor}
-.mvp-ticker .ticker-track{display:flex;width:max-content;gap:0;will-change:transform;backface-visibility:hidden;animation:tickerSeamlessLTR 13s linear infinite,tickerTwoColors 26s steps(1,end) infinite}
-.mvp-ticker.bottom .ticker-track{animation-duration:15s,30s}
+.mvp-ticker .ticker-track{display:flex;width:max-content;gap:0;will-change:transform;backface-visibility:hidden;animation:tickerSeamlessLTR 26s linear infinite,tickerTwoColors 52s steps(1,end) infinite}
+.mvp-ticker.bottom .ticker-track{animation-duration:30s,60s}
 .mvp-ticker .ticker-copy{display:block;flex:0 0 auto;min-width:100cqw;padding-right:42px;white-space:nowrap}
 @keyframes tickerSeamlessLTR{from{transform:translate3d(-50%,0,0)}to{transform:translate3d(0,0,0)}}
 @keyframes tickerTwoColors{0%{color:#ffd166}50%{color:#9fdcff}100%{color:#ffd166}}
