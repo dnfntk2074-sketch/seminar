@@ -1272,7 +1272,7 @@ function monthActivityWeeks(month=seoulDate(new Date()).slice(0,7)){
  const dayKey=day=>month+'-'+String(day).padStart(2,'0');
  const periods=[];
  for(let first=1,last=firstEnd;first<=lastDay;first=last+1,last=Math.min(last+7,lastDay)){
-  last=Math.min(last,lastDay);
+  last=periods.length===3?lastDay:Math.min(last,lastDay);
   const from=dayKey(first),through=dayKey(last);
   periods.push({month,index:periods.length+1,startDay:first,endDay:last,from,through,start:Date.parse(from+'T00:00:00+09:00'),end:Date.parse(through+'T00:00:00+09:00')+86400000});
   if(last===lastDay)break;
