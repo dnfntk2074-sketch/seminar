@@ -864,6 +864,47 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 .is-current .hall-week-state{color:#a5f2cf}
 .is-future .hall-week-winner,.is-future .hall-week-score{color:#7790aa}
 @media(max-width:420px){.hall-week{gap:4px;padding:7px 3px}.hall-week-winner{font-size:11px}.hall-week-range{font-size:8px}.hall-week-score{font-size:9px}.hall-week-title{font-size:10px}}
+
+/* A quiet live marker, and a compact award gallery instead of a data strip. */
+.led.mvp .mvp-marquee-copy{grid-template-columns:18px minmax(0,max-content) max-content;column-gap:5px}
+.led.mvp .mvp-live-badge{grid-column:3;display:inline-flex;align-items:center;gap:3px;align-self:center;padding:2px 5px;border:1px solid #9be8ca45;border-radius:99px;background:#9be8ca16;color:#b9f4d9;font-size:8px;line-height:1.2;letter-spacing:0;text-shadow:none;font-weight:650}
+.mvp-live-badge i{width:4px;height:4px;border-radius:50%;background:#7ee6b5}
+.hall-toolbar{min-height:22px;margin-bottom:4px}
+.hall-toolbar .upcoming-visits-label{padding:0;background:transparent;border:0;box-shadow:none;font-size:11px;line-height:1.4;font-weight:850;color:#344b68}
+.hall-toolbar .upcoming-visits-label:before{content:'🏆';margin-right:4px}
+.hall-month-controls button{width:24px;height:21px;border-radius:7px;color:#607795}
+#upcomingVisitBoard{height:108px!important;min-height:108px!important;border:1px solid #e0e7f1!important;border-radius:16px;background:linear-gradient(135deg,#fff,#f5f8fc)!important;box-shadow:0 3px 12px #314b7710;text-shadow:none}
+#upcomingVisitBoard>.glow-dots{display:none}
+#upcomingVisitGrid{padding:5px;gap:5px}
+.hall-week{padding:6px 3px;gap:4px;border:1px solid #e5ebf3;border-radius:11px;background:#fff;color:#536980;justify-content:center}
+.hall-week+.hall-week{border-left:1px solid #e5ebf3}
+.hall-week.is-final{border-color:#e7d5a5;border-top:2px solid #d7af5d;background:linear-gradient(155deg,#fffdf5,#fff7e4)}
+.hall-week.is-current{border-color:#b4dfd0;border-top:2px solid #50b98e;background:linear-gradient(155deg,#f8fffc,#eaf8f2)}
+.hall-week.is-future{background:linear-gradient(155deg,#fafbfd,#f2f5f9);border-style:dashed}
+.hall-week-title{font-size:11px;line-height:1.15;color:#3a506c;font-weight:850}
+.hall-week.is-final .hall-week-title{color:#856021}
+.hall-week.is-current .hall-week-title{color:#267658}
+.hall-week-range{font-size:9px;line-height:1.1;color:#8594a8}
+.hall-week-winner{font-size:14px;line-height:1.15;color:#253b58;font-weight:900}
+.hall-week.is-final .hall-week-winner:before{content:'👑';font-size:12px;margin-right:3px}
+.hall-week-score{font-size:10px;line-height:1.1;color:#8d6c2d}
+.hall-week.is-current .hall-week-score{color:#368465}
+.hall-week-state{font-size:8px;line-height:1.1;border-radius:99px;padding:2px 6px;max-width:100%;color:#8492a4;background:#eaf0f6}
+.hall-week.is-final .hall-week-state{background:#f0e2bd;color:#866223}
+.hall-week.is-current .hall-week-state{background:#d2eee1;color:#277653}
+.hall-week.is-current .hall-week-state:before{content:'';display:inline-block;width:4px;height:4px;margin-right:3px;border-radius:50%;background:#45a77c;vertical-align:1px}
+.is-future .hall-week-winner,.is-future .hall-week-score{color:#9ba8b9;font-weight:500}
+@media(max-width:420px){
+ #upcomingVisitGrid{padding:4px;gap:4px}
+ .hall-week{gap:4px;padding:6px 2px;border-radius:9px}
+ .hall-week-title{font-size:10px}
+ .hall-week-range{font-size:8px}
+ .hall-week-winner{font-size:12px}
+ .hall-week.is-final .hall-week-winner:before{font-size:10px;margin-right:2px}
+ .hall-week-score{font-size:9px}
+ .hall-week-state{font-size:7px;padding:2px 4px}
+ .hall-toolbar .upcoming-visits-label{font-size:10px}
+}
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
 <div class="card top-card premium-hub">
@@ -887,7 +928,7 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
   </div>
 </div>
 
-<div class="led mvp"><div class="mvp-ambient" aria-hidden="true"></div><div class="mvp-marquee-track ltr" id="mvpTrack"><div class="mvp-marquee-copy"><span class="mvp-kicker" aria-hidden="true">👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitle">2주차 활동 MVP</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpName">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCount"></span></div><div class="mvp-marquee-copy mirror" aria-hidden="true"><span class="mvp-kicker">👑 WEEKLY ACTIVITY MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitleMirror">2주차 활동 MVP</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpNameMirror">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCountMirror"></span></div><div class="mvp-marquee-copy extra" aria-hidden="true"><span class="mvp-kicker">👑 WEEKLY ACTIVITY MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitleExtra">2주차 활동 MVP</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpNameExtra">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCountExtra"></span></div></div><div class="mvp-scan" aria-hidden="true"></div><div class="mvp-ticker top" aria-hidden="true"><div class="ticker-track"><span class="ticker-copy"><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span></span><span class="ticker-copy"><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span></span></div></div><div class="mvp-ticker bottom" aria-hidden="true"><div class="ticker-track"><span class="ticker-copy"><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span></span><span class="ticker-copy"><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span></span></div></div><div class="mvp-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="fw fw1" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="fw fw2" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="fw fw3" aria-hidden="true"><i></i><i></i><i></i></div></div>
+<div class="led mvp"><div class="mvp-ambient" aria-hidden="true"></div><div class="mvp-marquee-track ltr" id="mvpTrack"><div class="mvp-marquee-copy"><span class="mvp-kicker" aria-hidden="true">👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitle">2주차 활동 MVP</span><span class="mvp-live-badge" aria-label="현재 주차 활동 집계 중"><i aria-hidden="true"></i>집계 중</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpName">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCount"></span></div><div class="mvp-marquee-copy mirror" aria-hidden="true"><span class="mvp-kicker">👑 WEEKLY ACTIVITY MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitleMirror">2주차 활동 MVP</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpNameMirror">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCountMirror"></span></div><div class="mvp-marquee-copy extra" aria-hidden="true"><span class="mvp-kicker">👑 WEEKLY ACTIVITY MVP 👑</span><span class="mvp-sep">•</span><span class="mvp-sub" id="mvpTitleExtra">2주차 활동 MVP</span><span class="mvp-sep">•</span><span class="mvp-name" id="mvpNameExtra">집계 중...</span><span class="mvp-sep">•</span><span class="mvp-count" id="mvpCountExtra"></span></div></div><div class="mvp-scan" aria-hidden="true"></div><div class="mvp-ticker top" aria-hidden="true"><div class="ticker-track"><span class="ticker-copy"><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span></span><span class="ticker-copy"><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span></span></div></div><div class="mvp-ticker bottom" aria-hidden="true"><div class="ticker-track"><span class="ticker-copy"><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span></span><span class="ticker-copy"><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span><span class="ticker-word">★ GURI LEADERS HB</span><span class="ticker-word">★ WEEKLY ACTIVITY MVP</span></span></div></div><div class="mvp-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="fw fw1" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="fw fw2" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="fw fw3" aria-hidden="true"><i></i><i></i><i></i></div></div>
 <div class="muted" style="margin:-2px 4px 12px;font-size:11px">MVP: 활동 날짜 기준 · 완료 활동 1건=1점 · 주차별 집계 · 공동 MVP 함께 표시</div><section class="upcoming-visits" aria-label="주차별 명예의 전당"><div class="hall-toolbar"><div class="upcoming-visits-label" id="hallMonthTitle">주차별 명예의 전당</div><div class="hall-month-controls"><button type="button" id="hallPrev" aria-label="명예의 전당 이전 달">‹</button><button type="button" id="hallNext" aria-label="명예의 전당 다음 달">›</button></div></div><div class="led schedule-led upcoming-board" id="upcomingVisitBoard"><div class="upcoming-visit-grid" id="upcomingVisitGrid"></div><div class="glow-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="marquee-track ltr" id="scheduleTrack" hidden><span class="marquee-copy" id="marquee">일정을 불러오는 중...</span><span class="marquee-copy mirror" id="marqueeMirror" aria-hidden="true">일정을 불러오는 중...</span><span class="marquee-copy extra" id="marqueeExtra" aria-hidden="true">일정을 불러오는 중...</span></div></div></section>
 <div class="card action-reg-card"><b>ACTION 등록</b><div class="tabs" id="tabs"><button type="button" data-t="visit" aria-expanded="false" aria-controls="actionRegistrationFields">🤝 신규상담</button><button type="button" data-t="study" aria-expanded="false" aria-controls="actionRegistrationFields">🔄 후속상담</button><button type="button" data-t="call" aria-expanded="false" aria-controls="actionRegistrationFields">💙 고객관리</button></div><div id="actionRegistrationFields" hidden>
 <div class="dt"><div class="field"><label for="owner">TFA</label><input class="input" id="owner" placeholder="성함을 입력해 주세요" autocomplete="off"></div>
@@ -1302,12 +1343,12 @@ function renderWeeklyHallOfFame(items){
   const entries=Object.entries(counts),maximum=entries.length?Math.max(...entries.map(x=>x[1])):0;
   const names=entries.filter(x=>x[1]===maximum).map(x=>x[0]).sort((a,b)=>a.localeCompare(b,'ko'));
   const future=now<week.start,current=now>=week.start&&now<week.end;
-  const card=document.createElement('article');card.className='hall-week'+(current?' is-current':'')+(future?' is-future':'');
+  const card=document.createElement('article');card.className='hall-week'+(current?' is-current':'')+(future?' is-future':'')+(!current&&!future&&maximum?' is-final':'');
   const heading=document.createElement('div');heading.className='hall-week-title';heading.textContent=week.index+'주차';
   const range=document.createElement('div');range.className='hall-week-range';range.textContent=week.startDay+'~'+week.endDay+'일';
   const winner=document.createElement('div');winner.className='hall-week-winner';winner.textContent=future?'집계 예정':names.length?names.join(' · '):current?'활동을 기다려요':'완료 활동 없음';
   const score=document.createElement('div');score.className='hall-week-score';score.textContent=future?'—':maximum?'완료 '+maximum+'건':'—';
-  const state=document.createElement('div');state.className='hall-week-state';state.textContent=future?'예정':current?'진행 중':maximum?'👑 확정 MVP':'집계 종료';
+  const state=document.createElement('div');state.className='hall-week-state';state.textContent=future?'집계 예정':current?'집계 중':maximum?'확정 MVP':'집계 종료';
   card.append(heading,range,winner,score,state);
   card.title=hallMonth+' '+week.index+'주차 ('+week.startDay+'~'+week.endDay+'일) · '+winner.textContent+' · '+score.textContent+' · '+state.textContent;
   card.setAttribute('aria-label',card.title);fragment.appendChild(card);
