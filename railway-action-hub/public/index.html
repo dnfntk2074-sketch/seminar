@@ -935,6 +935,9 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 .action-reg-card .tabs button{height:57px;min-height:57px}
 @media(max-width:720px){.action-reg-card .tabs button{height:50px;min-height:50px}}
 @media(max-width:520px){.action-reg-card .tabs button{height:44px;min-height:44px}}
+
+/* Ring only while the latest notice is within its first 24 hours. */
+#noticeTrigger:not(.is-new) .bell{animation:none!important;transform:none!important}
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
 <div class="card top-card premium-hub">
@@ -1031,14 +1034,30 @@ function renderNoticeHistory(items){
   container.appendChild(details);
  }
 }
+
+let noticeFreshnessTimer;
+function noticeIsNew(settings,hasLatest,now=Date.now()){
+ const published=Date.parse(settings.notice_published_at||'');
+ return settings.notice_new!==false&&hasLatest&&Number.isFinite(published)&&published<=now&&now-published<24*60*60*1000;
+}
+function updateNoticeFreshness(settings,hasLatest){
+ clearTimeout(noticeFreshnessTimer);
+ const fresh=noticeIsNew(settings,hasLatest);
+ noticeTriggerNew.hidden=!fresh;noticeModalNew.hidden=!fresh;
+ noticeTrigger.classList.toggle('is-new',fresh);
+ if(fresh){
+  const remaining=Date.parse(settings.notice_published_at)+24*60*60*1000-Date.now();
+  noticeFreshnessTimer=setTimeout(()=>updateNoticeFreshness(settings,hasLatest),Math.max(remaining,1));
+ }
+}
+
 function applyNotice(s){
  const history=Array.isArray(s.notice_history)?s.notice_history:[];
  const hasLatest=!!String(s.notice_title||s.notice_content||'').trim();
  const enabled=s.notice_enabled!==false&&(hasLatest||history.length>0);
  noticeTrigger.hidden=!enabled;
+ updateNoticeFreshness(s,hasLatest&&enabled);
  if(!enabled){if(!noticeBackdrop.hidden)closeNotice();return}
- const isNew=s.notice_new!==false&&hasLatest;
- noticeTriggerNew.hidden=!isNew;noticeModalNew.hidden=!isNew;
  document.getElementById('noticeLatest').hidden=!hasLatest;
  noticeTitle.textContent=s.notice_title||'공지사항';
  noticeParagraphs(noticeContent,s.notice_content||'');
