@@ -1181,11 +1181,8 @@ function renderLibrary(){
     libraryList.appendChild(d)
   })
 }
-async function loadLibrary(){try{let r=await fetch("/api/library",{cache:"no-store"});if(r.status===403){location.href="/access/?resource=library";return}if(!r.ok)throw Error();let j=await r.json();libraryItems=j.items||[];renderLibrary()}catch{libraryList.innerHTML='<div class="library-empty">자료실을 불러오지 못했습니다.</div>'}}
-async function openLibrary(){
-  try {const r=await fetch('/api/access/status?resource=library',{cache:'no-store'});if(!r.ok)throw Error();const j=await r.json();if(j.status!=='approved'){location.href='/access/?resource=library';return}libraryBackdrop.hidden=false;loadLibrary();setTimeout(()=>librarySearch.focus(),50)}
-  catch {alert('이용 권한을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.')}
-}
+async function loadLibrary(){try{let r=await fetch("/api/library"),j=await r.json();libraryItems=j.items||[];renderLibrary()}catch{libraryList.innerHTML='<div class="library-empty">자료실을 불러오지 못했습니다.</div>'}}
+function openLibrary(){libraryBackdrop.hidden=false;loadLibrary();setTimeout(()=>librarySearch.focus(),50)}
 function closeLibrary(){libraryBackdrop.hidden=true}
 let currentDownloadItem=null;
 function triggerLibraryDownload(x){
@@ -1351,7 +1348,6 @@ libraryDownloadHome.onclick=()=>{
 };
 libraryDownloadAgain.onclick=()=>{if(currentDownloadItem)triggerLibraryDownload(currentDownloadItem)};
 libraryTopBtn.onclick=openLibrary;
-if(new URLSearchParams(location.search).get("open")==="library")openLibrary();
 appRefreshBtn.onclick=()=>location.reload();
 
 libraryClose.onclick=closeLibrary;

@@ -1,6 +1,4 @@
 import express from "express";
-import { backupBeforeUpdate } from "./backup.js";
-import { createAccess, originGuard } from "./access.js";
 import { installPush } from "./push.js";
 import { publishApprovedNotice } from "./approved-notice.js";
 let notifyActivity=async()=>{};
@@ -66,9 +64,6 @@ function auth(req,res,next){
     req.admin=p; next();
   }catch{ res.status(401).json({error:"unauthorized"}); }
 }
-const access=createAccess({app,pool,auth,dir:__dirname,adminEmail:ADMIN_EMAIL,isAdmin:req=>{
-  try{return (jwt.verify(parseCookies(req).hb_admin,JWT_SECRET).email||'').toLowerCase()===ADMIN_EMAIL}catch{return false}
-}});
 function tokenHash(token){ return crypto.createHash("sha256").update(String(token||"")).digest("hex"); }
 function isTest(s){
   // Only suppress legacy imported demo schedules. Every locally registered
@@ -244,25 +239,25 @@ app.delete("/api/schedules/:id",async(req,res)=>{
   res.json({ok:true});
 });
 
-app.get("/api/library",access.requireAccess("library"),async(req,res)=>{
+app.get("/api/library",async(req,res)=>{
   try{
     const r=await pool.query("SELECT id,title,description,category,pinned,file_name,mime_type,file_size,created_at,updated_at FROM library_files ORDER BY pinned DESC, created_at DESC");
     res.json({items:r.rows.map(libraryMeta)});
   }catch(e){console.error(e);res.status(500).json({error:"library_load_failed"});}
 });
-app.get("/api/library/:id/file",access.requireAccess("library"),async(req,res)=>{
+app.get("/api/library/:id/file",async(req,res)=>{
   try{
     const r=await pool.query("SELECT file_name,mime_type,file_data FROM library_files WHERE id=$1",[req.params.id]);
     if(!r.rowCount)return res.status(404).end();
     const row=r.rows[0],download=req.query.download==="1";
     res.setHeader("Content-Type",row.mime_type||"application/octet-stream");
     res.setHeader("Content-Disposition",contentDisposition(row.file_name,download));
-    res.setHeader("Cache-Control","private, no-store");
+    res.setHeader("Cache-Control","private, max-age=300");
     res.send(row.file_data);
   }catch(e){console.error(e);res.status(500).end();}
 });
 
-app.post("/api/admin/login",originGuard,async(req,res)=>{
+app.post("/api/admin/login",async(req,res)=>{
   const email=(req.body?.email||"").trim().toLowerCase();
   const password=req.body?.password||"";
   if(email!==ADMIN_EMAIL) return res.status(401).json({error:"invalid"});
@@ -392,5 +387,5 @@ app.use((err,req,res,next)=>{
 app.get("/admin",(req,res)=>res.sendFile(path.join(__dirname,"public","admin.html")));
 
 
-backupBeforeUpdate(pool).then(()=>init()).then(async()=>{notifyActivity=await installPush(app,pool,auth);await access.init();await publishApprovedNotice(pool,notifyActivity);app.get("*",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));;app.use((err,req,res,next)=>{console.error("request failed");res.status(500).json({error:"server_error"})})}).then(()=>app.listen(PORT,"0.0.0.0",()=>console.log("HB ACTION HUB listening",PORT))).catch(e=>{console.error(e);process.exit(1);});
+init().then(async()=>{notifyActivity=await installPush(app,pool,auth);await publishApprovedNotice(pool,notifyActivity);app.get("*",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));;app.use((err,req,res,next)=>{console.error("request failed");res.status(500).json({error:"server_error"})})}).then(()=>app.listen(PORT,"0.0.0.0",()=>console.log("HB ACTION HUB listening",PORT))).catch(e=>{console.error(e);process.exit(1);});
 
