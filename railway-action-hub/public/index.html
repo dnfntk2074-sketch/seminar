@@ -945,6 +945,62 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 .calendar-card .schedule-filter-button.on{background:#def2e8;border-color:#c2e5d4;color:#267253;box-shadow:0 1px 3px #235a3b0b}
 .calendar-card .schedule-filter-button:focus-visible{outline:2px solid #4ea37c;outline-offset:1px}
 @media(max-width:420px){.calendar-card .schedule-filter-button{height:28px;font-size:11px}}
+
+/* Keep every Hall of Fame week aligned, even when the name or waiting message wraps. */
+#upcomingVisitBoard{
+  box-sizing:border-box;
+  height:126px!important;
+  min-height:126px!important;
+  padding:0!important;
+  overflow:hidden;
+}
+#upcomingVisitGrid{
+  box-sizing:border-box;
+  height:100%;
+  min-height:0;
+  align-items:stretch;
+  grid-auto-rows:minmax(0,1fr);
+}
+#upcomingVisitGrid>.hall-week{
+  box-sizing:border-box;
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:13px 10px minmax(30px,1fr) 12px 15px;
+  gap:3px;
+  align-items:center;
+  justify-items:center;
+  align-content:stretch;
+  height:100%;
+  min-height:0;
+  overflow:hidden;
+  padding:7px 3px;
+}
+#upcomingVisitGrid .hall-week-winner{
+  min-width:0;
+  max-height:30px;
+  align-self:center;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  text-align:center;
+  line-height:1.2;
+  white-space:normal;
+  word-break:keep-all;
+  overflow-wrap:anywhere;
+}
+#upcomingVisitGrid .hall-week-title,
+#upcomingVisitGrid .hall-week-range,
+#upcomingVisitGrid .hall-week-score,
+#upcomingVisitGrid .hall-week-state{
+  min-width:0;
+  max-width:100%;
+  white-space:nowrap;
+}
+@media(max-width:420px){
+  #upcomingVisitGrid>.hall-week{padding:7px 2px;gap:3px}
+}
+
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
 <div class="card top-card premium-hub">
