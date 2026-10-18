@@ -1002,135 +1002,214 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 }
 
 
-/* Hall of Fame award plaques - October 2026 */
-/* Six identical rows keep dates, emblems, names, counts and statuses aligned. */
+/* Hall of Fame compact awards — three matching horizontal rows. */
 #upcomingVisitBoard{
-  height:146px!important;
-  min-height:146px!important;
-  border-color:#dce5f0!important;
-  background:linear-gradient(125deg,#ffffff,#f7f9fc)!important;
-  box-shadow:0 4px 14px #314b7710!important;
+  box-sizing:border-box;
+  height:92px!important;
+  min-height:92px!important;
+  padding:0!important;
+  overflow:hidden;
+  border:1px solid #dce5f0!important;
+  border-radius:14px;
+  background:linear-gradient(125deg,#fff,#f7f9fc)!important;
+  box-shadow:0 3px 10px #314b7710!important;
 }
-#upcomingVisitGrid{padding:6px;gap:5px}
+#upcomingVisitGrid{
+  box-sizing:border-box;
+  display:grid;
+  height:100%;
+  min-height:0;
+  padding:4px;
+  gap:4px;
+  align-items:stretch;
+  grid-auto-rows:minmax(0,1fr);
+}
 #upcomingVisitGrid>.hall-week{
   --hall-accent:#8495a8;
   --hall-halo:rgba(169,180,195,.15);
+  box-sizing:border-box;
   display:grid;
-  grid-template-rows:14px 10px 18px minmax(30px,1fr) 11px 16px;
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:16px minmax(26px,1fr) 17px;
+  align-content:stretch;
+  align-items:center;
+  justify-items:stretch;
   gap:3px;
-  padding:7px 3px 6px;
+  height:100%;
+  min-height:0;
+  min-width:0;
   position:relative;
   isolation:isolate;
   overflow:hidden;
-  background:linear-gradient(150deg,#fff,#f7f9fc);
+  padding:5px 3px;
   border:1px solid #e0e6ee;
-  border-radius:11px;
+  border-radius:10px;
+  background:linear-gradient(150deg,#fff,#f7f9fc);
+  color:#334b69;
+  text-align:center;
+  text-shadow:none;
   box-shadow:0 2px 7px rgba(44,67,94,.055);
 }
+#upcomingVisitGrid>.hall-week+.hall-week{border-left:1px solid #e0e6ee}
 #upcomingVisitGrid>.hall-week::before{
   content:'';
   position:absolute;
   z-index:0;
-  width:68px;height:68px;right:-29px;top:-42px;
-  background:radial-gradient(circle,var(--hall-halo) 3%,transparent 72%);
+  width:64px;
+  height:64px;
+  right:-26px;
+  top:-40px;
+  background:radial-gradient(circle,var(--hall-halo) 3%,transparent 73%);
   pointer-events:none;
 }
 #upcomingVisitGrid>.hall-week::after{
   content:'';
   position:absolute;
-  z-index:0;
-  width:3px;height:3px;right:8px;top:8px;
+  width:3px;
+  height:3px;
+  right:7px;
+  top:7px;
   border-radius:50%;
+  opacity:.3;
   background:var(--hall-accent);
-  opacity:.36;
-  box-shadow:0 0 6px var(--hall-accent);
+  box-shadow:0 0 5px var(--hall-accent);
   pointer-events:none;
 }
-#upcomingVisitGrid>.hall-week>*{position:relative;z-index:1;min-width:0}
 #upcomingVisitGrid>.hall-week.is-final{
   --hall-accent:#ba913f;
-  --hall-halo:rgba(224,181,88,.37);
-  border:1px solid #dfc68b;
-  background:linear-gradient(150deg,#fffef9 0%,#fff5dd 100%);
-  box-shadow:0 2px 9px rgba(178,132,45,.14),inset 0 2px 0 rgba(231,183,87,.42);
+  --hall-halo:rgba(224,181,88,.32);
+  border-color:#dfc68b;
+  background:linear-gradient(150deg,#fffef9,#fff5dd);
+  box-shadow:0 2px 8px rgba(178,132,45,.14),inset 0 2px 0 rgba(231,183,87,.42);
 }
 #upcomingVisitGrid>.hall-week.is-current{
   --hall-accent:#46ae87;
-  --hall-halo:rgba(72,186,142,.30);
-  border:1px solid #a5d8be;
-  background:linear-gradient(150deg,#fbfffd 0%,#e7f7ed 100%);
-  box-shadow:0 2px 8px rgba(42,136,99,.12),inset 0 2px 0 rgba(86,190,145,.45);
-  animation:hallPlaqueMintBreath 5s ease-in-out infinite;
+  --hall-halo:rgba(72,186,142,.27);
+  border-color:#a5d8be;
+  background:linear-gradient(150deg,#fbfffd,#e7f7ed);
+  box-shadow:0 2px 8px rgba(42,136,99,.10),inset 0 2px 0 rgba(86,190,145,.40);
 }
 #upcomingVisitGrid>.hall-week.is-future{
   --hall-accent:#a6b2c1;
-  --hall-halo:rgba(153,166,185,.17);
-  border:1px solid #e1e6ed;
+  --hall-halo:rgba(153,166,185,.16);
+  border-color:#e1e6ed;
   border-style:solid;
   background:linear-gradient(150deg,#fafbfd,#f0f3f8);
   box-shadow:0 2px 6px rgba(76,90,110,.04);
 }
-#upcomingVisitGrid>.hall-week-title{
+#upcomingVisitGrid .hall-week-line{
+  box-sizing:border-box;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  gap:3px;
+  overflow:hidden;
+  position:relative;
+  z-index:1;
+  white-space:nowrap;
+}
+#upcomingVisitGrid .hall-week-line-top{gap:4px}
+#upcomingVisitGrid .hall-week-title{
+  font-size:10px;
+  line-height:16px;
   font-weight:900;
-  font-size:11px;
-  line-height:14px;
-  color:#334b69;
   letter-spacing:-.15px;
+  color:#344d6b;
+  flex:0 0 auto;
+  white-space:nowrap;
 }
 #upcomingVisitGrid>.hall-week.is-final .hall-week-title{color:#936c28}
 #upcomingVisitGrid>.hall-week.is-current .hall-week-title{color:#267a5b}
-#upcomingVisitGrid>.hall-week-range{
-  font-size:9px;
-  line-height:10px;
-  color:#8998aa;
+#upcomingVisitGrid .hall-week-range{
+  flex:0 1 auto;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:8px;
+  line-height:16px;
+  color:#8293a6;
+  white-space:nowrap;
 }
+#upcomingVisitGrid .hall-week-line-middle{gap:3px}
 #upcomingVisitGrid .hall-week-emblem{
+  flex:0 0 auto;
+  width:auto;
+  height:25px;
   display:flex;
   align-items:center;
   justify-content:center;
-  width:100%;height:18px;
-  line-height:18px;
-  font-size:16px;
+  font-size:23px;
+  line-height:25px;
   color:var(--hall-accent);
-  font-weight:850;
+  font-weight:800;
   text-shadow:0 1px 6px var(--hall-halo);
 }
-#upcomingVisitGrid>.hall-week.is-final .hall-week-emblem{font-size:16px;filter:drop-shadow(0 1px 2px rgba(166,118,38,.25))}
-#upcomingVisitGrid>.hall-week.is-current .hall-week-emblem{animation:hallPlaqueStar 3.8s ease-in-out infinite}
-#upcomingVisitGrid>.hall-week.is-future .hall-week-emblem{font-size:17px;font-weight:600}
+#upcomingVisitGrid>.hall-week.is-final .hall-week-emblem{
+  font-size:24px;
+  filter:drop-shadow(0 1px 2px rgba(166,118,38,.26));
+}
+#upcomingVisitGrid>.hall-week.is-current .hall-week-emblem{
+  animation:hallCompactStar 3.8s ease-in-out infinite;
+}
+#upcomingVisitGrid>.hall-week.is-future .hall-week-emblem{
+  font-size:24px;
+  font-weight:600;
+}
 #upcomingVisitGrid .hall-week-winner{
-  width:100%;
-  max-height:32px;
-  align-self:center;
-  font-size:12px;
-  line-height:1.2;
+  flex:0 1 auto;
+  display:block;
+  width:auto;
+  min-width:0;
+  max-width:100%;
+  max-height:25px;
+  margin:0;
+  text-align:left;
+  font-size:11px;
+  line-height:25px;
   font-weight:850;
   color:#30435e;
-  text-wrap:balance;
+  white-space:nowrap;
+  word-break:normal;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  -webkit-line-clamp:unset;
 }
 #upcomingVisitGrid>.hall-week.is-final .hall-week-winner{color:#664e22;font-weight:900}
+#upcomingVisitGrid>.hall-week.is-final .hall-week-winner::before{content:none!important}
 #upcomingVisitGrid>.hall-week.is-current .hall-week-winner{color:#236a51}
 #upcomingVisitGrid>.hall-week.is-future .hall-week-winner{color:#8794a5;font-weight:650}
-#upcomingVisitGrid>.hall-week.is-final .hall-week-winner::before{content:none!important}
+#upcomingVisitGrid .hall-week-line-bottom{gap:3px}
 #upcomingVisitGrid .hall-week-score{
-  font-size:9px;
-  line-height:11px;
+  flex:0 1 auto;
+  min-width:0;
+  font-size:8px;
+  line-height:16px;
   color:#997a43;
-  font-weight:700;
+  font-weight:750;
+  white-space:nowrap;
 }
 #upcomingVisitGrid>.hall-week.is-current .hall-week-score{color:#3c9975}
 #upcomingVisitGrid>.hall-week.is-future .hall-week-score{color:#9aa7b6}
 #upcomingVisitGrid .hall-week-state{
   box-sizing:border-box;
+  flex:0 1 auto;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  height:16px;
-  padding:2px 5px;
+  height:15px;
+  width:auto;
+  max-width:100%;
+  min-width:0;
+  margin:0;
+  padding:1px 3px;
   border-radius:99px;
-  font-size:8px;
-  line-height:11px;
+  font-size:7px;
+  line-height:12px;
   font-weight:750;
+  white-space:nowrap;
   border:1px solid #dce3eb;
   background:#eff2f6;
   color:#7c899a;
@@ -1138,27 +1217,89 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 #upcomingVisitGrid>.hall-week.is-final .hall-week-state{background:#f7e8c7;border-color:#ead19f;color:#8c6527}
 #upcomingVisitGrid>.hall-week.is-current .hall-week-state{background:#dbf3e7;border-color:#addfc7;color:#27775a}
 #upcomingVisitGrid>.hall-week.is-future .hall-week-state{background:#e9eef5;border-color:#dee5ee;color:#8896a7}
-@keyframes hallPlaqueMintBreath{
-  0%,100%{box-shadow:0 2px 8px rgba(42,136,99,.12),inset 0 2px 0 rgba(86,190,145,.45)}
-  50%{box-shadow:0 2px 12px rgba(42,136,99,.22),inset 0 2px 0 rgba(86,190,145,.52)}
+#upcomingVisitGrid>.hall-week.is-current .hall-week-state::before{content:'';display:none}
+#upcomingVisitGrid>.hall-week.is-final::after{
+  content:'';
+  position:absolute;
+  z-index:2;
+  top:auto;
+  right:auto;
+  bottom:2px;
+  left:-43%;
+  width:43%;
+  height:2px;
+  opacity:0;
+  border-radius:99px;
+  background:linear-gradient(90deg,transparent 0%,rgba(220,169,68,.45) 25%,#fff9c8 70%,#fff 90%,transparent 100%);
+  box-shadow:0 0 4px 1px rgba(240,196,109,.7);
+  animation:hallGoldLineSweep 5s linear infinite;
+  pointer-events:none;
 }
-@keyframes hallPlaqueStar{0%,100%{opacity:.72;transform:scale(.95)}50%{opacity:1;transform:scale(1.07)}}
+#upcomingVisitGrid .hall-week-end-sparkle{
+  position:absolute;
+  z-index:3;
+  right:0;
+  bottom:-4px;
+  width:12px;
+  height:12px;
+  pointer-events:none;
+  opacity:0;
+  transform:scale(.4);
+  animation:hallGoldEndSparkle 5s ease-out infinite;
+}
+#upcomingVisitGrid .hall-week-end-sparkle::before,
+#upcomingVisitGrid .hall-week-end-sparkle::after{
+  content:'';
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  background:#fff7b0;
+  border-radius:99px;
+  box-shadow:0 0 6px 2px #e9b95099;
+}
+#upcomingVisitGrid .hall-week-end-sparkle::before{width:3px;height:12px}
+#upcomingVisitGrid .hall-week-end-sparkle::after{width:12px;height:3px}
+@keyframes hallGoldLineSweep{
+  0%,5%{left:-43%;opacity:0}
+  12%{opacity:1}
+  66%{left:101%;opacity:1}
+  72%,100%{left:101%;opacity:0}
+}
+@keyframes hallGoldEndSparkle{
+  0%,63%{opacity:0;transform:scale(.35) rotate(0deg)}
+  68%{opacity:1;transform:scale(1.2) rotate(20deg)}
+  76%,100%{opacity:0;transform:scale(.35) rotate(55deg)}
+}
+@keyframes hallCompactStar{
+  0%,100%{opacity:.75;transform:scale(.94)}
+  50%{opacity:1;transform:scale(1.08)}
+}
 @media(max-width:420px){
-  #upcomingVisitGrid{padding:5px;gap:4px}
-  #upcomingVisitGrid>.hall-week{padding:7px 2px 6px;gap:3px;border-radius:9px}
-  #upcomingVisitGrid .hall-week-winner{font-size:11px}
-  #upcomingVisitGrid>.hall-week-title{font-size:10px}
-  #upcomingVisitGrid>.hall-week-range{font-size:8px}
-  #upcomingVisitGrid .hall-week-score{font-size:9px}
-  #upcomingVisitGrid .hall-week-state{font-size:7px;padding:2px 4px}
+  #upcomingVisitGrid{padding:4px;gap:3px}
+  #upcomingVisitGrid>.hall-week{padding:5px 2px;gap:3px;border-radius:9px}
+  #upcomingVisitGrid .hall-week-line{gap:2px}
+  #upcomingVisitGrid .hall-week-line-top{gap:3px}
+  #upcomingVisitGrid .hall-week-title{font-size:9px}
+  #upcomingVisitGrid .hall-week-range{font-size:7px}
+  #upcomingVisitGrid .hall-week-emblem{font-size:22px}
+  #upcomingVisitGrid>.hall-week.is-final .hall-week-emblem{font-size:23px}
+  #upcomingVisitGrid .hall-week-winner{font-size:10px}
+  #upcomingVisitGrid .hall-week-score{font-size:8px}
+  #upcomingVisitGrid .hall-week-state{font-size:6.5px;padding:1px 2px}
 }
 @media(max-width:350px){
-  #upcomingVisitGrid{padding:4px;gap:3px}
-  #upcomingVisitGrid .hall-week-winner{font-size:10px}
-  #upcomingVisitGrid .hall-week-state{font-size:7px}
+  #upcomingVisitGrid{padding:3px;gap:3px}
+  #upcomingVisitGrid>.hall-week{padding:5px 1px}
+  #upcomingVisitGrid .hall-week-emblem{font-size:20px}
+  #upcomingVisitGrid>.hall-week.is-final .hall-week-emblem{font-size:21px}
+  #upcomingVisitGrid .hall-week-winner{font-size:9px}
+  #upcomingVisitGrid .hall-week-score{font-size:7px}
+  #upcomingVisitGrid .hall-week-state{font-size:6px;padding:1px 2px}
 }
 @media(prefers-reduced-motion:reduce){
-  #upcomingVisitGrid>.hall-week.is-current,
+  #upcomingVisitGrid>.hall-week.is-final::after,
+  #upcomingVisitGrid .hall-week-end-sparkle,
   #upcomingVisitGrid>.hall-week.is-current .hall-week-emblem{animation:none!important}
 }
 
@@ -1623,13 +1764,20 @@ function renderWeeklyHallOfFame(items){
   const card=document.createElement('article');card.className='hall-week'+(current?' is-current':'')+(future?' is-future':'')+(!current&&!future&&maximum?' is-final':'');
   const heading=document.createElement('div');heading.className='hall-week-title';heading.textContent=week.index+'주차';
   const range=document.createElement('div');range.className='hall-week-range';range.textContent=week.startDay+'~'+week.endDay+'일';
-  const winner=document.createElement('div');winner.className='hall-week-winner';winner.textContent=future?'집계 예정':names.length?names.join(' · '):current?'활동을 기다려요':'완료 활동 없음';
+  const winner=document.createElement('div');winner.className='hall-week-winner';winner.textContent=future?'집계 예정':names.length?names.join(' · '):current?'활동 대기':'완료 없음';
   const score=document.createElement('div');score.className='hall-week-score';score.textContent=future?'—':maximum?'완료 '+maximum+'건':'—';
   const state=document.createElement('div');state.className='hall-week-state';state.textContent=future?'집계 예정':current?'집계 중':maximum?'확정 MVP':'집계 종료';
   const emblem=document.createElement('div');emblem.className='hall-week-emblem';emblem.setAttribute('aria-hidden','true');
   emblem.textContent=future?'◇':current?'✦':maximum?'👑':'✧';
-  card.append(heading,range,emblem,winner,score,state);
-  card.title=hallMonth+' '+week.index+'주차 ('+week.startDay+'~'+week.endDay+'일) · '+winner.textContent+' · '+score.textContent+' · '+state.textContent;
+  // The three compact rows have identical heights across every week.
+  const top=document.createElement('div');top.className='hall-week-line hall-week-line-top';top.append(heading,range);
+  const middle=document.createElement('div');middle.className='hall-week-line hall-week-line-middle';middle.append(emblem,winner);
+  const bottom=document.createElement('div');bottom.className='hall-week-line hall-week-line-bottom';bottom.append(score,state);
+  card.append(top,middle,bottom);
+  if(!current&&!future&&maximum){
+   const sparkle=document.createElement('span');sparkle.className='hall-week-end-sparkle';sparkle.setAttribute('aria-hidden','true');card.append(sparkle);
+  }
+  card.title=hallMonth+' '+week.index+'주차 ('+week.startDay+'~'+week.endDay+'일) · '+(current&&!names.length?'활동을 기다려요':winner.textContent)+' · '+score.textContent+' · '+state.textContent;
   card.setAttribute('aria-label',card.title);fragment.appendChild(card);
  }
  panel.replaceChildren(fragment);
