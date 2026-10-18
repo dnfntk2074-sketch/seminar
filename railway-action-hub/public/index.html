@@ -1001,6 +1001,167 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
   #upcomingVisitGrid>.hall-week{padding:7px 2px;gap:3px}
 }
 
+
+/* Hall of Fame award plaques - October 2026 */
+/* Six identical rows keep dates, emblems, names, counts and statuses aligned. */
+#upcomingVisitBoard{
+  height:146px!important;
+  min-height:146px!important;
+  border-color:#dce5f0!important;
+  background:linear-gradient(125deg,#ffffff,#f7f9fc)!important;
+  box-shadow:0 4px 14px #314b7710!important;
+}
+#upcomingVisitGrid{padding:6px;gap:5px}
+#upcomingVisitGrid>.hall-week{
+  --hall-accent:#8495a8;
+  --hall-halo:rgba(169,180,195,.15);
+  display:grid;
+  grid-template-rows:14px 10px 18px minmax(30px,1fr) 11px 16px;
+  gap:3px;
+  padding:7px 3px 6px;
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:linear-gradient(150deg,#fff,#f7f9fc);
+  border:1px solid #e0e6ee;
+  border-radius:11px;
+  box-shadow:0 2px 7px rgba(44,67,94,.055);
+}
+#upcomingVisitGrid>.hall-week::before{
+  content:'';
+  position:absolute;
+  z-index:0;
+  width:68px;height:68px;right:-29px;top:-42px;
+  background:radial-gradient(circle,var(--hall-halo) 3%,transparent 72%);
+  pointer-events:none;
+}
+#upcomingVisitGrid>.hall-week::after{
+  content:'';
+  position:absolute;
+  z-index:0;
+  width:3px;height:3px;right:8px;top:8px;
+  border-radius:50%;
+  background:var(--hall-accent);
+  opacity:.36;
+  box-shadow:0 0 6px var(--hall-accent);
+  pointer-events:none;
+}
+#upcomingVisitGrid>.hall-week>*{position:relative;z-index:1;min-width:0}
+#upcomingVisitGrid>.hall-week.is-final{
+  --hall-accent:#ba913f;
+  --hall-halo:rgba(224,181,88,.37);
+  border:1px solid #dfc68b;
+  background:linear-gradient(150deg,#fffef9 0%,#fff5dd 100%);
+  box-shadow:0 2px 9px rgba(178,132,45,.14),inset 0 2px 0 rgba(231,183,87,.42);
+}
+#upcomingVisitGrid>.hall-week.is-current{
+  --hall-accent:#46ae87;
+  --hall-halo:rgba(72,186,142,.30);
+  border:1px solid #a5d8be;
+  background:linear-gradient(150deg,#fbfffd 0%,#e7f7ed 100%);
+  box-shadow:0 2px 8px rgba(42,136,99,.12),inset 0 2px 0 rgba(86,190,145,.45);
+  animation:hallPlaqueMintBreath 5s ease-in-out infinite;
+}
+#upcomingVisitGrid>.hall-week.is-future{
+  --hall-accent:#a6b2c1;
+  --hall-halo:rgba(153,166,185,.17);
+  border:1px solid #e1e6ed;
+  border-style:solid;
+  background:linear-gradient(150deg,#fafbfd,#f0f3f8);
+  box-shadow:0 2px 6px rgba(76,90,110,.04);
+}
+#upcomingVisitGrid>.hall-week-title{
+  font-weight:900;
+  font-size:11px;
+  line-height:14px;
+  color:#334b69;
+  letter-spacing:-.15px;
+}
+#upcomingVisitGrid>.hall-week.is-final .hall-week-title{color:#936c28}
+#upcomingVisitGrid>.hall-week.is-current .hall-week-title{color:#267a5b}
+#upcomingVisitGrid>.hall-week-range{
+  font-size:9px;
+  line-height:10px;
+  color:#8998aa;
+}
+#upcomingVisitGrid .hall-week-emblem{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;height:18px;
+  line-height:18px;
+  font-size:16px;
+  color:var(--hall-accent);
+  font-weight:850;
+  text-shadow:0 1px 6px var(--hall-halo);
+}
+#upcomingVisitGrid>.hall-week.is-final .hall-week-emblem{font-size:16px;filter:drop-shadow(0 1px 2px rgba(166,118,38,.25))}
+#upcomingVisitGrid>.hall-week.is-current .hall-week-emblem{animation:hallPlaqueStar 3.8s ease-in-out infinite}
+#upcomingVisitGrid>.hall-week.is-future .hall-week-emblem{font-size:17px;font-weight:600}
+#upcomingVisitGrid .hall-week-winner{
+  width:100%;
+  max-height:32px;
+  align-self:center;
+  font-size:12px;
+  line-height:1.2;
+  font-weight:850;
+  color:#30435e;
+  text-wrap:balance;
+}
+#upcomingVisitGrid>.hall-week.is-final .hall-week-winner{color:#664e22;font-weight:900}
+#upcomingVisitGrid>.hall-week.is-current .hall-week-winner{color:#236a51}
+#upcomingVisitGrid>.hall-week.is-future .hall-week-winner{color:#8794a5;font-weight:650}
+#upcomingVisitGrid>.hall-week.is-final .hall-week-winner::before{content:none!important}
+#upcomingVisitGrid .hall-week-score{
+  font-size:9px;
+  line-height:11px;
+  color:#997a43;
+  font-weight:700;
+}
+#upcomingVisitGrid>.hall-week.is-current .hall-week-score{color:#3c9975}
+#upcomingVisitGrid>.hall-week.is-future .hall-week-score{color:#9aa7b6}
+#upcomingVisitGrid .hall-week-state{
+  box-sizing:border-box;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:16px;
+  padding:2px 5px;
+  border-radius:99px;
+  font-size:8px;
+  line-height:11px;
+  font-weight:750;
+  border:1px solid #dce3eb;
+  background:#eff2f6;
+  color:#7c899a;
+}
+#upcomingVisitGrid>.hall-week.is-final .hall-week-state{background:#f7e8c7;border-color:#ead19f;color:#8c6527}
+#upcomingVisitGrid>.hall-week.is-current .hall-week-state{background:#dbf3e7;border-color:#addfc7;color:#27775a}
+#upcomingVisitGrid>.hall-week.is-future .hall-week-state{background:#e9eef5;border-color:#dee5ee;color:#8896a7}
+@keyframes hallPlaqueMintBreath{
+  0%,100%{box-shadow:0 2px 8px rgba(42,136,99,.12),inset 0 2px 0 rgba(86,190,145,.45)}
+  50%{box-shadow:0 2px 12px rgba(42,136,99,.22),inset 0 2px 0 rgba(86,190,145,.52)}
+}
+@keyframes hallPlaqueStar{0%,100%{opacity:.72;transform:scale(.95)}50%{opacity:1;transform:scale(1.07)}}
+@media(max-width:420px){
+  #upcomingVisitGrid{padding:5px;gap:4px}
+  #upcomingVisitGrid>.hall-week{padding:7px 2px 6px;gap:3px;border-radius:9px}
+  #upcomingVisitGrid .hall-week-winner{font-size:11px}
+  #upcomingVisitGrid>.hall-week-title{font-size:10px}
+  #upcomingVisitGrid>.hall-week-range{font-size:8px}
+  #upcomingVisitGrid .hall-week-score{font-size:9px}
+  #upcomingVisitGrid .hall-week-state{font-size:7px;padding:2px 4px}
+}
+@media(max-width:350px){
+  #upcomingVisitGrid{padding:4px;gap:3px}
+  #upcomingVisitGrid .hall-week-winner{font-size:10px}
+  #upcomingVisitGrid .hall-week-state{font-size:7px}
+}
+@media(prefers-reduced-motion:reduce){
+  #upcomingVisitGrid>.hall-week.is-current,
+  #upcomingVisitGrid>.hall-week.is-current .hall-week-emblem{animation:none!important}
+}
+
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
 <div class="card top-card premium-hub">
@@ -1465,7 +1626,9 @@ function renderWeeklyHallOfFame(items){
   const winner=document.createElement('div');winner.className='hall-week-winner';winner.textContent=future?'집계 예정':names.length?names.join(' · '):current?'활동을 기다려요':'완료 활동 없음';
   const score=document.createElement('div');score.className='hall-week-score';score.textContent=future?'—':maximum?'완료 '+maximum+'건':'—';
   const state=document.createElement('div');state.className='hall-week-state';state.textContent=future?'집계 예정':current?'집계 중':maximum?'확정 MVP':'집계 종료';
-  card.append(heading,range,winner,score,state);
+  const emblem=document.createElement('div');emblem.className='hall-week-emblem';emblem.setAttribute('aria-hidden','true');
+  emblem.textContent=future?'◇':current?'✦':maximum?'👑':'✧';
+  card.append(heading,range,emblem,winner,score,state);
   card.title=hallMonth+' '+week.index+'주차 ('+week.startDay+'~'+week.endDay+'일) · '+winner.textContent+' · '+score.textContent+' · '+state.textContent;
   card.setAttribute('aria-label',card.title);fragment.appendChild(card);
  }
