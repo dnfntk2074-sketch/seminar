@@ -1319,29 +1319,44 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
   animation:hallBorderOrbit 5.6s linear infinite
 }
 #upcomingVisitGrid .hall-border-orbit .hall-border-glow{
-  stroke:rgba(255,194,65,.82);stroke-width:7px;
-  filter:drop-shadow(0 0 3px rgba(239,171,44,.85));opacity:.8
+  stroke:rgba(255,194,65,.68);stroke-width:4px;
+  filter:drop-shadow(0 0 2px rgba(239,171,44,.78));opacity:.8
 }
 #upcomingVisitGrid .hall-border-orbit .hall-border-beam{
-  stroke:#fff8bf;stroke-width:3.4px;
+  stroke:#fff8bf;stroke-width:2px;
   filter:drop-shadow(0 0 2px #ffc766)
 }
 @keyframes hallBorderOrbit{
   from{stroke-dashoffset:0}to{stroke-dashoffset:-100}
 }
+/* Beam front arrives at TR → BR → BL → TL, approximately 1/4 loop apart.
+   Every four-point star flashes only when the moving gold stroke reaches it. */
 #upcomingVisitGrid .hall-border-corner{
-  position:absolute;z-index:5;width:5px;height:5px;border-radius:50%;
-  background:#fff9c4;box-shadow:0 0 4px 2px #ffe79a,0 0 9px 4px rgba(245,172,39,.66);
-  opacity:.13;transform:scale(.55);animation:hallCornerTwinkle 5.6s ease-in-out infinite
+  position:absolute;z-index:5;width:11px;height:11px;
+  pointer-events:none;border-radius:50%;opacity:.06;transform:scale(.5);
+  background:radial-gradient(circle,#fff 0%,#fff3a8 20%,transparent 65%);
+  filter:drop-shadow(0 0 3px #eeb855);
+  animation:hallCornerTwinkle 5.6s linear infinite
 }
-#upcomingVisitGrid .corner-tl{top:0;left:0;animation-delay:-.15s}
-#upcomingVisitGrid .corner-tr{top:0;right:0;animation-delay:1.25s}
-#upcomingVisitGrid .corner-br{bottom:0;right:0;animation-delay:2.65s}
-#upcomingVisitGrid .corner-bl{bottom:0;left:0;animation-delay:4.05s}
+#upcomingVisitGrid .hall-border-corner::before,
+#upcomingVisitGrid .hall-border-corner::after{
+  content:'';position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);border-radius:50%;
+  background:linear-gradient(90deg,transparent,#fff 46%,#fff 54%,transparent);
+  box-shadow:0 0 4px rgba(255,217,110,.95)
+}
+#upcomingVisitGrid .hall-border-corner::before{width:3px;height:12px}
+#upcomingVisitGrid .hall-border-corner::after{width:12px;height:3px}
+/* Dash leading edge starts ~16% along the border: corner arrival phases
+   ≈9%, 34%, 59%, 84% of the 5.6-second orbit. */
+#upcomingVisitGrid .corner-tr{top:1px;right:1px;animation-delay:.34s}
+#upcomingVisitGrid .corner-br{bottom:1px;right:1px;animation-delay:1.74s}
+#upcomingVisitGrid .corner-bl{bottom:1px;left:1px;animation-delay:3.14s}
+#upcomingVisitGrid .corner-tl{top:1px;left:1px;animation-delay:4.54s}
 @keyframes hallCornerTwinkle{
-  0%,12%,32%,100%{opacity:.13;transform:scale(.55)}
-  20%{opacity:1;transform:scale(1.65)}
-  26%{opacity:.65;transform:scale(1)}
+  0%,1%,9%,100%{opacity:.05;transform:scale(.5)}
+  3%{opacity:1;transform:scale(1.45)}
+  6%{opacity:.38;transform:scale(.95)}
 }
 /* Crown on the left; one centered TFA name per award. */
 #upcomingVisitGrid .hall-week-line-middle{
@@ -1370,29 +1385,32 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 }
 /* Force all holiday names, including substitute holidays, into one shared slot. */
 .calendar-card .day h4{
-  display:grid!important;grid-template-columns:max-content minmax(0,1fr);
+  display:grid!important;grid-template-columns:14px minmax(0,1fr);
   align-items:center!important;justify-content:stretch!important;gap:2px!important;
   flex-wrap:nowrap!important;height:17px!important;min-height:17px!important;
   max-height:17px!important;margin-bottom:3px!important;overflow:hidden!important
 }
-.calendar-card .day h4 .day-date{white-space:nowrap;line-height:15px!important}
+.calendar-card .day h4 .day-date{width:14px;min-width:14px;white-space:nowrap;line-height:15px!important;text-align:left}
 .calendar-card .day h4 .day-badge{
-  grid-column:2;box-sizing:border-box;display:flex!important;min-width:0!important;
-  max-width:100%!important;width:100%;align-items:center;
-  white-space:nowrap!important;overflow:hidden!important;padding:1px 2px!important
+  grid-column:2;box-sizing:border-box;display:inline-flex!important;min-width:0!important;
+  max-width:100%!important;width:max-content!important;justify-self:start;align-items:center;
+  flex:0 1 auto;white-space:nowrap!important;overflow:hidden!important;padding:1px 2px!important
 }
 .calendar-card .day h4 .day-badge-label{
-  display:block;flex:1 1 auto;min-width:0;max-width:100%;
+  display:block;flex:0 1 auto;min-width:0;max-width:100%;
   white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
   font-size:inherit!important;letter-spacing:-.15px
 }
 @media(max-width:520px){
-  .calendar-card .day h4{grid-template-columns:9px minmax(0,1fr);gap:1px!important}
-  .calendar-card .day h4 .day-badge{font-size:clamp(5px,1.45vw,7px)!important;padding:1px!important}
+  .calendar-card .day h4{grid-template-columns:12px minmax(0,1fr);gap:1px!important}
+  .calendar-card .day h4 .day-date{width:12px;min-width:12px}
+  .calendar-card .day h4 .day-badge{font-size:clamp(5px,1.35vw,7px)!important;padding:1px!important}
   .calendar-card .day h4 .day-badge-icon{display:none!important}
   .calendar-card .day h4 .day-badge-label{letter-spacing:-.3px}
 }
 @media(max-width:350px){
+  .calendar-card .day h4{grid-template-columns:11px minmax(0,1fr)}
+  .calendar-card .day h4 .day-date{width:11px;min-width:11px}
   .calendar-card .day h4 .day-badge{font-size:5px!important}
 }
 @media(prefers-reduced-motion:reduce){
