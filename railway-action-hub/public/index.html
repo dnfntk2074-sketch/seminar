@@ -1303,6 +1303,104 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
   #upcomingVisitGrid>.hall-week.is-current .hall-week-emblem{animation:none!important}
 }
 
+
+/* 2026-10-19 compact plaque improvements: orbit, titles, calendar. */
+#upcomingVisitGrid>.hall-week.is-final::after{display:none!important;animation:none!important}
+#upcomingVisitGrid .hall-week-end-sparkle{display:none!important}
+#upcomingVisitGrid .hall-border-orbit{
+  position:absolute;inset:0;z-index:4;pointer-events:none;overflow:visible
+}
+#upcomingVisitGrid .hall-border-orbit svg{
+  position:absolute;inset:0;display:block;width:100%;height:100%;overflow:visible
+}
+#upcomingVisitGrid .hall-border-orbit rect{
+  fill:none;stroke-linecap:round;stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;stroke-dasharray:16 84;stroke-dashoffset:0;
+  animation:hallBorderOrbit 5.6s linear infinite
+}
+#upcomingVisitGrid .hall-border-orbit .hall-border-glow{
+  stroke:rgba(255,194,65,.82);stroke-width:7px;
+  filter:drop-shadow(0 0 3px rgba(239,171,44,.85));opacity:.8
+}
+#upcomingVisitGrid .hall-border-orbit .hall-border-beam{
+  stroke:#fff8bf;stroke-width:3.4px;
+  filter:drop-shadow(0 0 2px #ffc766)
+}
+@keyframes hallBorderOrbit{
+  from{stroke-dashoffset:0}to{stroke-dashoffset:-100}
+}
+#upcomingVisitGrid .hall-border-corner{
+  position:absolute;z-index:5;width:5px;height:5px;border-radius:50%;
+  background:#fff9c4;box-shadow:0 0 4px 2px #ffe79a,0 0 9px 4px rgba(245,172,39,.66);
+  opacity:.13;transform:scale(.55);animation:hallCornerTwinkle 5.6s ease-in-out infinite
+}
+#upcomingVisitGrid .corner-tl{top:0;left:0;animation-delay:-.15s}
+#upcomingVisitGrid .corner-tr{top:0;right:0;animation-delay:1.25s}
+#upcomingVisitGrid .corner-br{bottom:0;right:0;animation-delay:2.65s}
+#upcomingVisitGrid .corner-bl{bottom:0;left:0;animation-delay:4.05s}
+@keyframes hallCornerTwinkle{
+  0%,12%,32%,100%{opacity:.13;transform:scale(.55)}
+  20%{opacity:1;transform:scale(1.65)}
+  26%{opacity:.65;transform:scale(1)}
+}
+/* Crown on the left; one centered TFA name per award. */
+#upcomingVisitGrid .hall-week-line-middle{
+  display:grid;grid-template-columns:21px minmax(0,1fr);
+  align-items:center;justify-items:stretch;gap:0
+}
+#upcomingVisitGrid .hall-week-line-middle .hall-week-emblem{
+  grid-column:1;justify-self:start;width:21px;min-width:21px;font-size:24px
+}
+#upcomingVisitGrid>.hall-week.is-final .hall-week-line-middle .hall-week-emblem{font-size:25px}
+#upcomingVisitGrid .hall-week-line-middle .hall-week-winner{
+  grid-column:2;display:block;width:100%;min-width:0;max-width:100%;
+  font-size:10px;line-height:25px;text-align:center;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis
+}
+@media(max-width:420px){
+  #upcomingVisitGrid .hall-week-line-middle{grid-template-columns:18px minmax(0,1fr)}
+  #upcomingVisitGrid .hall-week-line-middle .hall-week-emblem{width:18px;min-width:18px;font-size:22px}
+  #upcomingVisitGrid>.hall-week.is-final .hall-week-line-middle .hall-week-emblem{font-size:23px}
+  #upcomingVisitGrid .hall-week-line-middle .hall-week-winner{font-size:9px}
+}
+@media(max-width:350px){
+  #upcomingVisitGrid .hall-week-line-middle{grid-template-columns:16px minmax(0,1fr)}
+  #upcomingVisitGrid .hall-week-line-middle .hall-week-emblem{width:16px;min-width:16px;font-size:20px}
+  #upcomingVisitGrid .hall-week-line-middle .hall-week-winner{font-size:8px}
+}
+/* Force all holiday names, including substitute holidays, into one shared slot. */
+.calendar-card .day h4{
+  display:grid!important;grid-template-columns:max-content minmax(0,1fr);
+  align-items:center!important;justify-content:stretch!important;gap:2px!important;
+  flex-wrap:nowrap!important;height:17px!important;min-height:17px!important;
+  max-height:17px!important;margin-bottom:3px!important;overflow:hidden!important
+}
+.calendar-card .day h4 .day-date{white-space:nowrap;line-height:15px!important}
+.calendar-card .day h4 .day-badge{
+  grid-column:2;box-sizing:border-box;display:flex!important;min-width:0!important;
+  max-width:100%!important;width:100%;align-items:center;
+  white-space:nowrap!important;overflow:hidden!important;padding:1px 2px!important
+}
+.calendar-card .day h4 .day-badge-label{
+  display:block;flex:1 1 auto;min-width:0;max-width:100%;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  font-size:inherit!important;letter-spacing:-.15px
+}
+@media(max-width:520px){
+  .calendar-card .day h4{grid-template-columns:9px minmax(0,1fr);gap:1px!important}
+  .calendar-card .day h4 .day-badge{font-size:clamp(5px,1.45vw,7px)!important;padding:1px!important}
+  .calendar-card .day h4 .day-badge-icon{display:none!important}
+  .calendar-card .day h4 .day-badge-label{letter-spacing:-.3px}
+}
+@media(max-width:350px){
+  .calendar-card .day h4 .day-badge{font-size:5px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #upcomingVisitGrid .hall-border-orbit rect,
+  #upcomingVisitGrid .hall-border-corner{animation:none!important}
+  #upcomingVisitGrid .hall-border-orbit rect{stroke-dasharray:none}
+  #upcomingVisitGrid .hall-border-corner{opacity:.4}
+}
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
 <div class="card top-card premium-hub">
@@ -1764,7 +1862,7 @@ function renderWeeklyHallOfFame(items){
   const card=document.createElement('article');card.className='hall-week'+(current?' is-current':'')+(future?' is-future':'')+(!current&&!future&&maximum?' is-final':'');
   const heading=document.createElement('div');heading.className='hall-week-title';heading.textContent=week.index+'주차';
   const range=document.createElement('div');range.className='hall-week-range';range.textContent=week.startDay+'~'+week.endDay+'일';
-  const winner=document.createElement('div');winner.className='hall-week-winner';winner.textContent=future?'집계 예정':names.length?names.join(' · '):current?'활동 대기':'완료 없음';
+  const winner=document.createElement('div');winner.className='hall-week-winner';winner.textContent=future?'집계 예정':names.length?names.map(n=>/\sTFA$/i.test(n)?n:n+' TFA').join(' · '):current?'활동 대기':'완료 없음';
   const score=document.createElement('div');score.className='hall-week-score';score.textContent=future?'—':maximum?'완료 '+maximum+'건':'—';
   const state=document.createElement('div');state.className='hall-week-state';state.textContent=future?'집계 예정':current?'집계 중':maximum?'확정 MVP':'집계 종료';
   const emblem=document.createElement('div');emblem.className='hall-week-emblem';emblem.setAttribute('aria-hidden','true');
@@ -1775,7 +1873,9 @@ function renderWeeklyHallOfFame(items){
   const bottom=document.createElement('div');bottom.className='hall-week-line hall-week-line-bottom';bottom.append(score,state);
   card.append(top,middle,bottom);
   if(!current&&!future&&maximum){
-   const sparkle=document.createElement('span');sparkle.className='hall-week-end-sparkle';sparkle.setAttribute('aria-hidden','true');card.append(sparkle);
+   const orbit=document.createElement('div');orbit.className='hall-border-orbit';orbit.setAttribute('aria-hidden','true');
+   orbit.innerHTML='<svg viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false" aria-hidden="true"><rect class="hall-border-glow" x="2" y="2" width="96" height="96" rx="11" pathLength="100"/><rect class="hall-border-beam" x="2" y="2" width="96" height="96" rx="11" pathLength="100"/></svg><i class="hall-border-corner corner-tl"></i><i class="hall-border-corner corner-tr"></i><i class="hall-border-corner corner-br"></i><i class="hall-border-corner corner-bl"></i>';
+   card.append(orbit);
   }
   card.title=hallMonth+' '+week.index+'주차 ('+week.startDay+'~'+week.endDay+'일) · '+(current&&!names.length?'활동을 기다려요':winner.textContent)+' · '+score.textContent+' · '+state.textContent;
   card.setAttribute('aria-label',card.title);fragment.appendChild(card);
