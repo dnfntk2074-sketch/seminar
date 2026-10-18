@@ -85,6 +85,7 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
 #adminNoticeHistory summary small{display:block;font-size:11px;color:#64748b;margin-top:5px}
 #adminNoticeHistory details p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.8;color:#475569}
 #adminNoticeHistorySection[hidden]{display:none}
+.hero{background:linear-gradient(130deg,#102b46,#164c65 65%,#169b94)}.primary{background:#087f82}.nav.on{color:#087f82}.call{background:#f3edff;color:#7550b8}.quick button{border:1px solid #d9eee9;background:#f1fcf8}.stats{margin-top:12px}.hall-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.hall-card{border-radius:16px;padding:15px;background:linear-gradient(145deg,#132c46,#23536a);color:#fff;min-width:0}.hall-card span,.hall-card div{font-size:11px;color:#c9e4e5}.hall-card strong{display:block;margin:12px 0;font-size:17px;overflow-wrap:anywhere}#refreshData{margin-top:12px;margin-right:8px}@media(min-width:620px){.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:380px){.hero-title{font-size:18px}.admin-badge{padding:6px;font-size:10px}.filters{grid-template-columns:1fr 1fr}} 
 </style>
 </head>
 <body>
@@ -112,12 +113,12 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
 
     <section class="view on" id="view-home">
       <div class="card">
-        <div class="section-title">📊 오늘의 관리 현황</div>
+        <div class="section-title">📊 활동 관리 현황</div><div class="muted" id="periodLabel"></div><button class="btn ghost" id="refreshData">↻ 새로고침</button><span class="muted" id="refreshStatus" role="status"></span>
         <div class="stats">
           <div class="stat s1"><span>오늘 일정</span><b id="stToday">0</b></div>
-          <div class="stat s2"><span>이번 주 일정</span><b id="stWeek">0</b></div>
-          <div class="stat s3"><span>신규상담</span><b id="stVisit">0</b></div>
-          <div class="stat s4"><span>후속상담·고객관리</span><b id="stEtc">0</b></div>
+          <div class="stat s2"><span>현재 주차 일정</span><b id="stWeek">0</b></div>
+          <div class="stat s3"><span>🤝 신규상담</span><b id="stVisit">0</b></div>
+          <div class="stat s2"><span>💬 후속상담</span><b id="stStudy">0</b></div><div class="stat s4"><span>💜 고객관리</span><b id="stCall">0</b></div><div class="stat s3"><span>✓ 현재 주차 완료</span><b id="stDone">0</b></div>
         </div>
       </div>
       <div class="card">
@@ -140,20 +141,20 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
       <div class="card">
         <div class="section-title">📅 일정 관리 <span class="muted" id="scheduleCount"></span></div>
         <div class="filters">
-          <input id="search" placeholder="TFA명 · 장소 검색">
+          <input id="search" placeholder="TFA명 · 지역/장소 검색">
           <select id="typeFilter"><option value="all">전체 유형</option><option value="visit">신규상담</option><option value="study">후속상담</option><option value="call">고객관리</option></select>
         </div>
-        <div id="list"></div>
+<div class="filters"><select id="periodFilter"><option value="all">전체 기간</option><option value="today">오늘</option><option value="week">현재 주차</option><option value="month">이번 달</option></select><select id="statusFilter"><option value="all">전체 상태</option><option value="pending">예정</option><option value="done">완료</option></select></div><div id="list"></div>
       </div>
     </section>
 
-    <section class="view" id="view-board">
+    <section class="view" id="view-board"><div class="card"><div class="section-title">🏆 주차별 명예의 전당</div><input type="month" id="hallMonth" aria-label="명예의 전당 조회 월"><p class="muted">사용자 앱과 동일하게 일정 날짜 기준 완료 활동만 집계합니다. 공동 1위는 함께 표시됩니다.</p><div id="hallCards" class="hall-grid"></div></div>
       <div class="card">
         <div class="section-title">📺 전광판 · MVP 설정</div>
-        <div class="field"><label>전광판 모드</label><select id="mode"><option value="auto">자동 — 가장 가까운 다음 일정</option><option value="manual">직접 문구 입력</option></select></div>
+        <div class="field"><label>전광판 모드</label><select id="mode"><option value="auto">자동 — 다가오는 일정 전광판</option><option value="manual">직접 문구 입력</option></select></div>
         <div class="field"><label>직접 입력 문구</label><input id="marquee" placeholder="직접 입력 모드에서 노출할 문구"></div>
-        <div class="toggle-row"><div><b>MVP 전광판 표시</b><div class="muted">이번 주 완료 활동 MVP 표시 여부</div></div><input type="checkbox" id="mvp"></div>
-        <div class="field"><label>MVP 제목</label><input id="mvpTitle"></div>
+        <div class="toggle-row"><div><b>MVP 전광판 표시</b><div class="muted">현재 주차 완료 활동 MVP 표시 여부 · 사용자 앱과 동일한 집계</div></div><input type="checkbox" id="mvp"></div>
+        <div class="field" hidden><label>MVP 제목</label><input id="mvpTitle"></div><p class="muted">MVP 제목과 집계 중 표시는 현재 주차에 맞춰 자동 표시됩니다. 매월 최대 4개 주차로 구분합니다.</p>
         <div class="field"><label>앱 제목</label><input id="title"></div>
         <div class="field"><label>앱 부제목</label><input id="sub"></div>
         <button class="btn primary full" id="save">설정 저장</button>
@@ -166,7 +167,7 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
         <div class="section-title">📢 공지 관리</div>
         <div class="muted">새 공지를 게시하면 현재 공지는 날짜·시간과 함께 이전 공지로 자동 보관됩니다. 내용이 같으면 중복 저장하지 않습니다.</div>
         <div class="toggle-row"><div><b>공지 게시</b><div class="muted">끄면 사용자 화면에서 공지 버튼이 숨겨집니다.</div></div><input type="checkbox" id="noticeEnabled"></div>
-        <div class="toggle-row"><div><b>NEW 표시</b><div class="muted">새 공지일 때 빨간 NEW 배지를 표시합니다.</div></div><input type="checkbox" id="noticeNew"></div>
+        <div class="toggle-row"><div><b>NEW 표시</b><div class="muted">게시 후 24시간 동안 NEW와 종 흔들림을 표시하고, 이후 자동으로 종료됩니다.</div></div><input type="checkbox" id="noticeNew"></div>
         <div id="noticeCurrentDate" class="muted" style="margin-top:12px"></div><button type="button" class="btn full" id="newNoticeDraft">＋ 새 공지 작성</button><div class="field"><label>공지 제목</label><input id="noticeTitleInput" maxlength="120" placeholder="예: TFA TOOLBOX 리뉴얼 안내"></div>
         <div class="field"><label>공지 내용</label><textarea id="noticeContentInput" maxlength="4000" placeholder="공지 내용을 입력해 주세요."></textarea></div>
         <div class="field"><label>바로가기 링크 · 선택</label><input id="noticeUrlInput" type="url" placeholder="https://..."></div>
@@ -233,18 +234,44 @@ function placeOf(x){return String(x.customerName||"").replace(/^\[(후속상담|
 function typeName(t){return t==="study"?"후속상담":t==="call"?"고객관리":"신규상담"}
 function badgeClass(t){return t==="study"?"study":t==="call"?"call":"visit"}
 function fmt(iso){return new Intl.DateTimeFormat("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(iso))}
-function weekRange(){
-  let now=new Date(), kst=new Date(now.toLocaleString("en-US",{timeZone:"Asia/Seoul"})),day=kst.getDay(),back=day===0?6:day-1;
-  let mon=new Date(kst);mon.setDate(kst.getDate()-back);mon.setHours(0,0,0,0);
-  let sun=new Date(mon);sun.setDate(mon.getDate()+7);
-  return[mon,sun]
+function monthActivityWeeks(month=seoulDate(new Date()).slice(0,7)){
+ const [year,monthNumber]=month.split('-').map(Number);
+ const lastDay=new Date(Date.UTC(year,monthNumber,0)).getUTCDate();
+ const weekdayOfSeventh=new Date(Date.UTC(year,monthNumber-1,7)).getUTCDay();
+ const firstEnd=7+(7-weekdayOfSeventh)%7;
+ const dayKey=day=>month+'-'+String(day).padStart(2,'0');
+ const periods=[];
+ for(let first=1,last=firstEnd;first<=lastDay;first=last+1,last=Math.min(last+7,lastDay)){
+  last=periods.length===3?lastDay:Math.min(last,lastDay);
+  const from=dayKey(first),through=dayKey(last);
+  periods.push({month,index:periods.length+1,startDay:first,endDay:last,from,through,start:Date.parse(from+'T00:00:00+09:00'),end:Date.parse(through+'T00:00:00+09:00')+86400000});
+  if(last===lastDay)break;
+ }
+ return periods;
+}
+function activityWeek(now=new Date()){
+ const day=seoulDate(now);
+ return monthActivityWeeks(day.slice(0,7)).find(week=>day>=week.from&&day<=week.through);
+}
+function weekRange(){const w=activityWeek();return [new Date(w.start),new Date(w.end)]}
+function renderActivitySummary(){
+ const w=activityWeek(),rows=schedules.filter(x=>Date.parse(x.scheduledAt)>=w.start&&Date.parse(x.scheduledAt)<w.end);
+ document.getElementById('periodLabel').textContent=Number(w.month.slice(5))+'월 '+w.index+'주차 · '+w.startDay+'~'+w.endDay+'일';
+ for(const [type,id] of [['visit','stVisit'],['study','stStudy'],['call','stCall']])document.getElementById(id).textContent=rows.filter(x=>typeOf(x)===type).length;
+ document.getElementById('stDone').textContent=rows.filter(x=>x.completed).length;
+ const month=document.getElementById('hallMonth').value||seoulDate().slice(0,7);
+ document.getElementById('hallCards').innerHTML=monthActivityWeeks(month).map(p=>{
+ const counts=new Map();schedules.filter(x=>x.completed&&Date.parse(x.scheduledAt)>=p.start&&Date.parse(x.scheduledAt)<p.end).forEach(x=>counts.set(x.ownerName,(counts.get(x.ownerName)||0)+1));
+ const max=Math.max(0,...counts.values()),names=[...counts].filter(x=>x[1]===max).map(x=>x[0]).join(' · '),now=Date.now(),state=now<p.start?'집계 예정':now<p.end?'집계 중':'집계 종료';
+ return '<article class="hall-card"><span>'+p.index+'주차 · '+p.startDay+'~'+p.endDay+'일</span><strong>'+esc(names||(now<p.start?'집계 예정':'완료 활동 없음'))+'</strong><div>'+(max?'완료 '+max+'건 · ':'')+state+'</div></article>';
+ }).join('');
 }
 function renderStats(){
   const today=seoulDate(), [mon,sun]=weekRange();
   stToday.textContent=schedules.filter(x=>seoulDate(new Date(x.scheduledAt))===today).length;
   stWeek.textContent=schedules.filter(x=>{let d=new Date(x.scheduledAt);return d>=mon&&d<sun}).length;
-  stVisit.textContent=schedules.filter(x=>typeOf(x)==="visit").length;
-  stEtc.textContent=schedules.filter(x=>typeOf(x)!=="visit").length;
+
+  renderActivitySummary();
   const n=schedules.filter(x=>new Date(x.scheduledAt)>=new Date()).sort((a,b)=>new Date(a.scheduledAt)-new Date(b.scheduledAt))[0];
   if(!n) nextSchedule.innerHTML='<div class="empty">등록된 다음 일정이 없습니다.</div>';
   else{let t=typeOf(n);nextSchedule.innerHTML='<div class="item"><div class="item-top"><div class="item-main"><div class="owner">'+esc(n.ownerName)+' TFA <span class="badge '+badgeClass(t)+'">'+typeName(t)+'</span></div><div class="item-meta">'+fmt(n.scheduledAt)+' · '+esc(placeOf(n))+'</div></div></div></div>'}
@@ -253,7 +280,7 @@ function renderList(){
   const q=search.value.trim().toLowerCase(), tf=typeFilter.value;
   let rows=schedules.filter(x=>{
     let t=typeOf(x), hay=((x.ownerName||"")+" "+placeOf(x)).toLowerCase();
-    return(!q||hay.includes(q))&&(tf==="all"||t===tf)
+    const date=seoulDate(new Date(x.scheduledAt)),w=activityWeek(),p=periodFilter.value,status=statusFilter.value;return(!q||hay.includes(q))&&(tf==="all"||t===tf)&&(status==="all"||(status==="done"?x.completed:!x.completed))&&(p==="all"||(p==="today"?date===seoulDate():p==="month"?date.startsWith(seoulDate().slice(0,7)):date>=w.from&&date<=w.through))
   }).sort((a,b)=>new Date(b.scheduledAt)-new Date(a.scheduledAt));
   scheduleCount.textContent=rows.length+"건";
   list.innerHTML="";
@@ -394,7 +421,12 @@ async function load(){
   let j=await (await api("/api/admin/schedules")).json();schedules=j.schedules||[];
   renderStats();renderList();await loadLibraryAdmin()
 }
-load();
+document.getElementById('hallMonth').value=seoulDate().slice(0,7);
+document.getElementById('hallMonth').onchange=renderActivitySummary;
+periodFilter.onchange=statusFilter.onchange=renderList;
+refreshData.onclick=async()=>{refreshData.disabled=true;try{await load();refreshStatus.textContent='방금 업데이트됨'}catch{refreshStatus.textContent='불러오지 못했습니다. 다시 시도해 주세요.'}finally{refreshData.disabled=false}};
+load().catch(()=>{loginMsg.textContent='연결을 확인하고 다시 시도해 주세요.'});
 </script>
 </body>
 </html>
+
