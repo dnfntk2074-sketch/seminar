@@ -78,7 +78,15 @@ function isTest(s){
 }
 function requestOwnerName(req){try{return decodeURIComponent(req.get("x-owner-name")||"").trim()}catch{return ""}}
 function sameOwnerName(a,b){return String(a||"").trim()===String(b||"").trim()}
-function isScheduleAdmin(req){try{return (jwt.verify(parseCookies(req).hb_admin,JWT_SECRET).email||"").toLowerCase()===ADMIN_EMAIL}catch{return false}}
+function isScheduleAdmin(req){
+  for(const [name,purpose] of [["hb_admin",null],["hb_schedule_pass","schedule-owner"]]){
+    try{const p=jwt.verify(parseCookies(req)[name],JWT_SECRET);
+      if((p.email||"").toLowerCase()===ADMIN_EMAIL&&(!purpose||p.purpose===purpose))return true;
+    }catch{}
+  }
+  return false;
+}
+function scheduleAuth(req,res,next){if(isScheduleAdmin(req))return next();res.status(401).json({error:"owner_pass_required"})}
 function toPublic(row,hash,ownerName,isAdmin=false){
   return {
     id:String(row.id), ownerName:row.owner_name, customerName:row.customer_name,
@@ -197,7 +205,8 @@ app.get("/api/data", async(req,res)=>{
     const [rows,settings]=await Promise.all([pool.query("SELECT * FROM schedules ORDER BY scheduled_at ASC"),getSettings()]);
     const h=req.get("x-owner-token")?tokenHash(req.get("x-owner-token")):"";
     const ownerName=requestOwnerName(req);
-    res.json({schedules:rows.rows.filter(s=>!isTest(s)).map(s=>toPublic(s,h,ownerName,isScheduleAdmin(req))),settings});
+    res.setHeader("Cache-Control","private, no-store");
+    res.json({ownerPass:isScheduleAdmin(req),schedules:rows.rows.filter(s=>!isTest(s)).map(s=>toPublic(s,h,ownerName,isScheduleAdmin(req))),settings});
   }catch(e){console.error(e);res.status(500).json({error:"load_failed"});}
 });
 
@@ -225,7 +234,7 @@ async function updateSchedule(req,res){
     res.json({ok:true});
   }catch(e){console.error(e);res.status(500).json({error:"update_failed"})}
 }
-app.put("/api/schedules/:id",originGuard,auth,updateSchedule);
+app.put("/api/schedules/:id",originGuard,scheduleAuth,updateSchedule);
 app.put("/api/admin/schedules/:id",originGuard,auth,updateSchedule);
 app.patch("/api/schedules/:id/complete",async(req,res)=>{
   const ownerToken=req.get("x-owner-token")||"";
@@ -265,16 +274,20 @@ app.get("/api/library/:id/file",access.requireAccess("library"),async(req,res)=>
   }catch(e){console.error(e);res.status(500).end();}
 });
 
-app.post("/api/admin/login",originGuard,async(req,res)=>{
+app.post(["/api/admin/login","/api/schedule-pass/login"],originGuard,async(req,res)=>{
   const email=(req.body?.email||"").trim().toLowerCase();
   const password=req.body?.password||"";
   if(email!==ADMIN_EMAIL) return res.status(401).json({error:"invalid"});
   const r=await pool.query("SELECT password_hash FROM admin_auth WHERE email=$1",[ADMIN_EMAIL]);
   if(!r.rowCount || !(await bcrypt.compare(password,r.rows[0].password_hash))) return res.status(401).json({error:"invalid"});
   const token=jwt.sign({email:ADMIN_EMAIL},JWT_SECRET,{expiresIn:"7d"});
-  res.setHeader("Set-Cookie",`hb_admin=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=604800`);
+  const pass=jwt.sign({email:ADMIN_EMAIL,purpose:"schedule-owner"},JWT_SECRET,{expiresIn:"365d"});
+  const cookies=[`hb_schedule_pass=${pass}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=31536000`];
+  if(req.path==="/api/admin/login")cookies.push(`hb_admin=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=604800`);
+  res.setHeader("Set-Cookie",cookies);
   res.json({ok:true});
 });
+app.post("/api/schedule-pass/logout",originGuard,(req,res)=>{res.setHeader("Set-Cookie","hb_schedule_pass=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0");res.json({ok:true})});
 app.post("/api/admin/logout",(req,res)=>{res.setHeader("Set-Cookie","hb_admin=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0");res.json({ok:true})});
 app.get("/api/admin/me",auth,(req,res)=>res.json({email:req.admin.email}));
 app.get("/api/admin/schedules",auth,async(req,res)=>{
