@@ -299,6 +299,7 @@ function renderList(){
       finally{complete.disabled=false;complete.textContent=x.completed?"완료 취소":"✓ 완료 처리";}
     };
     d.querySelector(".item-actions").appendChild(complete);
+    let edit=document.createElement("button");edit.className="btn primary";edit.textContent="일정 수정";edit.onclick=()=>openScheduleEditor(x);d.querySelector(".item-actions").appendChild(edit);
     let b=document.createElement("button");b.className="btn danger";b.textContent="완전 삭제";
     b.onclick=async()=>{if(!confirm("이 일정은 복구할 수 없습니다. 완전히 삭제하시겠습니까?"))return;let r=await api("/api/admin/schedules/"+encodeURIComponent(x.id),{method:"DELETE"});if(r.ok)await load()};
     d.querySelector(".item-actions").appendChild(b);list.appendChild(d)
@@ -426,6 +427,25 @@ document.getElementById('hallMonth').onchange=renderActivitySummary;
 periodFilter.onchange=statusFilter.onchange=renderList;
 refreshData.onclick=async()=>{refreshData.disabled=true;try{await load();refreshStatus.textContent='방금 업데이트됨'}catch{refreshStatus.textContent='불러오지 못했습니다. 다시 시도해 주세요.'}finally{refreshData.disabled=false}};
 load().catch(()=>{loginMsg.textContent='연결을 확인하고 다시 시도해 주세요.'});
+</script>
+<dialog id="scheduleEditor" style="border:0;border-radius:20px;padding:24px;width:min(440px,90vw)"><form id="scheduleEditForm"><h3>일정 수정 · 지점장 전용</h3><label>TFA 이름<input id="adminEditOwner" class="input" required></label><label>일정 종류<select id="adminEditType" class="input"><option value="visit">신규상담</option><option value="study">후속상담</option><option value="call">고객관리</option></select></label><label>지역/장소<input id="adminEditPlace" class="input" required></label><label>날짜<input id="adminEditDate" class="input" type="date" required></label><label>시간<input id="adminEditTime" class="input" type="time" required></label><p id="scheduleEditError" role="alert"></p><div class="item-actions"><button type="button" class="btn ghost" id="adminEditCancel">취소</button><button class="btn primary" id="adminEditSave">수정 저장</button></div></form></dialog>
+<script>
+let adminEditingId="";
+function openScheduleEditor(x){
+ adminEditingId=x.id;adminEditOwner.value=x.ownerName;adminEditType.value=typeOf(x);adminEditPlace.value=placeOf(x);
+ adminEditDate.value=seoulDate(new Date(x.scheduledAt));
+ adminEditTime.value=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(x.scheduledAt));
+ scheduleEditError.textContent="";scheduleEditor.showModal();
+}
+adminEditCancel.onclick=()=>scheduleEditor.close();
+scheduleEditForm.onsubmit=async e=>{
+ e.preventDefault();adminEditSave.disabled=true;scheduleEditError.textContent="";
+ try{
+  const r=await api("/api/admin/schedules/"+encodeURIComponent(adminEditingId),{method:"PUT",body:JSON.stringify({ownerName:adminEditOwner.value.trim(),place:adminEditPlace.value.trim(),type:adminEditType.value,date:adminEditDate.value,time:adminEditTime.value})});
+  if(!r.ok){scheduleEditError.textContent=r.status===404?"이미 삭제된 일정입니다.":"수정하지 못했습니다. 입력 내용을 확인해 주세요.";return}
+  scheduleEditor.close();await load();
+ }catch{scheduleEditError.textContent="연결을 확인하고 다시 시도해 주세요."}finally{adminEditSave.disabled=false}
+};
 </script>
 </body>
 </html>
