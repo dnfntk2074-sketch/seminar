@@ -78,13 +78,15 @@ function isTest(s){
 }
 function requestOwnerName(req){try{return decodeURIComponent(req.get("x-owner-name")||"").trim()}catch{return ""}}
 function sameOwnerName(a,b){return String(a||"").trim()===String(b||"").trim()}
-function toPublic(row,hash,ownerName){
+function isScheduleAdmin(req){try{return (jwt.verify(parseCookies(req).hb_admin,JWT_SECRET).email||"").toLowerCase()===ADMIN_EMAIL}catch{return false}}
+function toPublic(row,hash,ownerName,isAdmin=false){
   return {
     id:String(row.id), ownerName:row.owner_name, customerName:row.customer_name,
     scheduledAt:new Date(row.scheduled_at).toISOString(),
     completed:!!row.completed,
     completedAt:row.completed_at?new Date(row.completed_at).toISOString():null,
-    canEdit:!!hash && !!row.owner_token_hash && crypto.timingSafeEqual(Buffer.from(hash),Buffer.from(row.owner_token_hash))
+    canEdit:isAdmin,
+    isOwner:!!hash && !!row.owner_token_hash && crypto.timingSafeEqual(Buffer.from(hash),Buffer.from(row.owner_token_hash))
   };
 }
 async function init(){
@@ -195,7 +197,7 @@ app.get("/api/data", async(req,res)=>{
     const [rows,settings]=await Promise.all([pool.query("SELECT * FROM schedules ORDER BY scheduled_at ASC"),getSettings()]);
     const h=req.get("x-owner-token")?tokenHash(req.get("x-owner-token")):"";
     const ownerName=requestOwnerName(req);
-    res.json({schedules:rows.rows.filter(s=>!isTest(s)).map(s=>toPublic(s,h,ownerName)),settings});
+    res.json({schedules:rows.rows.filter(s=>!isTest(s)).map(s=>toPublic(s,h,ownerName,isScheduleAdmin(req))),settings});
   }catch(e){console.error(e);res.status(500).json({error:"load_failed"});}
 });
 
@@ -211,18 +213,20 @@ app.post("/api/register", async(req,res)=>{
   res.json({ok:true,id});
 });
 
-app.put("/api/schedules/:id",async(req,res)=>{
-  const {ownerName,place,date,time,type="visit",ownerToken}=req.body||{};
-  if(!ownerName||!place||!date||!time||!ownerToken||!["visit","study","call"].includes(type)) return res.status(400).json({error:"missing"});
+async function updateSchedule(req,res){
+  const {ownerName,place,date,time,type="visit"}=req.body||{};
+  if(!String(ownerName||"").trim()||!String(place||"").trim()||!/^\d{4}-\d{2}-\d{2}$/.test(date||"")||!/^\d{2}:\d{2}$/.test(time||"")||!["visit","study","call"].includes(type))return res.status(400).json({error:"missing"});
   const at=new Date(`${date}T${time}:00+09:00`);
-  if(Number.isNaN(at.getTime())) return res.status(400).json({error:"invalid_date"});
-  const r=await pool.query("SELECT owner_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
-  const ownerIdentity=requestOwnerName(req);
-  if(!r.rowCount||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
-  await pool.query("UPDATE schedules SET owner_name=$1,customer_name=$2,scheduled_at=$3,completed=completed,updated_at=now() WHERE id=$4",
-    [String(ownerName).trim(),makeCustomer(type,String(place).trim()),at.toISOString(),req.params.id]);
-  res.json({ok:true});
-});
+  if(Number.isNaN(at.getTime()))return res.status(400).json({error:"invalid_date"});
+  try{
+    const r=await pool.query("UPDATE schedules SET owner_name=$1,customer_name=$2,scheduled_at=$3,source='local',updated_at=now() WHERE id=$4 RETURNING id",
+      [String(ownerName).trim(),makeCustomer(type,String(place).trim()),at.toISOString(),req.params.id]);
+    if(!r.rowCount)return res.status(404).json({error:"not_found"});
+    res.json({ok:true});
+  }catch(e){console.error(e);res.status(500).json({error:"update_failed"})}
+}
+app.put("/api/schedules/:id",originGuard,auth,updateSchedule);
+app.put("/api/admin/schedules/:id",originGuard,auth,updateSchedule);
 app.patch("/api/schedules/:id/complete",async(req,res)=>{
   const ownerToken=req.get("x-owner-token")||"";
   const ownerIdentity=requestOwnerName(req);
@@ -274,7 +278,7 @@ app.post("/api/admin/login",originGuard,async(req,res)=>{
 app.post("/api/admin/logout",(req,res)=>{res.setHeader("Set-Cookie","hb_admin=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0");res.json({ok:true})});
 app.get("/api/admin/me",auth,(req,res)=>res.json({email:req.admin.email}));
 app.get("/api/admin/schedules",auth,async(req,res)=>{
-  try{await syncFloot();const r=await pool.query("SELECT id,owner_name AS \"ownerName\",customer_name AS \"customerName\",scheduled_at AS \"scheduledAt\",completed,completed_at AS \"completedAt\",source FROM schedules ORDER BY scheduled_at DESC LIMIT 100");res.json({schedules:r.rows});}
+  try{await syncFloot();const r=await pool.query("SELECT id,owner_name AS \"ownerName\",customer_name AS \"customerName\",scheduled_at AS \"scheduledAt\",completed,completed_at AS \"completedAt\",source FROM schedules ORDER BY scheduled_at DESC");res.json({schedules:r.rows});}
   catch{res.status(500).json({error:"load_failed"});}
 });
 app.patch("/api/admin/schedules/:id/complete",auth,async(req,res)=>{
