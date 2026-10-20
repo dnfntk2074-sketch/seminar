@@ -14,3 +14,9 @@ Original Railway source and volumes are preserved. The trial-expired Railway pro
 - New origins require users to reconnect browser notifications and re-establish browser/device authorization. Existing owner-token data in the old origin's browser storage is not automatically transferred.
 
 Never put database exports, migration tokens, live credentials, or library file contents in Git. Disable the temporary authenticated recovery importer after verification.
+
+## Verified recovery
+
+All 18 library documents (169040687 bytes) were restored into the private `hb-action-hub-library` bucket and verified against the original SHA-256 values. The API serves files only after its administrator/device approval check. The largest and smallest API downloads returned the original bytes. Database metadata keeps each original document ID; binary objects are kept outside Postgres to fit free-plan limits.
+
+Authenticated administrator reads returned 200; anonymous administrator reads returned 401 and anonymous library reads returned 403. The public visitor setting is still blocked pending owner approval.

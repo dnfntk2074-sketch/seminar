@@ -1,3 +1,4 @@
+import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 import process from "node:process";
 import { Buffer } from "node:buffer";
 import express from "express";
@@ -14,6 +15,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const { Pool } = pg;
+const storageClient=createClient(Deno.env.get("SUPABASE_URL"),Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),{auth:{persistSession:false,autoRefreshToken:false}});
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = 8000;
@@ -22,7 +24,7 @@ const JWT_SECRET = crypto.createHash("sha256").update(Deno.env.get("SUPABASE_SER
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "dnfntk2074@gmail.com").trim().toLowerCase();
 const ADMIN_PASSWORD = crypto.randomBytes(32).toString("hex");
 const FLOOT = "https://guri-leaders-hb-db-hub.floot.app/_api";
-const pool = new Pool({ connectionString: DATABASE_URL, max:2, options:"-c search_path=hb_action_hub,public" });
+const pool = new Pool({ connectionString: DATABASE_URL, max:2, options:"-c search_path=hb_action_hub" });
 const upload = multer({storage:multer.memoryStorage(),limits:{fileSize:30*1024*1024}});
 const LIBRARY_CATEGORIES=new Set(["영업자료","상품자료","교육자료","서식","전사시책","상품환산","수수료예시"]);
 const LIBRARY_EXTS=new Set(["pdf","jpg","jpeg","png","webp","gif","xlsx","xls","pptx","ppt","docx","doc","hwp","hwpx","txt","zip"]);
@@ -160,9 +162,11 @@ async function init(){
     mime_type text not null default 'application/octet-stream',
     file_size integer not null default 0,
     file_data bytea not null,
+    storage_path text,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
   )`);
+  await pool.query("ALTER TABLE library_files ADD COLUMN IF NOT EXISTS storage_path text");
   await pool.query("UPDATE library_files SET category=$1 WHERE category=$2",["전사시책","기타"]);
   // repair existing mojibake library filenames without touching file contents
   const badNames=await pool.query("SELECT id,file_name FROM library_files");
@@ -277,13 +281,17 @@ app.get("/api/library",access.requireAccess("library"),async(req,res)=>{
 });
 app.get("/api/library/:id/file",access.requireAccess("library"),async(req,res)=>{
   try{
-    const r=await pool.query("SELECT file_name,mime_type,file_data FROM library_files WHERE id=$1",[req.params.id]);
+    const r=await pool.query("SELECT file_name,mime_type,CASE WHEN storage_path IS NULL THEN file_data ELSE NULL END AS file_data,storage_path FROM library_files WHERE id=$1",[req.params.id]);
     if(!r.rowCount)return res.status(404).end();
     const row=r.rows[0],download=req.query.download==="1";
     res.setHeader("Content-Type",row.mime_type||"application/octet-stream");
     res.setHeader("Content-Disposition",contentDisposition(row.file_name,download));
     res.setHeader("Cache-Control","private, no-store");
-    res.send(row.file_data);
+    if(row.storage_path){
+      const {data:object,error}=await storageClient.storage.from("hb-action-hub-library").download(row.storage_path);
+      if(error)throw new Error("Library object unavailable: "+error.message);
+      res.send(Buffer.from(await object.arrayBuffer()));
+    }else res.send(row.file_data);
   }catch(e){console.error(e);res.status(500).end();}
 });
 
@@ -336,9 +344,12 @@ app.post("/api/admin/library",auth,upload.single("file"),async(req,res)=>{
     const category=safeCategory(req.body?.category);
     const pinned=String(req.body?.pinned||"").toLowerCase()==="true";
     const id=crypto.randomUUID();
-    await pool.query(`INSERT INTO library_files(id,title,description,category,pinned,file_name,mime_type,file_size,file_data)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-      [id,title,description,category,pinned,originalName,req.file.mimetype||"application/octet-stream",req.file.size,req.file.buffer]);
+    const storagePath="library/"+id;
+    const {error:storageError}=await storageClient.storage.from("hb-action-hub-library").upload(storagePath,req.file.buffer,{contentType:req.file.mimetype||"application/octet-stream",upsert:false});
+    if(storageError)throw new Error("Library storage upload failed: "+storageError.message);
+    await pool.query(`INSERT INTO library_files(id,title,description,category,pinned,file_name,mime_type,file_size,file_data,storage_path)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+      [id,title,description,category,pinned,originalName,req.file.mimetype||"application/octet-stream",req.file.size,Buffer.alloc(0),storagePath]);
     const r=await pool.query("SELECT id,title,description,category,pinned,file_name,mime_type,file_size,created_at,updated_at FROM library_files WHERE id=$1",[id]);
     res.json({ok:true,item:libraryMeta(r.rows[0])});
   }catch(e){
@@ -361,7 +372,11 @@ app.put("/api/admin/library/:id",auth,async(req,res)=>{
   res.json({ok:true,item:libraryMeta(r.rows[0])});
 });
 app.delete("/api/admin/library/:id",auth,async(req,res)=>{
-  await pool.query("DELETE FROM library_files WHERE id=$1",[req.params.id]);
+  const removed=await pool.query("DELETE FROM library_files WHERE id=$1 RETURNING storage_path",[req.params.id]);
+  if(removed.rows[0]?.storage_path){
+    const {error}=await storageClient.storage.from("hb-action-hub-library").remove([removed.rows[0].storage_path]);
+    if(error)console.warn("Private library object cleanup pending");
+  }
   res.json({ok:true});
 });
 
