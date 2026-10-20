@@ -1,0 +1,3 @@
+[functions.hub-api]
+verify_jwt = false
+# Administrator and resource permissions are checked by the application.

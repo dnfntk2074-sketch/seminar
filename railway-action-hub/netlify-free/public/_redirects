@@ -1,0 +1,4 @@
+/api/* https://xncdmnislikuquuxpgxb.supabase.co/functions/v1/hub-api/api/:splat 200
+/commission https://xncdmnislikuquuxpgxb.supabase.co/functions/v1/hub-api/commission 200
+/commission/* https://xncdmnislikuquuxpgxb.supabase.co/functions/v1/hub-api/commission/:splat 200
+/admin /admin.html 200
