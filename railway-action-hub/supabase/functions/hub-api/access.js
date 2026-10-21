@@ -51,7 +51,8 @@ export function createAccess({app,pool,auth,dir,adminEmail,isAdmin=()=>false}) {
       res.status(403).json({error:'approval_required',requestUrl:'/access/?resource='+resource});
     });
   }
-  async function init() {
+  async function init({schemaReady=false}={}) {
+    if(!schemaReady){
     await pool.query(`CREATE TABLE IF NOT EXISTS hb_access_requests(
       id text PRIMARY KEY, device_hash text NOT NULL, resource text NOT NULL CHECK(resource IN ('library','commission')),
       name text NOT NULL, employee text NOT NULL, phone text NOT NULL,
@@ -62,15 +63,18 @@ export function createAccess({app,pool,auth,dir,adminEmail,isAdmin=()=>false}) {
     await pool.query(`CREATE TABLE IF NOT EXISTS hb_approval_keys(id text PRIMARY KEY, public_key text NOT NULL, private_key text NOT NULL)`);
     const generated=webpush.generateVAPIDKeys();
     await pool.query("INSERT INTO hb_approval_keys VALUES('main',$1,$2) ON CONFLICT DO NOTHING",[generated.publicKey,generated.privateKey]);
+    }
     keys=(await pool.query("SELECT public_key,private_key FROM hb_approval_keys WHERE id='main'")).rows[0];
+    if(!schemaReady){
     await pool.query(`CREATE TABLE IF NOT EXISTS hb_approval_push(id text PRIMARY KEY, subscription jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now())`);
     await pool.query(`CREATE TABLE IF NOT EXISTS hb_approval_outbox(id text PRIMARY KEY, subscriber text NOT NULL REFERENCES hb_approval_push(id) ON DELETE CASCADE,
       payload jsonb NOT NULL, attempts integer NOT NULL DEFAULT 0, next_at timestamptz NOT NULL DEFAULT now(), sent_at timestamptz)`);
+    }
     async function cleanup(){
       await pool.query("DELETE FROM hb_access_requests WHERE (status='pending' AND created_at < now()-interval '90 days') OR (status IN ('rejected','revoked') AND reviewed_at < now()-interval '30 days')");
       await pool.query("DELETE FROM hb_approval_outbox WHERE (sent_at IS NOT NULL AND sent_at < now()-interval '7 days') OR (attempts>=5 AND next_at < now()-interval '7 days')");
     }
-    await cleanup();
+    if(!schemaReady)await cleanup();
     const cleanupTimer=setInterval(()=>cleanup().catch(()=>console.warn('approval retention cleanup pending')),86400000);cleanupTimer.unref?.();
     timer=setInterval(deliver,15000);timer.unref?.();
     void deliver();
@@ -179,3 +183,4 @@ export function createAccess({app,pool,auth,dir,adminEmail,isAdmin=()=>false}) {
   }));
   return {init,requireAccess,allowed,stop:()=>clearInterval(timer)};
 }
+
