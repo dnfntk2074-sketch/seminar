@@ -1,7 +1,6 @@
-import process from "node:process";
 import { Buffer } from "node:buffer";
 import crypto from 'node:crypto';
-import fs from 'node:fs';
+import commissionHtml from './commission-content.js';
 import webpush from 'web-push';
 
 export const RESOURCES = {library:'ACTION HUB 자료실',commission:'생보 수수료 계산기'};
@@ -169,12 +168,7 @@ export function createAccess({app,pool,auth,dir,adminEmail,isAdmin=()=>false}) {
     catch{res.status(502).json({error:'push_failed'})}
   }));
   app.get(['/commission','/commission/','/commission/index.html'],requireAccess('commission',true),(req,res)=>{
-    const secret=process.env.COMMISSION_CONTENT_KEY;
-    if(!secret)return res.status(503).send('계산기 연결 준비 중입니다. 잠시 후 다시 이용해 주세요.');
-    const bytes=fs.readFileSync(dir+'/commission.enc');
-    const decipher=crypto.createDecipheriv('aes-256-gcm',Buffer.from(secret,'base64'),bytes.subarray(0,12));
-    decipher.setAuthTag(bytes.subarray(12,28));
-    res.type('html').set('Content-Security-Policy',"frame-ancestors 'self'").send(Buffer.concat([decipher.update(bytes.subarray(28)),decipher.final()]));
+    res.type('html').set('Content-Security-Policy',"frame-ancestors 'self'").send(commissionHtml);
   });
   app.get('/api/commission-fx',requireAccess('commission'),wrap(async(req,res)=>{
     const r=await fetch('https://hbtoolbox.vercel.app/api/commission-fx',{signal:AbortSignal.timeout(15000)});
@@ -183,4 +177,5 @@ export function createAccess({app,pool,auth,dir,adminEmail,isAdmin=()=>false}) {
   }));
   return {init,requireAccess,allowed,stop:()=>clearInterval(timer)};
 }
+
 
