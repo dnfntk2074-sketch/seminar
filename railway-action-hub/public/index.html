@@ -1919,7 +1919,7 @@ function originalCrownMarkup(){
   for(let i=0;i<mask.length;i++){
    const r=data[i*4],g=data[i*4+1],b=data[i*4+2],a=data[i*4+3];if(a<180)continue;
    if(g>r*1.25&&g>b*1.12&&g>80)mask[i]=1;
-   else if(r>g*1.25&&b>g*1.18&&r>100)mask[i]=2;
+   else if(r>100&&((r>g*1.25&&b>g*1.18)||(r>g*2&&r>b*1.6&&g<125&&Math.floor(i/side)>side*.42)))mask[i]=2;
   }
   for(let start=0;start<mask.length;start++){
    if(!mask[start]||seen[start])continue;
@@ -1929,7 +1929,12 @@ function originalCrownMarkup(){
     for(const j of [x>0?i-1:-1,x<side-1?i+1:-1,y>0?i-side:-1,y<side-1?i+side:-1])if(j>=0&&!seen[j]&&mask[j]===type){seen[j]=1;queue.push(j)}
    }
    if(queue.length<side*side*.0005)continue;
-   gems.push({x:100*sumX/queue.length/side,y:100*sumY/queue.length/side,w:100*(maxX-minX+1)/side,h:100*(maxY-minY+1)/side,type});
+   gems.push({x:100*sumX/queue.length/side,y:100*sumY/queue.length/side,w:100*(maxX-minX+1)/side,h:100*(maxY-minY+1)/side,type,weight:queue.length});
+  }
+  // Highlights can split a single gem into separate color regions.
+  for(let i=0;i<gems.length;i++)for(let j=gems.length-1;j>i;j--){
+   const a=gems[i],b=gems[j];if(a.type!==b.type||Math.hypot(a.x-b.x,a.y-b.y)>14)continue;
+   const weight=a.weight+b.weight;a.x=(a.x*a.weight+b.x*b.weight)/weight;a.y=(a.y*a.weight+b.y*b.weight)/weight;a.w=Math.max(a.w,b.w);a.h=Math.max(a.h,b.h);a.weight=weight;gems.splice(j,1);
   }
   gems.sort((a,b)=>a.x-b.x||a.y-b.y);
   originalCrownSpec={url:canvas.toDataURL('image/png'),gems};
