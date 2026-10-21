@@ -1,13 +1,19 @@
 const $=id=>document.getElementById(id), labels={library:'ACTION HUB 자료실',commission:'생보 수수료 계산기'}, stateNames={pending:'승인 대기',approved:'이용 중',rejected:'거절',revoked:'이용 중지'};
 let items=[],filter='pending',registration,subscription,busy=false;
+let resource='all';
+const resourcePicker=document.createElement('select');resourcePicker.setAttribute('aria-label','승인 업무 선택');resourcePicker.style.cssText='width:100%;padding:14px;border-radius:12px;margin:8px 0;font-size:16px';
+for(const [value,label] of [['all','전체 승인 업무'],['library','ACTION HUB 자료실'],['commission','툴박스 생보수수료']]){const option=document.createElement('option');option.value=value;option.textContent=label;resourcePicker.append(option)}
+$('search').parentElement.before(resourcePicker);resourcePicker.onchange=()=>{resource=resourcePicker.value;render()};
+if(new URLSearchParams(location.search).get('embedded')==='1'){document.querySelector('header').hidden=true;document.querySelector('.notification').hidden=true}
 async function api(url,options={}){const response=await fetch(url,{...options,headers:{'Content-Type':'application/json',...options.headers},cache:'no-store'});const body=await response.json();if(!response.ok){if(response.status===401){$('login').hidden=false;$('dashboard').hidden=true;$('logout').hidden=true}throw Error(body.error||'failed')}return body}
 const text=(tag,value,cls)=>{const el=document.createElement(tag);el.textContent=value;if(cls)el.className=cls;return el};
 function render(){
- $('pendingCount').textContent=items.filter(x=>x.status==='pending').length;$('approvedCount').textContent=items.filter(x=>x.status==='approved').length;$('otherCount').textContent=items.filter(x=>['rejected','revoked'].includes(x.status)).length;
+ const selected=items.filter(x=>resource==='all'||x.resource===resource);
+ $('pendingCount').textContent=selected.filter(x=>x.status==='pending').length;$('approvedCount').textContent=selected.filter(x=>x.status==='approved').length;$('otherCount').textContent=selected.filter(x=>['rejected','revoked'].includes(x.status)).length;
  const count=items.filter(x=>x.status==='pending').length;if(navigator.setAppBadge){if(count)navigator.setAppBadge(count).catch(()=>{});else navigator.clearAppBadge?.().catch(()=>{})}
  document.title=(count?'('+count+') ':'')+'HB 승인센터';
  $('listTitle').textContent=filter==='other'?'거절·이용 중지':stateNames[filter];document.querySelectorAll('[data-filter]').forEach(el=>el.classList.toggle('active',el.dataset.filter===filter));
- const query=$('search').value.replace(/\s/g,'').toLowerCase(), rows=items.filter(x=>(filter==='other'?['rejected','revoked'].includes(x.status):x.status===filter)&&(!query||(x.name+x.employee+x.phone).toLowerCase().includes(query)));
+ const query=$('search').value.replace(/\s/g,'').toLowerCase(), rows=selected.filter(x=>(filter==='other'?['rejected','revoked'].includes(x.status):x.status===filter)&&(!query||(x.name+x.employee+x.phone).toLowerCase().includes(query)));
  $('requests').replaceChildren();if(!rows.length){$('requests').append(text('div',filter==='pending'?'대기 중인 신청이 없습니다.':'표시할 이용자가 없습니다.','empty'));return}
  for(const row of rows){const card=text('article','','card request');card.append(text('span',labels[row.resource],'resource'),text('h3',row.name));const dl=document.createElement('dl');dl.className='meta';for(const [name,value] of [['사번',row.employee],['휴대폰',row.phone],['상태',stateNames[row.status]]]){dl.append(text('dt',name));const dd=text('dd',value);if(name==='휴대폰'){const a=text('a',value);a.href='tel:'+value;dd.replaceChildren(a)}dl.append(dd)}card.append(dl,text('p',new Date(row.created_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})+' 신청','time'));const actions=text('div','','actions');const decisions=row.status==='pending'?[['approved','승인','primary'],['rejected','거절','quiet']]:row.status==='approved'?[['revoked','이용 중지','danger']]:[['approved','이용 승인','primary']];for(const [status,label,cls] of decisions){const button=text('button',label,cls);button.onclick=()=>decide(row,status);actions.append(button)}card.append(actions);$('requests').append(card)}
 }
