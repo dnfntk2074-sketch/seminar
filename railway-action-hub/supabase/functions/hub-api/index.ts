@@ -252,12 +252,12 @@ async function updateSchedule(req,res){
 }
 app.put("/api/schedules/:id",originGuard,scheduleAuth,updateSchedule);
 app.put("/api/admin/schedules/:id",originGuard,auth,updateSchedule);
-app.patch("/api/schedules/:id/complete",async(req,res)=>{
+app.patch("/api/schedules/:id/complete",originGuard,async(req,res)=>{
   const ownerToken=req.get("x-owner-token")||"";
   const ownerIdentity=requestOwnerName(req);
   const completed=req.body?.completed===true;
   const r=await pool.query("SELECT id,owner_name,customer_name,scheduled_at,owner_token_hash,completed FROM schedules WHERE id=$1",[req.params.id]);
-  if(!r.rowCount||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
+  if(!r.rowCount||(!isScheduleAdmin(req)&&(!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)))) return res.status(403).json({error:"forbidden"});
   const customer=String(r.rows[0].customer_name||"");
   const changed=await pool.query("UPDATE schedules SET completed=$1,completed_at=CASE WHEN $1 THEN COALESCE(completed_at,now()) ELSE NULL END,updated_at=now() WHERE id=$2 AND completed IS DISTINCT FROM $1 RETURNING id,owner_name,customer_name,scheduled_at",[completed,req.params.id]);
   if(completed&&changed.rowCount)await notifyActivity("completed",changed.rows[0]);
