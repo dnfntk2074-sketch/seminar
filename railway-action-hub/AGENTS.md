@@ -1,5 +1,7 @@
 # Required update safeguards
 
+- User instruction (2026-10-21): every ACTION HUB update must also update and verify the administrator app in the same release. Preserve working library and life-commission approval management and persistent owner login; follow RELEASE_CHECKLIST.md.
+
 - User instruction: before every update, back up the current state.
 - Before changing an operational branch, preserve its current exact commit with a dated remote backup reference (branch or tag) and record the current successful deployment ID.
 - Before a production release, create and verify an external PostgreSQL backup and record its location, checksum and successful deployment ID. Backups must be outside the production database and its volume.
