@@ -17,14 +17,16 @@ async function sendPush(subscription,payload,options={}){
  const response=await fetch(details.endpoint,{method:details.method,headers:details.headers,body:details.body,signal:AbortSignal.timeout(options.timeout||10000)});
  if(!response.ok){const error=new Error('push_rejected');error.statusCode=response.status;throw error}
 }
-export async function installPush(app,pool,auth){
+export async function installPush(app,pool,auth,{schemaReady=false}={}){
+  if(!schemaReady){
   await pool.query(`CREATE TABLE IF NOT EXISTS push_config(id text primary key,public_key text not null,private_key text not null)`);
   await pool.query(`CREATE TABLE IF NOT EXISTS push_recipients(id integer primary key, name text not null, token_hash text, subscription jsonb, connected_at timestamptz, invite_expires_at timestamptz)`);
   await pool.query(`CREATE TABLE IF NOT EXISTS push_events(id text primary key,payload jsonb not null,created_at timestamptz default now())`);
   await pool.query(`CREATE TABLE IF NOT EXISTS push_deliveries(event_id text references push_events(id),recipient_id integer references push_recipients(id),subscription jsonb not null,attempts integer default 0,next_at timestamptz default now(),sent_at timestamptz,last_status text,primary key(event_id,recipient_id))`);
   const keys=webpush.generateVAPIDKeys();await pool.query(`INSERT INTO push_config VALUES('main',$1,$2) ON CONFLICT DO NOTHING`,[keys.publicKey,keys.privateKey]);
+  }
   const config=(await pool.query(`SELECT * FROM push_config WHERE id='main'`)).rows[0];webpush.setVapidDetails('https://action-hub-web-production.up.railway.app',config.public_key,config.private_key);
-  for(let i=0;i<names.length;i++)await pool.query(`INSERT INTO push_recipients(id,name) VALUES($1,$2) ON CONFLICT DO NOTHING`,[i+1,names[i]]);
+  if(!schemaReady)for(let i=0;i<names.length;i++)await pool.query(`INSERT INTO push_recipients(id,name) VALUES($1,$2) ON CONFLICT DO NOTHING`,[i+1,names[i]]);
   const wrap=fn=>(req,res,next)=>Promise.resolve(fn(req,res)).catch(next);
   const identity=async req=>(await pool.query(`SELECT * FROM push_recipients WHERE token_hash=$1 AND (connected_at IS NOT NULL OR invite_expires_at>now())`,[hash(req.body?.token)])).rows[0];
   app.get('/api/admin/push',auth,wrap(async(req,res)=>res.json({recipients:(await pool.query(`SELECT id,name,connected_at AS "connectedAt",subscription IS NOT NULL AS connected FROM push_recipients ORDER BY id`)).rows})));
@@ -34,9 +36,11 @@ export async function installPush(app,pool,auth){
   app.post('/api/push/unsubscribe',wrap(async(req,res)=>{const p=await identity(req);if(!p)return res.status(403).json({error:'invalid_link'});await pool.query(`UPDATE push_recipients SET subscription=NULL WHERE id=$1`,[p.id]);res.json({ok:true})}));
   app.post('/api/push/test',wrap(async(req,res)=>{const p=await identity(req);if(!p?.subscription)return res.status(403).json({error:'not_connected'});try{await sendPush(p.subscription,JSON.stringify({title:'ACTION HUB 알림 연결 확인',body:p.name+'님의 휴대폰에 알림이 연결되었습니다.',url:'/push.html',tag:'connection-test'}),{TTL:300,timeout:10000});res.json({ok:true})}catch(e){res.status(502).json({error:'push_failed'})}}));
   // Public opt-in endpoints manage only this device's notification subscription.
+  if(!schemaReady){
   await pool.query(`CREATE SEQUENCE IF NOT EXISTS push_member_id_seq START WITH 5`);
   await pool.query(`ALTER TABLE push_recipients ADD COLUMN IF NOT EXISTS device_token_hash text`);
   await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS push_member_token_unique ON push_recipients(device_token_hash) WHERE device_token_hash IS NOT NULL`);
+  }
   const deviceToken=req=>/^[A-Za-z0-9_-]{43,100}$/.test(String(req.body?.deviceToken||''))?hash(req.body.deviceToken):null;
   app.get('/api/push/public-key',wrap(async(req,res)=>{res.setHeader('Cache-Control','no-store');res.json({publicKey:config.public_key})}));
   app.post('/api/push/member/status',wrap(async(req,res)=>{
@@ -75,3 +79,4 @@ export async function installPush(app,pool,auth){
   const timer=setInterval(deliver,15000);timer.unref?.();deliver();
   return async function enqueue(kind,s){try{if(['테스트','점검','test'].some(w=>String(s.owner_name||'').toLowerCase().includes(w)))return;const id=kind==='notice'?'notice:'+hash(s.id+'|'+s.title+'|'+s.content):`${kind}:${s.id}`;const client=await pool.connect();try{await client.query('BEGIN');const r=await client.query(`INSERT INTO push_events(id,payload) VALUES($1,$2) ON CONFLICT DO NOTHING RETURNING id`,[id,JSON.stringify(activityPayload(kind,s))]);if(r.rowCount)await client.query(`INSERT INTO push_deliveries(event_id,recipient_id,subscription) SELECT $1,id,subscription FROM (SELECT DISTINCT ON (subscription->>'endpoint') id,subscription FROM push_recipients WHERE subscription IS NOT NULL ORDER BY subscription->>'endpoint',id) AS devices ON CONFLICT DO NOTHING`,[id]);await client.query('COMMIT')}catch(e){await client.query('ROLLBACK');throw e}finally{client.release()}await deliver()}catch{console.warn('push event could not be queued')}};
 }
+
