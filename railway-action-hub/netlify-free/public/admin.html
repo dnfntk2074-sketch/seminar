@@ -89,6 +89,7 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
 .hall-counting::before{content:'●';display:inline-block;color:#7ee6b5;margin-right:5px;animation:countPulse 1.5s ease-in-out infinite}
 @keyframes countPulse{0%,100%{opacity:.25}50%{opacity:1;text-shadow:0 0 5px #7ee6b5}}
 @media(prefers-reduced-motion:reduce){.hall-counting::before{animation:none}}
+.approval-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}.approval-summary button{display:flex;flex-direction:column;align-items:flex-start;gap:10px;text-align:left;border:1px solid #cfe7e1;border-radius:18px;padding:18px;background:#effaf6;color:#174a45;min-width:0}.approval-summary button:nth-child(2){background:#eff5ff;border-color:#d5e2f5;color:#244873}.approval-summary span{font-size:14px;font-weight:800;line-height:1.5}.approval-summary strong{font-size:22px}.approval-summary small{font-size:12px;line-height:1.6}.approval-summary em{font-size:12px;font-style:normal;margin-top:auto}@media(max-width:400px){.approval-summary{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -125,12 +126,20 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
         </div>
       </div>
       <div class="card">
+        <div class="section-title">✅ 이용 신청현황</div>
+        <div class="approval-summary">
+          <button onclick="openApprovals('library')"><span>📚 자료실 신청현황</span><strong id="libraryPending">확인 중</strong><small id="librarySummary">신청현황을 불러옵니다</small><em>자료실 승인 관리 →</em></button>
+          <button onclick="openApprovals('commission')"><span>🧮 생보수수료계산기 신청현황</span><strong id="commissionPending">확인 중</strong><small id="commissionSummary">신청현황을 불러옵니다</small><em>생보수수료 승인 관리 →</em></button>
+        </div><p class="muted" id="approvalSummaryStatus" role="status"></p>
+      </div>
+      <div class="card">
         <div class="section-title">⚡ 빠른 관리</div>
         <div class="quick">
           <button onclick="go('schedule')"><span class="ico">📅</span>일정 관리</button>
           <button onclick="go('board')"><span class="ico">📺</span>전광판 설정</button>
           <button onclick="go('library')"><span class="ico">📚</span>자료실</button>
-          <button onclick="openApprovals()"><span class="ico">✅</span>자료실·생보수수료 승인</button>
+          <button onclick="openApprovals('library')"><span class="ico">✅</span>자료실 승인</button>
+          <button onclick="openApprovals('commission')"><span class="ico">🧮</span>생보수수료 승인</button>
           <button onclick="go('notice')"><span class="ico">📢</span>공지 관리</button>
           <button onclick="openUserApp()"><span class="ico">🚀</span>사용자 앱</button>
         </div>
@@ -348,14 +357,37 @@ async function loadPushRecipients(){
 pushRefresh.onclick=loadPushRecipients;
 
 function go(v){
-  if(v==="approvals"&&approvalFrame.getAttribute("src")==="about:blank")approvalFrame.src="/approvals/?embedded=1";
+  if(v==="approvals"&&approvalFrame.getAttribute("src")==="about:blank")approvalFrame.src="/approvals/?embedded=1&resource=library";
+  if(v==="home")loadApprovalSummary();
   if(v==="more")loadPushRecipients();
   document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
   document.getElementById("view-"+v).classList.add("on");
   document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("on",x.dataset.view===v))
 }
 function openUserApp(){location.href="/"}
-function openApprovals(){go('approvals')}
+function openApprovals(resource='library'){
+  if(!['library','commission'].includes(resource))return;
+  approvalFrame.src='/approvals/?embedded=1&resource='+resource;go('approvals');
+}
+let loadingApprovalSummary=false;
+async function loadApprovalSummary(){
+ if(loadingApprovalSummary)return;loadingApprovalSummary=true;
+ try{
+  const r=await api('/api/approvals/requests');if(!r.ok)throw Error();const {items}=await r.json();
+  for(const resource of ['library','commission']){
+   const rows=items.filter(x=>x.resource===resource),count=status=>rows.filter(x=>x.status===status).length;
+   document.getElementById(resource+'Pending').textContent='승인 대기 '+count('pending')+'건';
+   document.getElementById(resource+'Summary').textContent='전체 신청 '+rows.length+'건 · 이용 중 '+count('approved')+'건 · 거절·중지 '+(count('rejected')+count('revoked'))+'건';
+  }
+  approvalSummaryStatus.textContent='';
+ }catch{
+  for(const resource of ['library','commission']){document.getElementById(resource+'Pending').textContent='확인 필요';document.getElementById(resource+'Summary').textContent='신청현황을 불러오지 못했습니다'}
+  approvalSummaryStatus.textContent='새로고침으로 신청현황을 다시 확인해 주세요.';
+ }finally{loadingApprovalSummary=false}
+}
+window.addEventListener('message',event=>{if(event.origin===location.origin&&event.source===approvalFrame.contentWindow&&event.data?.type==='approval-updated')loadApprovalSummary()});
+setInterval(()=>{if(document.visibilityState==='visible'&&!document.getElementById('app').classList.contains('hidden'))loadApprovalSummary()},20000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!document.getElementById('app').classList.contains('hidden'))loadApprovalSummary()});
 document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>go(b.dataset.view));
 search.oninput=renderList;typeFilter.onchange=renderList;
 libUpload.onclick=uploadLibrary;
@@ -428,7 +460,7 @@ async function load(){
   mode.value=settings.marquee_mode;marquee.value=settings.marquee_text||"";mvp.checked=!!settings.mvp_enabled;mvpTitle.value=settings.mvp_title||"";title.value=settings.app_title||"";sub.value=settings.app_subtitle||"";
   noticeEnabled.checked=settings.notice_enabled!==false;noticeNew.checked=settings.notice_new!==false;noticeTitleInput.value=settings.notice_title||"";noticeContentInput.value=settings.notice_content||"";noticeUrlInput.value=settings.notice_url||"";renderAdminNoticeHistory();
   let j=await (await api("/api/admin/schedules")).json();schedules=j.schedules||[];
-  renderStats();renderList();await loadLibraryAdmin()
+  renderStats();renderList();await Promise.all([loadLibraryAdmin(),loadApprovalSummary()])
 }
 document.getElementById('hallMonth').value=seoulDate().slice(0,7);
 document.getElementById('hallMonth').onchange=renderActivitySummary;
