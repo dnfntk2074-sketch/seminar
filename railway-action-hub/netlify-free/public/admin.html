@@ -86,6 +86,9 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
 #adminNoticeHistory details p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.8;color:#475569}
 #adminNoticeHistorySection[hidden]{display:none}
 .hero{background:linear-gradient(130deg,#102b46,#164c65 65%,#169b94)}.primary{background:#087f82}.nav.on{color:#087f82}.call{background:#f3edff;color:#7550b8}.quick button{border:1px solid #d9eee9;background:#f1fcf8}.stats{margin-top:12px}.hall-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.hall-card{border-radius:16px;padding:15px;background:linear-gradient(145deg,#132c46,#23536a);color:#fff;min-width:0}.hall-card span,.hall-card div{font-size:11px;color:#c9e4e5}.hall-card strong{display:block;margin:12px 0;font-size:17px;overflow-wrap:anywhere}#refreshData{margin-top:12px;margin-right:8px}@media(min-width:620px){.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:380px){.hero-title{font-size:18px}.admin-badge{padding:6px;font-size:10px}.filters{grid-template-columns:1fr 1fr}} 
+.hall-counting::before{content:'●';display:inline-block;color:#7ee6b5;margin-right:5px;animation:countPulse 1.5s ease-in-out infinite}
+@keyframes countPulse{0%,100%{opacity:.25}50%{opacity:1;text-shadow:0 0 5px #7ee6b5}}
+@media(prefers-reduced-motion:reduce){.hall-counting::before{animation:none}}
 </style>
 </head>
 <body>
@@ -266,7 +269,7 @@ function renderActivitySummary(){
  const counts=new Map();schedules.filter(x=>x.completed&&Date.parse(x.scheduledAt)>=p.start&&Date.parse(x.scheduledAt)<p.end).forEach(x=>counts.set(x.ownerName,(counts.get(x.ownerName)||0)+1));
  const max=Math.max(0,...counts.values()),names=[...counts].filter(x=>x[1]===max).map(x=>x[0]),now=Date.now(),state=now<p.start?'집계 예정':now<p.end?'집계 중':'집계 종료';
  const titled=names.map(name=>{const base=String(name).trim().replace(/\s*(?:TFA|이사)\s*$/i,'').trim();return base==='박효선'?'박효선 이사':base+' TFA'});
- return '<article class="hall-card"><span>'+p.index+'주차 · '+p.startDay+'~'+p.endDay+'일</span><strong style="font-size:'+(names.length>1?'14':'17')+'px;line-height:1.4">'+(titled.length?titled.map(esc).join('<br>'):esc(now<p.start?'집계 예정':'완료 활동 없음'))+'</strong><div>'+(max?'완료 '+max+'건 · ':'')+state+'</div></article>';
+ return '<article class="hall-card"><span>'+p.index+'주차 · '+p.startDay+'~'+p.endDay+'일</span><strong style="font-size:'+(names.length>1?'14':'17')+'px;line-height:1.4">'+(titled.length?titled.map(esc).join('<br>'):esc(now<p.start?'집계 예정':'완료 활동 없음'))+'</strong><div class="'+(state==='집계 중'?'hall-counting':'')+'">'+(max?'완료 '+max+'건 · ':'')+state+'</div></article>';
  }).join('');
 }
 function renderStats(){
