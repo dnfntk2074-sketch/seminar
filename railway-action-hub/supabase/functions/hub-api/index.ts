@@ -300,16 +300,21 @@ app.post(["/api/admin/login","/api/schedule-pass/login"],originGuard,async(req,r
   if(email!==ADMIN_EMAIL) return res.status(401).json({error:"invalid"});
   const r=await pool.query("SELECT password_hash FROM admin_auth WHERE email=$1",[ADMIN_EMAIL]);
   if(!r.rowCount || !(await bcrypt.compare(password,r.rows[0].password_hash))) return res.status(401).json({error:"invalid"});
-  const token=jwt.sign({email:ADMIN_EMAIL},JWT_SECRET,{expiresIn:"7d"});
+  const token=jwt.sign({email:ADMIN_EMAIL},JWT_SECRET,{expiresIn:"365d"});
   const pass=jwt.sign({email:ADMIN_EMAIL,purpose:"schedule-owner"},JWT_SECRET,{expiresIn:"365d"});
   const cookies=[`hb_schedule_pass=${pass}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=31536000`];
-  if(req.path==="/api/admin/login")cookies.push(`hb_admin=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=604800`);
+  if(req.path==="/api/admin/login")cookies.push(`hb_admin=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=31536000`);
   res.setHeader("Set-Cookie",cookies);
   res.json({ok:true});
 });
 app.post("/api/schedule-pass/logout",originGuard,(req,res)=>{res.setHeader("Set-Cookie","hb_schedule_pass=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0");res.json({ok:true})});
-app.post("/api/admin/logout",(req,res)=>{res.setHeader("Set-Cookie","hb_admin=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0");res.json({ok:true})});
-app.get("/api/admin/me",auth,(req,res)=>res.json({email:req.admin.email}));
+app.post("/api/admin/logout",originGuard,(req,res)=>{res.setHeader("Set-Cookie","hb_admin=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0");res.json({ok:true})});
+app.get("/api/admin/me",auth,(req,res)=>{
+  const token=jwt.sign({email:ADMIN_EMAIL},JWT_SECRET,{expiresIn:"365d"});
+  res.setHeader("Set-Cookie",`hb_admin=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=31536000`);
+  res.setHeader("Cache-Control","private, no-store");
+  res.json({email:req.admin.email});
+});
 app.get("/api/admin/schedules",auth,async(req,res)=>{
   try{const r=await pool.query("SELECT id,owner_name AS \"ownerName\",customer_name AS \"customerName\",scheduled_at AS \"scheduledAt\",completed,completed_at AS \"completedAt\",source FROM schedules ORDER BY scheduled_at DESC");res.json({schedules:r.rows});}
   catch{res.status(500).json({error:"load_failed"});}
@@ -437,5 +442,6 @@ app.get("/admin",(req,res)=>res.redirect("https://guri-hb-action-hub.netlify.app
 
 // Schema and approved notice were already migrated during recovery. Runtime startup is read-only.
 Promise.resolve().then(async()=>{notifyActivity=await installPush(app,pool,auth,{schemaReady:true});await access.init({schemaReady:true});app.get("*",(req,res)=>res.status(404).json({error:"not_found"}));;app.use((err,req,res,next)=>{console.error("request failed");res.status(500).json({error:"server_error"})})}).then(()=>app.listen(PORT,"0.0.0.0",()=>console.log("HB ACTION HUB listening",PORT))).catch(e=>{console.error(e);process.exit(1);});
+
 
 
