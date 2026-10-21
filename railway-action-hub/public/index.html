@@ -1940,7 +1940,9 @@ function originalCrownMarkup(){
   originalCrownSpec={url:canvas.toDataURL('image/png'),gems};
  }
  const {url,gems}=originalCrownSpec;
- return '<span class="hb-original-crown"><img class="hb-crown-art" src="'+url+'" alt="" draggable="false">'+gems.map((g,i)=>'<i class="hb-crown-jewel '+(g.type===1?'jewel-green':'jewel-pink')+'" style="left:'+g.x+'%;top:'+g.y+'%;width:'+Math.max(7,g.w*.72)+'%;height:'+Math.max(7,g.h*.72)+'%;animation-delay:'+i*.45+'s"></i>').join('')+'</span>';
+ // A shared page clock keeps every gem and freshly rendered crown in phase.
+ const jewelDelay=-(performance.now()%2800)/1000;
+ return '<span class="hb-original-crown"><img class="hb-crown-art" src="'+url+'" alt="" draggable="false">'+gems.map(g=>'<i class="hb-crown-jewel '+(g.type===1?'jewel-green':'jewel-pink')+'" style="left:'+g.x+'%;top:'+g.y+'%;width:'+Math.max(7,g.w*.72)+'%;height:'+Math.max(7,g.h*.72)+'%;animation-delay:'+jewelDelay+'s"></i>').join('')+'</span>';
 }
 document.querySelectorAll('.mvp-award-heading .hb-original-crown').forEach(el=>el.outerHTML=originalCrownMarkup());
 function appendBoardPerson(el,name){
