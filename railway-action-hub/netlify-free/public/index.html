@@ -558,7 +558,7 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 
 .member-push-dialog{max-height:calc(100dvh - 36px);overflow:auto}
 .member-push-dialog h3{font-size:18px;margin:0;color:#17366e}.member-push-dialog p{font-size:14px;line-height:1.8;color:#52677e;word-break:keep-all}
-#memberPushEnable,#memberPushDisable{width:100%;min-height:46px;padding:12px;border:0;border-radius:12px;font:inherit;font-size:14px;font-weight:800;cursor:pointer;margin-top:8px}
+#memberPushEnable,#memberPushDisable,#memberPushTest{width:100%;min-height:46px;padding:12px;border:0;border-radius:12px;font:inherit;font-size:14px;font-weight:800;cursor:pointer;margin-top:8px}
 #memberPushEnable{background:#2456d8;color:#fff}#memberPushEnable:disabled{opacity:.5}
 #memberPushDisable{background:#eef2f7;color:#52677e}#memberPushDisable[hidden]{display:none}
 .member-push-dialog p.member-push-footnote{font-size:11px;color:#708195}
@@ -1553,61 +1553,29 @@ noticeClose?.addEventListener("click",closeNotice);
 noticeBackdrop?.addEventListener("click",e=>{if(e.target===noticeBackdrop)closeNotice()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!noticeBackdrop.hidden)closeNotice()});
 
-// Notification permission is requested only after the user presses 알림 켜기.
-const memberPush={registration:null,publicKey:null,busy:false};
+// Permission is requested directly from the user's tap (required by iOS).
+const memberPush={registration:null,publicKey:null,busy:false,connected:false};
 navigator.serviceWorker?.addEventListener('message',e=>{if(e.data?.type==='action-hub-refresh')load()});
 const pushButton=document.getElementById('memberPushButton'),pushPanel=document.getElementById('memberPushPanel'),pushMessage=document.getElementById('memberPushMessage'),pushEnable=document.getElementById('memberPushEnable'),pushDisable=document.getElementById('memberPushDisable');
-function memberPushToken(){
- let token=localStorage.getItem('hb_push_device_token_v1');
- if(!/^[A-Za-z0-9_-]{43}$/.test(token||'')){const bytes=crypto.getRandomValues(new Uint8Array(32));token=btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');localStorage.setItem('hb_push_device_token_v1',token)}
- return token;
-}
-async function memberPushApi(action,extra={}){
- const r=await fetch('/api/push/member/'+action,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({deviceToken:memberPushToken(),...extra})});
- const j=await r.json();if(!r.ok)throw Error(j.error||'failed');return j;
-}
-function memberPushState(connected){
- document.getElementById('memberPushLabel').textContent=connected?'알림 켜짐':'알림 꺼짐';pushButton.classList.toggle('is-on',connected);pushButton.setAttribute('aria-label',connected?'활동·공지 알림 켜짐 · 설정 열기':'활동·공지 알림 꺼짐 · 설정 열기');pushEnable.textContent=connected?'알림 다시 연결':'알림 켜기';pushDisable.hidden=!connected;
-}
+const pushTest=document.createElement('button');pushTest.type='button';pushTest.id='memberPushTest';pushTest.textContent='알림 연결 확인';pushTest.hidden=true;pushDisable.after(pushTest);
+function memberPushToken(){let token=localStorage.getItem('hb_push_device_token_v1');if(!/^[A-Za-z0-9_-]{43}$/.test(token||'')){const bytes=crypto.getRandomValues(new Uint8Array(32));token=btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');localStorage.setItem('hb_push_device_token_v1',token)}return token}
+async function memberPushApi(action,extra={}){const r=await fetch('/api/push/member/'+action,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({deviceToken:memberPushToken(),...extra}),signal:AbortSignal.timeout(15000)});const j=await r.json();if(!r.ok)throw Error(j.error||'failed');return j}
+function memberPushState(connected){memberPush.connected=connected;document.getElementById('memberPushLabel').textContent=connected?'알림 켜짐':'알림 꺼짐';pushButton.classList.toggle('is-on',connected);pushButton.setAttribute('aria-label',connected?'활동·공지 알림 켜짐 · 설정 열기':'활동·공지 알림 꺼짐 · 설정 열기');pushEnable.textContent=connected?'알림 다시 연결':'알림 켜기';pushTest.hidden=!connected;pushDisable.hidden=!connected}
 function closeMemberPush(){pushPanel.hidden=true;pushButton.focus({preventScroll:true})}
 document.getElementById('memberPushClose').onclick=closeMemberPush;
 pushPanel.addEventListener('click',e=>{if(e.target===pushPanel)closeMemberPush()});
 pushPanel.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();closeMemberPush()}});
-async function prepareMemberPush(){
- pushEnable.disabled=true;pushMessage.textContent='이 휴대폰의 알림 연결 상태를 확인하고 있습니다.';
- const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),standalone=window.matchMedia?.('(display-mode: standalone)').matches||navigator.standalone===true;
- if(isIOS&&!standalone){pushMessage.textContent='아이폰은 Safari에서 액션허브를 열고 공유 → 홈 화면에 추가한 뒤, 추가된 아이콘에서 알림을 켜주세요.';return}
- if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){pushMessage.textContent='이 브라우저에서는 휴대폰 알림을 지원하지 않습니다. Chrome 또는 홈 화면에 추가한 앱에서 열어주세요.';return}
- if(Notification.permission==='denied'){pushMessage.textContent='현재 알림이 차단되어 있습니다. 휴대폰 또는 브라우저 설정에서 액션허브 알림을 허용한 뒤 다시 열어주세요.';return}
- try{
-  const r=await fetch('/api/push/public-key');if(!r.ok)throw Error();const j=await r.json();memberPush.publicKey=j.publicKey;
-  memberPush.registration=await navigator.serviceWorker.register('/push-sw.js');await navigator.serviceWorker.ready;
-  const sub=await memberPush.registration.pushManager.getSubscription(),state=await memberPushApi('status');
-  const connected=!!sub&&Notification.permission==='granted'&&state.connected;
-  memberPushState(connected);pushEnable.disabled=false;
-  pushMessage.textContent=connected?'새 활동 등록 · 활동 완료 · 새 공지 알림이 연결되어 있습니다.':'아래 알림 켜기를 누른 뒤 알림을 허용해 주세요.';
- }catch{pushMessage.textContent='연결 상태를 확인하지 못했습니다. 잠시 후 다시 열어주세요.'}
-}
+function pushSupportMessage(){const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),installed=window.matchMedia?.('(display-mode: standalone)').matches||navigator.standalone===true;if(ios&&!installed)return '아이폰: Safari에서 이 주소를 열고 공유 → 홈 화면에 추가한 뒤, 설치한 액션허브 아이콘에서 알림을 켜주세요. iOS 16.4 이상이 필요합니다.';if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window))return '이 환경은 푸시 알림을 지원하지 않습니다. 갤럭시는 Chrome 또는 삼성 인터넷에서 설치한 앱으로, 아이폰은 최신 iOS의 홈 화면 앱으로 열어주세요.';return ''}
+async function pushRegistration(){const reg=await navigator.serviceWorker.register('/push-sw.js',{updateViaCache:'none'});await Promise.race([navigator.serviceWorker.ready,new Promise((_,reject)=>setTimeout(()=>reject(Error('worker_timeout')),12000))]);memberPush.registration=reg;return reg}
+async function prepareMemberPush(){pushEnable.disabled=true;pushMessage.textContent='이 휴대폰의 알림 연결 상태를 확인하고 있습니다.';pushDisable.hidden=false;const unsupported=pushSupportMessage();if(unsupported){pushMessage.textContent=unsupported;return}try{const [reg,state,r]=await Promise.all([pushRegistration(),memberPushApi('status'),fetch('/api/push/public-key',{cache:'no-store',signal:AbortSignal.timeout(15000)})]);if(!r.ok)throw Error('key_failed');memberPush.publicKey=(await r.json()).publicKey;const sub=await reg.pushManager.getSubscription();memberPushState(!!sub&&Notification.permission==='granted'&&state.connected);pushDisable.hidden=!(state.connected||sub);if(Notification.permission==='denied'){pushMessage.textContent='휴대폰에서 알림이 차단되어 있습니다. 아이폰: 설정 → 알림 → 설치한 액션허브 → 알림 허용. 갤럭시: 설정 → 알림 → 앱 알림에서 액션허브 또는 설치에 사용한 브라우저를 허용한 뒤 앱을 다시 열어주세요. 앱에서 차단을 강제로 해제할 수는 없습니다.';return}pushEnable.disabled=false;pushMessage.textContent=memberPush.connected?'이 휴대폰의 알림이 켜져 있습니다. 아래에서 연결 확인 또는 끄기를 선택하세요.':'알림 켜기를 누르고 휴대폰의 알림 허용을 선택해 주세요. 이전 Railway 주소에 설치한 앱은 새 주소에서 다시 설치하고 알림을 연결해야 합니다.'}catch{pushMessage.textContent='연결 확인에 실패했습니다. 알림 켜기를 눌러 다시 연결하거나, 이 휴대폰 알림 끄기를 선택하세요.';pushEnable.disabled=false;pushDisable.hidden=false}}
 pushButton.onclick=()=>{pushPanel.hidden=false;document.getElementById('memberPushClose').focus({preventScroll:true});prepareMemberPush()};
-pushEnable.onclick=async()=>{
- if(memberPush.busy||!memberPush.registration||!memberPush.publicKey)return;
- memberPush.busy=true;pushEnable.disabled=true;pushDisable.disabled=true;
- try{
-  const permission=await Notification.requestPermission();
-  if(permission!=='granted'){pushMessage.textContent='알림이 허용되지 않았습니다. 원하실 때 다시 켜실 수 있어요.';return}
-  let sub=await memberPush.registration.pushManager.getSubscription();
-  if(!sub){const key=memberPush.publicKey.replace(/-/g,'+').replace(/_/g,'/'),raw=atob(key+'='.repeat((4-key.length%4)%4));sub=await memberPush.registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:Uint8Array.from(raw,c=>c.charCodeAt(0))})}
-  await memberPushApi('subscribe',{name:owner.value.trim()||ownerIdentity||'TFA',subscription:sub.toJSON()});memberPushState(true);
-  pushMessage.textContent='알림 연결 완료! 앞으로 새 공지와 TFA님들의 활동 등록·완료 소식을 받으실 수 있습니다.';
- }catch{pushMessage.textContent='연결하지 못했습니다. 네트워크와 휴대폰 알림 설정을 확인해 주세요.'}
- finally{memberPush.busy=false;pushEnable.disabled=false;pushDisable.disabled=false}
-};
-pushDisable.onclick=async()=>{
- if(memberPush.busy)return;memberPush.busy=true;pushDisable.disabled=true;pushEnable.disabled=true;
- try{await memberPushApi('unsubscribe');const sub=await memberPush.registration?.pushManager.getSubscription();if(sub)await sub.unsubscribe();memberPushState(false);pushMessage.textContent='이 휴대폰의 활동·공지 알림을 껐습니다.'}
- catch{pushMessage.textContent='알림 해제를 확인하지 못했습니다. 다시 시도해 주세요.'}
- finally{memberPush.busy=false;pushDisable.disabled=false;pushEnable.disabled=false}
-};
+pushEnable.onclick=async()=>{if(memberPush.busy)return;const unsupported=pushSupportMessage();if(unsupported){pushMessage.textContent=unsupported;return}memberPush.busy=true;pushEnable.disabled=true;pushDisable.disabled=true;try{const permission=await Notification.requestPermission();if(permission!=='granted'){pushMessage.textContent='알림이 허용되지 않았습니다. 휴대폰 설정에서 알림을 허용한 뒤 다시 켜주세요.';return}const reg=memberPush.registration||await pushRegistration();if(!memberPush.publicKey){const r=await fetch('/api/push/public-key',{signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('key_failed');memberPush.publicKey=(await r.json()).publicKey}const key=memberPush.publicKey.replace(/-/g,'+').replace(/_/g,'/'),raw=atob(key+'='.repeat((4-key.length%4)%4)),keyBytes=Uint8Array.from(raw,c=>c.charCodeAt(0));let sub=await reg.pushManager.getSubscription();if(sub?.options?.applicationServerKey){const old=new Uint8Array(sub.options.applicationServerKey);if(old.length!==keyBytes.length||old.some((v,i)=>v!==keyBytes[i])){await sub.unsubscribe();sub=null}}if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes});await memberPushApi('subscribe',{name:document.getElementById('owner')?.value?.trim()||ownerIdentity||'TFA',subscription:sub.toJSON()});memberPushState(true);pushMessage.textContent='이 휴대폰의 알림을 켰습니다. 알림 연결 확인을 눌러 실제 수신을 확인해 주세요.'}catch(e){pushMessage.textContent=e.name==='NotAllowedError'?'휴대폰의 알림 허용 설정을 확인해 주세요.':'알림 연결에 실패했습니다. 네트워크를 확인한 뒤 다시 켜주세요.'}finally{memberPush.busy=false;pushEnable.disabled=false;pushDisable.disabled=false}};
+pushDisable.onclick=async()=>{if(memberPush.busy)return;memberPush.busy=true;pushDisable.disabled=true;try{await memberPushApi('unsubscribe');const reg=memberPush.registration||await navigator.serviceWorker?.getRegistration('/');const sub=await reg?.pushManager?.getSubscription();if(sub)await sub.unsubscribe();memberPushState(false);pushMessage.textContent='이 휴대폰의 활동·공지 알림을 껐습니다. 원할 때 알림 켜기로 다시 연결할 수 있습니다.'}catch{pushMessage.textContent='알림 해제를 확인하지 못했습니다. 네트워크 연결 후 다시 눌러주세요.'}finally{memberPush.busy=false;pushDisable.disabled=false}};
+pushTest.onclick=async()=>{pushTest.disabled=true;try{await memberPushApi('test');pushMessage.textContent='알림 서버에 전송했습니다. 휴대폰 알림센터를 확인해 주세요. 보이지 않으면 집중 모드·방해금지·앱 알림 설정을 확인해 주세요.'}catch{pushMessage.textContent='알림 전송을 확인하지 못했습니다. 알림 다시 연결 후 확인해 주세요.'}finally{pushTest.disabled=false}};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!pushPanel.hidden&&!memberPush.busy)prepareMemberPush()});
+if(navigator.serviceWorker?.getRegistration)navigator.serviceWorker.getRegistration('/').then(reg=>reg?.update()).catch(()=>{});
+if(localStorage.getItem('hb_push_device_token_v1')&&!pushSupportMessage())Promise.all([memberPushApi('status'),navigator.serviceWorker.getRegistration('/').then(reg=>reg?.pushManager.getSubscription())]).then(([state,sub])=>memberPushState(!!sub&&state.connected&&Notification.permission==='granted')).catch(()=>{});
+
 // Display the notice that was tapped, including an older notice if a newer one arrived.
 if(navigator.serviceWorker?.getRegistration)navigator.serviceWorker.getRegistration('/').then(reg=>reg?.update()).catch(()=>{});
 if(localStorage.getItem('hb_push_device_token_v1'))memberPushApi('status').then(state=>memberPushState(state.connected&&typeof Notification!=='undefined'&&Notification.permission==='granted')).catch(()=>{});
