@@ -4,7 +4,7 @@ let resource='all';
 const resourcePicker=document.createElement('select');resourcePicker.setAttribute('aria-label','승인 업무 선택');resourcePicker.style.cssText='width:100%;padding:14px;border-radius:12px;margin:8px 0;font-size:16px';
 for(const [value,label] of [['all','전체 승인 업무'],['library','ACTION HUB 자료실'],['commission','툴박스 생보수수료']]){const option=document.createElement('option');option.value=value;option.textContent=label;resourcePicker.append(option)}
 $('search').parentElement.before(resourcePicker);resourcePicker.onchange=()=>{resource=resourcePicker.value;render()};
-if(new URLSearchParams(location.search).get('embedded')==='1'){document.querySelector('header').hidden=true;document.querySelector('.notification').hidden=true}
+if(new URLSearchParams(location.search).get('embedded')==='1'){document.querySelector('header').hidden=true;document.querySelector('.notification').hidden=true;document.querySelector('.intro').hidden=true;document.querySelector('main').style.padding='0 0 20px'}
 async function api(url,options={}){const response=await fetch(url,{...options,headers:{'Content-Type':'application/json',...options.headers},cache:'no-store'});const body=await response.json();if(!response.ok){if(response.status===401){$('login').hidden=false;$('dashboard').hidden=true;$('logout').hidden=true}throw Error(body.error||'failed')}return body}
 const text=(tag,value,cls)=>{const el=document.createElement(tag);el.textContent=value;if(cls)el.className=cls;return el};
 function render(){
