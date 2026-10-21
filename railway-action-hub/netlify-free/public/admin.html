@@ -65,7 +65,7 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
 .hidden{display:none!important}
 .view{display:none}.view.on{display:block}
 .bottom{position:fixed;z-index:20;left:0;right:0;bottom:0;background:#ffffffee;backdrop-filter:blur(16px);border-top:1px solid #e7ecf3;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
-.bottom-inner{max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.bottom-inner{max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(5,1fr)}
 .nav{border:0;background:transparent;color:#8a94a5;font-size:10px;font-weight:900;padding:7px 3px}.nav i{display:block;font-style:normal;font-size:21px;margin-bottom:3px}.nav.on{color:var(--blue)}
 .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(150deg,#0b2a66,#0b57e3 55%,#51c6ff)}
 .login-card{width:min(420px,100%);background:#fff;border-radius:26px;padding:22px;box-shadow:0 20px 60px #001d5744}
@@ -93,7 +93,7 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
   <div class="login-card">
     <img class="login-logo" src="/action-hub-approved-icon-v4.png?v=20261001-admin" alt="유료DB ACTION HUB 아이콘">
     <div class="login-title">ACTION HUB 관리자</div>
-    <div class="login-sub">구리리더스HB 유료DB ACTION HUB</div>
+    <div class="login-sub">구리리더스HB 유료DB ACTION HUB<br>한 번 로그인하면 이 기기에서 최대 1년간 유지됩니다.</div>
     <div class="field"><label for="email">관리자 이메일</label><input id="email" type="email" value="dnfntk2074@gmail.com" autocomplete="username"></div>
     <div class="field"><label for="pw">비밀번호</label><input id="pw" type="password" placeholder="관리자 비밀번호" autocomplete="current-password"></div>
     <button class="btn primary full" id="loginBtn">관리자 로그인</button>
@@ -127,6 +127,7 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
           <button onclick="go('schedule')"><span class="ico">📅</span>일정 관리</button>
           <button onclick="go('board')"><span class="ico">📺</span>전광판 설정</button>
           <button onclick="go('library')"><span class="ico">📚</span>자료실</button>
+          <button onclick="openApprovals()"><span class="ico">✅</span>자료실·생보수수료 승인</button>
           <button onclick="go('notice')"><span class="ico">📢</span>공지 관리</button>
           <button onclick="openUserApp()"><span class="ico">🚀</span>사용자 앱</button>
         </div>
@@ -206,11 +207,13 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
     </section>
   </div>
 
+  <section class="view" id="view-approvals"><div class="card"><div class="section-title">✅ 자료실 · 생보수수료 승인</div><p class="muted">관리자 로그인으로 신청 확인·승인·거절·이용 중지를 처리합니다.</p><iframe id="approvalFrame" title="자료실 및 생보수수료 승인센터" style="width:100%;height:75vh;border:0;border-radius:16px" src="about:blank"></iframe></div></section>
   <nav class="bottom">
     <div class="bottom-inner">
       <button class="nav on" data-view="home"><i>🏠</i>홈</button>
       <button class="nav" data-view="schedule"><i>📅</i>일정</button>
       <button class="nav" data-view="board"><i>📺</i>전광판</button>
+      <button class="nav" data-view="approvals"><i>✅</i>승인</button>
       <button class="nav" data-view="more"><i>⚙️</i>설정</button>
     </div>
   </nav>
@@ -220,7 +223,7 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
 let schedules=[],settings={},libraryItems=[];
 async function api(u,o={}){
   const form=typeof FormData!=="undefined"&&o.body instanceof FormData;
-  let headers=form?{...(o.headers||{})}:{"content-type":"application/json",...(o.headers||{})};
+  let headers=form?{"x-region":"ap-northeast-2",...(o.headers||{})}:{"content-type":"application/json","x-region":"ap-northeast-2",...(o.headers||{})};
   let r=await fetch(u,{...o,headers});
   if(r.status===401&&u!=="/api/admin/login"){showLogin();throw new Error("unauthorized")}
   return r;
@@ -342,12 +345,14 @@ async function loadPushRecipients(){
 pushRefresh.onclick=loadPushRecipients;
 
 function go(v){
+  if(v==="approvals"&&approvalFrame.getAttribute("src")==="about:blank")approvalFrame.src="/approvals/?embedded=1";
   if(v==="more")loadPushRecipients();
   document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
   document.getElementById("view-"+v).classList.add("on");
   document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("on",x.dataset.view===v))
 }
 function openUserApp(){location.href="/"}
+function openApprovals(){go('approvals')}
 document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>go(b.dataset.view));
 search.oninput=renderList;typeFilter.onchange=renderList;
 libUpload.onclick=uploadLibrary;
@@ -414,7 +419,7 @@ change.onclick=async()=>{
   changeMsg.textContent=r.ok?"비밀번호가 변경되었습니다.":"8자 이상으로 설정해 주세요.";if(r.ok)newpw.value=""
 };
 async function load(){
-  let me=await fetch("/api/admin/me");if(!me.ok)return showLogin();
+  let me=await api("/api/admin/me");if(!me.ok)return showLogin();
   showApp();
   settings=await (await api("/api/admin/settings")).json();
   mode.value=settings.marquee_mode;marquee.value=settings.marquee_text||"";mvp.checked=!!settings.mvp_enabled;mvpTitle.value=settings.mvp_title||"";title.value=settings.app_title||"";sub.value=settings.app_subtitle||"";
