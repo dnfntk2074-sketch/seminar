@@ -218,7 +218,6 @@ function makeCustomer(type,place){
 
 app.get("/api/data", async(req,res)=>{
   try{
-    await syncFloot();
     const [rows,settings]=await Promise.all([pool.query("SELECT * FROM schedules ORDER BY scheduled_at ASC"),getSettings()]);
     const h=req.get("x-owner-token")?tokenHash(req.get("x-owner-token")):"";
     const ownerName=requestOwnerName(req);
@@ -312,7 +311,7 @@ app.post("/api/schedule-pass/logout",originGuard,(req,res)=>{res.setHeader("Set-
 app.post("/api/admin/logout",(req,res)=>{res.setHeader("Set-Cookie","hb_admin=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0");res.json({ok:true})});
 app.get("/api/admin/me",auth,(req,res)=>res.json({email:req.admin.email}));
 app.get("/api/admin/schedules",auth,async(req,res)=>{
-  try{await syncFloot();const r=await pool.query("SELECT id,owner_name AS \"ownerName\",customer_name AS \"customerName\",scheduled_at AS \"scheduledAt\",completed,completed_at AS \"completedAt\",source FROM schedules ORDER BY scheduled_at DESC");res.json({schedules:r.rows});}
+  try{const r=await pool.query("SELECT id,owner_name AS \"ownerName\",customer_name AS \"customerName\",scheduled_at AS \"scheduledAt\",completed,completed_at AS \"completedAt\",source FROM schedules ORDER BY scheduled_at DESC");res.json({schedules:r.rows});}
   catch{res.status(500).json({error:"load_failed"});}
 });
 app.patch("/api/admin/schedules/:id/complete",auth,async(req,res)=>{
@@ -436,5 +435,7 @@ app.use((err,req,res,next)=>{
 app.get("/admin",(req,res)=>res.redirect("https://guri-hb-action-hub.netlify.app/admin"));
 
 
-init().then(async()=>{notifyActivity=await installPush(app,pool,auth);await access.init();await publishApprovedNotice(pool,notifyActivity);app.get("*",(req,res)=>res.status(404).json({error:"not_found"}));;app.use((err,req,res,next)=>{console.error("request failed");res.status(500).json({error:"server_error"})})}).then(()=>app.listen(PORT,"0.0.0.0",()=>console.log("HB ACTION HUB listening",PORT))).catch(e=>{console.error(e);process.exit(1);});
+// Schema and approved notice were already migrated during recovery. Runtime startup is read-only.
+Promise.resolve().then(async()=>{notifyActivity=await installPush(app,pool,auth,{schemaReady:true});await access.init({schemaReady:true});app.get("*",(req,res)=>res.status(404).json({error:"not_found"}));;app.use((err,req,res,next)=>{console.error("request failed");res.status(500).json({error:"server_error"})})}).then(()=>app.listen(PORT,"0.0.0.0",()=>console.log("HB ACTION HUB listening",PORT))).catch(e=>{console.error(e);process.exit(1);});
+
 
