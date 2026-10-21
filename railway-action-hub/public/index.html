@@ -1419,6 +1419,17 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
   #upcomingVisitGrid .hall-border-orbit rect{stroke-dasharray:none}
   #upcomingVisitGrid .hall-border-corner{opacity:.4}
 }
+
+/* Golden sparkle for the crown and confirmed weekly MVP. */
+#upcomingVisitGrid>.is-final .hall-week-emblem{position:relative;overflow:visible;animation:hbCrownGlint 2.8s ease-in-out infinite}
+#upcomingVisitGrid>.is-final .hall-week-emblem::after{content:'✦';position:absolute;right:-2px;top:-3px;font-size:7px;color:#fff3b2;pointer-events:none;animation:hbCrownStar 2.8s ease-in-out infinite}
+#upcomingVisitGrid>.is-final .hall-week-state{position:relative;isolation:isolate;overflow:hidden;animation:hbFinalGlow 3.2s ease-in-out infinite}
+#upcomingVisitGrid>.is-final .hall-week-state::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 30%,#fff7ceaa 49%,transparent 68%);transform:translateX(-140%);animation:hbFinalSweep 3.2s ease-in-out infinite}
+@keyframes hbCrownGlint{0%,100%{filter:drop-shadow(0 0 1px #e4a82755);opacity:.85}45%{filter:drop-shadow(0 0 4px #ffc94f);opacity:1}}
+@keyframes hbCrownStar{0%,25%,75%,100%{opacity:0;transform:scale(.45)}48%{opacity:1;transform:scale(1.15)}}
+@keyframes hbFinalGlow{0%,100%{box-shadow:0 0 0 #efbd4800;text-shadow:none}48%{box-shadow:0 0 5px #eebc4877;text-shadow:0 0 3px #ffe7a3}}
+@keyframes hbFinalSweep{0%,15%{transform:translateX(-140%)}65%,100%{transform:translateX(140%)}}
+@media(prefers-reduced-motion:reduce){#upcomingVisitGrid>.is-final .hall-week-emblem,#upcomingVisitGrid>.is-final .hall-week-emblem::after,#upcomingVisitGrid>.is-final .hall-week-state,#upcomingVisitGrid>.is-final .hall-week-state::after{animation:none}#upcomingVisitGrid>.is-final .hall-week-emblem::after,#upcomingVisitGrid>.is-final .hall-week-state::after{display:none}}
 </style></head><body><div class="wrap">
 <div class="chuseok-banner" aria-label="추석 인사"><img src="/chuseok-banner-20260925.svg?v=20260925-1420" alt="구리리더스HB사업단 추석 인사 - 풍성한 한가위 되세요"></div>
 <div class="card top-card premium-hub">
