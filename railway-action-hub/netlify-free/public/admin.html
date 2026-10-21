@@ -264,8 +264,9 @@ function renderActivitySummary(){
  const month=document.getElementById('hallMonth').value||seoulDate().slice(0,7);
  document.getElementById('hallCards').innerHTML=monthActivityWeeks(month).map(p=>{
  const counts=new Map();schedules.filter(x=>x.completed&&Date.parse(x.scheduledAt)>=p.start&&Date.parse(x.scheduledAt)<p.end).forEach(x=>counts.set(x.ownerName,(counts.get(x.ownerName)||0)+1));
- const max=Math.max(0,...counts.values()),names=[...counts].filter(x=>x[1]===max).map(x=>x[0]).join(' · '),now=Date.now(),state=now<p.start?'집계 예정':now<p.end?'집계 중':'집계 종료';
- return '<article class="hall-card"><span>'+p.index+'주차 · '+p.startDay+'~'+p.endDay+'일</span><strong>'+esc(names||(now<p.start?'집계 예정':'완료 활동 없음'))+'</strong><div>'+(max?'완료 '+max+'건 · ':'')+state+'</div></article>';
+ const max=Math.max(0,...counts.values()),names=[...counts].filter(x=>x[1]===max).map(x=>x[0]),now=Date.now(),state=now<p.start?'집계 예정':now<p.end?'집계 중':'집계 종료';
+ const titled=names.map(name=>{const base=String(name).trim().replace(/\s*(?:TFA|이사)\s*$/i,'').trim();return base==='박효선'?'박효선 이사':base+' TFA'});
+ return '<article class="hall-card"><span>'+p.index+'주차 · '+p.startDay+'~'+p.endDay+'일</span><strong style="font-size:'+(names.length>1?'14':'17')+'px;line-height:1.4">'+(titled.length?titled.map(esc).join('<br>'):esc(now<p.start?'집계 예정':'완료 활동 없음'))+'</strong><div>'+(max?'완료 '+max+'건 · ':'')+state+'</div></article>';
  }).join('');
 }
 function renderStats(){
