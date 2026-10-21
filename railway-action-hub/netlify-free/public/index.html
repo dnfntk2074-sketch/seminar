@@ -1421,6 +1421,7 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 }
 
 /* Keep every tied winner visible, one titled name per line. */
+.mvp .mvp-name.mvp-joint{display:block!important;width:100%!important;max-width:100%!important;white-space:nowrap!important;word-break:normal!important;line-height:1.12!important}
 #upcomingVisitBoard:has(.has-joint-winners){height:auto!important;min-height:92px!important;overflow:visible}
 #upcomingVisitGrid:has(.has-joint-winners){height:auto;min-height:90px;grid-auto-rows:auto}
 #upcomingVisitGrid>.hall-week.has-joint-winners{height:auto;min-height:78px;grid-template-rows:16px minmax(28px,auto) 16px}
@@ -1856,6 +1857,20 @@ function boardPersonName(name){
  return base==='박효선'?'박효선 이사':base?base+' TFA':'';
 }
 let hallMonth=seoulDate(new Date()).slice(0,7);
+let mvpFitFrame=0;
+function fitJointMvpNames(){
+ cancelAnimationFrame(mvpFitFrame);mvpFitFrame=requestAnimationFrame(()=>{
+  document.querySelectorAll('.mvp-name').forEach(el=>{
+   const joint=el.textContent.includes(' · ');el.classList.toggle('mvp-joint',joint);el.style.removeProperty('font-size');
+   if(!joint||!el.clientWidth)return;
+   let size=parseFloat(getComputedStyle(el).fontSize);
+   for(let i=0;i<4&&el.scrollWidth>el.clientWidth;i++){size=size*el.clientWidth/el.scrollWidth*.98;el.style.setProperty('font-size',size+'px','important')}
+  });
+ });
+}
+new MutationObserver(fitJointMvpNames).observe(document.getElementById('mvpTrack'),{childList:true,characterData:true,subtree:true});
+new ResizeObserver(fitJointMvpNames).observe(document.querySelector('.mvp'));
+document.fonts?.ready.then(fitJointMvpNames);
 function renderWeeklyHallOfFame(items){
  const panel=document.getElementById('upcomingVisitGrid'),track=document.getElementById('scheduleTrack'),board=document.getElementById('upcomingVisitBoard');
  panel.hidden=false;track.hidden=true;board.classList.remove('is-manual');
