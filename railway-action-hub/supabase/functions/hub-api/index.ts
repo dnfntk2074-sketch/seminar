@@ -79,9 +79,7 @@ function auth(req,res,next){
     req.admin=p; next();
   }catch{ res.status(401).json({error:"unauthorized"}); }
 }
-const access=createAccess({app,pool,auth,dir:__dirname,adminEmail:ADMIN_EMAIL,isAdmin:req=>{
-  try{return (jwt.verify(parseCookies(req).hb_admin,JWT_SECRET).email||'').toLowerCase()===ADMIN_EMAIL}catch{return false}
-}});
+const access=createAccess({app,pool,auth,dir:__dirname,adminEmail:ADMIN_EMAIL,isAdmin:req=>isScheduleAdmin(req)});
 function tokenHash(token){ return crypto.createHash("sha256").update(String(token||"")).digest("hex"); }
 function isTest(s){
   // Only suppress legacy imported demo schedules. Every locally registered
@@ -100,15 +98,30 @@ function isScheduleAdmin(req){
   }
   return false;
 }
-function scheduleAuth(req,res,next){if(isScheduleAdmin(req))return next();res.status(401).json({error:"owner_pass_required"})}
+async function scheduleAuth(req,res,next){
+  if(isScheduleAdmin(req))return next();
+  const token=req.get("x-owner-token")||req.body?.ownerToken||"";
+  if(!token)return res.status(403).json({error:"forbidden"});
+  try{
+    const r=await pool.query("SELECT owner_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
+    if(!r.rowCount||!ownsSchedule(r.rows[0],tokenHash(token)))return res.status(403).json({error:"forbidden"});
+    if(!sameOwnerName(req.body?.ownerName,r.rows[0].owner_name))return res.status(403).json({error:"owner_change_forbidden"});
+    return next();
+  }catch(e){console.error(e);return res.status(500).json({error:"authorization_failed"})}
+}
+function ownsSchedule(row,hash){
+  if(!hash||!row.owner_token_hash)return false;
+  const supplied=Buffer.from(hash),stored=Buffer.from(row.owner_token_hash);
+  return supplied.length===stored.length&&crypto.timingSafeEqual(supplied,stored);
+}
 function toPublic(row,hash,ownerName,isAdmin=false){
   return {
     id:String(row.id), ownerName:row.owner_name, customerName:row.customer_name,
     scheduledAt:new Date(row.scheduled_at).toISOString(),
     completed:!!row.completed,
     completedAt:row.completed_at?new Date(row.completed_at).toISOString():null,
-    canEdit:isAdmin,
-    isOwner:!!hash && !!row.owner_token_hash && crypto.timingSafeEqual(Buffer.from(hash),Buffer.from(row.owner_token_hash))
+    canEdit:isAdmin||ownsSchedule(row,hash),
+    isOwner:ownsSchedule(row,hash)
   };
 }
 async function init(){
@@ -263,7 +276,7 @@ app.patch("/api/schedules/:id/complete",originGuard,async(req,res)=>{
   if(completed&&changed.rowCount)await notifyActivity("completed",changed.rows[0]);
   res.json({ok:true,completed});
 });
-app.delete("/api/schedules/:id",async(req,res)=>{
+app.delete("/api/schedules/:id",originGuard,async(req,res)=>{
   const ownerToken=req.get("x-owner-token")||req.body?.ownerToken||"";
   const r=await pool.query("SELECT owner_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
   const ownerIdentity=requestOwnerName(req);
@@ -355,6 +368,7 @@ app.post("/api/admin/library",auth,upload.single("file"),async(req,res)=>{
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
       [id,title,description,category,pinned,originalName,req.file.mimetype||"application/octet-stream",req.file.size,Buffer.alloc(0),storagePath]);
     const r=await pool.query("SELECT id,title,description,category,pinned,file_name,mime_type,file_size,created_at,updated_at FROM library_files WHERE id=$1",[id]);
+    await notifyActivity('library',{id,title,category});
     res.json({ok:true,item:libraryMeta(r.rows[0])});
   }catch(e){
     if(e?.code==="LIMIT_FILE_SIZE")return res.status(413).json({error:"file_too_large"});
@@ -442,6 +456,3 @@ app.get("/admin",(req,res)=>res.redirect("https://guri-hb-action-hub.netlify.app
 
 // Schema and approved notice were already migrated during recovery. Runtime startup is read-only.
 Promise.resolve().then(async()=>{notifyActivity=await installPush(app,pool,auth,{schemaReady:true});await access.init({schemaReady:true});app.get("*",(req,res)=>res.status(404).json({error:"not_found"}));;app.use((err,req,res,next)=>{console.error("request failed");res.status(500).json({error:"server_error"})})}).then(()=>app.listen(PORT,"0.0.0.0",()=>console.log("HB ACTION HUB listening",PORT))).catch(e=>{console.error(e);process.exit(1);});
-
-
-

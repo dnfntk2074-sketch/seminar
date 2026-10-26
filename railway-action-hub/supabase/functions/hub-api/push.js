@@ -6,6 +6,7 @@ export function validSubscription(s){
   try{const u=new URL(s.endpoint);return u.protocol==='https:'&&u.port===''&&!u.username&&!u.password&&(/^(fcm\.googleapis\.com|updates\.push\.services\.mozilla\.com|web\.push\.apple\.com)$/.test(u.hostname)||u.hostname.endsWith('.notify.windows.com'))&&/^[A-Za-z0-9_-]{80,100}$/.test(s.keys?.p256dh)&&/^[A-Za-z0-9_-]{20,30}$/.test(s.keys?.auth)}catch{return false}
 }
 export function activityPayload(kind,s){
+ if(kind==='library')return {title:'📚 자료실 · 새 자료 등록',body:(String(s.category||'자료실')+' · '+String(s.title||'새 자료')).slice(0,140),url:'/?open=library',tag:'library-'+s.id};
  if(kind==='notice'){
   const text=String(s.content||'').replace(/\\r\\n|\\n|\/n/gi,' ').replace(/\s+/g,' ').trim();
   return {title:'📢 새 공지 · 구리리더스HB',body:(String(s.title||'새 공지')+(text?' · '+text:'')).slice(0,140),url:'/?notice='+encodeURIComponent(s.id),tag:'notice-'+s.id};
@@ -79,4 +80,3 @@ export async function installPush(app,pool,auth,{schemaReady=false}={}){
   const timer=setInterval(deliver,15000);timer.unref?.();deliver();
   return async function enqueue(kind,s){try{if(['테스트','점검','test'].some(w=>String(s.owner_name||'').toLowerCase().includes(w)))return;const id=kind==='notice'?'notice:'+hash(s.id+'|'+s.title+'|'+s.content):`${kind}:${s.id}`;const client=await pool.connect();try{await client.query('BEGIN');const r=await client.query(`INSERT INTO push_events(id,payload) VALUES($1,$2) ON CONFLICT DO NOTHING RETURNING id`,[id,JSON.stringify(activityPayload(kind,s))]);if(r.rowCount)await client.query(`INSERT INTO push_deliveries(event_id,recipient_id,subscription) SELECT $1,id,subscription FROM (SELECT DISTINCT ON (subscription->>'endpoint') id,subscription FROM push_recipients WHERE subscription IS NOT NULL ORDER BY subscription->>'endpoint',id) AS devices ON CONFLICT DO NOTHING`,[id]);await client.query('COMMIT')}catch(e){await client.query('ROLLBACK');throw e}finally{client.release()}await deliver()}catch{console.warn('push event could not be queued')}};
 }
-

@@ -86,15 +86,30 @@ function isScheduleAdmin(req){
   }
   return false;
 }
-function scheduleAuth(req,res,next){if(isScheduleAdmin(req))return next();res.status(401).json({error:"owner_pass_required"})}
+async function scheduleAuth(req,res,next){
+  if(isScheduleAdmin(req))return next();
+  const token=req.get("x-owner-token")||req.body?.ownerToken||"";
+  if(!token)return res.status(403).json({error:"forbidden"});
+  try{
+    const r=await pool.query("SELECT owner_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
+    if(!r.rowCount||!ownsSchedule(r.rows[0],tokenHash(token)))return res.status(403).json({error:"forbidden"});
+    if(!sameOwnerName(req.body?.ownerName,r.rows[0].owner_name))return res.status(403).json({error:"owner_change_forbidden"});
+    return next();
+  }catch(e){console.error(e);return res.status(500).json({error:"authorization_failed"})}
+}
+function ownsSchedule(row,hash){
+  if(!hash||!row.owner_token_hash)return false;
+  const supplied=Buffer.from(hash),stored=Buffer.from(row.owner_token_hash);
+  return supplied.length===stored.length&&crypto.timingSafeEqual(supplied,stored);
+}
 function toPublic(row,hash,ownerName,isAdmin=false){
   return {
     id:String(row.id), ownerName:row.owner_name, customerName:row.customer_name,
     scheduledAt:new Date(row.scheduled_at).toISOString(),
     completed:!!row.completed,
     completedAt:row.completed_at?new Date(row.completed_at).toISOString():null,
-    canEdit:isAdmin,
-    isOwner:!!hash && !!row.owner_token_hash && crypto.timingSafeEqual(Buffer.from(hash),Buffer.from(row.owner_token_hash))
+    canEdit:isAdmin||ownsSchedule(row,hash),
+    isOwner:ownsSchedule(row,hash)
   };
 }
 async function init(){
@@ -247,7 +262,7 @@ app.patch("/api/schedules/:id/complete",async(req,res)=>{
   if(completed&&changed.rowCount)await notifyActivity("completed",changed.rows[0]);
   res.json({ok:true,completed});
 });
-app.delete("/api/schedules/:id",async(req,res)=>{
+app.delete("/api/schedules/:id",originGuard,async(req,res)=>{
   const ownerToken=req.get("x-owner-token")||req.body?.ownerToken||"";
   const r=await pool.query("SELECT owner_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
   const ownerIdentity=requestOwnerName(req);
