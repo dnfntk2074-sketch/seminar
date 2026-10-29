@@ -1,0 +1,29 @@
+name: Deploy ACTION HUB to Netlify
+on:
+  push:
+    branches:
+      - recovery/action-hub-free-20261021
+    paths:
+      - railway-action-hub/netlify-free/**
+      - .github/workflows/action-hub-netlify-deploy.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy production site
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN || secrets.NETLIFY_TOKEN }}
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ]; then
+            echo "NETLIFY_AUTH_TOKEN secret is not configured"
+            exit 2
+          fi
+          npx --yes netlify-cli@23.5.1 deploy --prod \
+            --dir=railway-action-hub/netlify-free/public \
+            --site=9e091081-0de7-44be-855a-139ffe3a5d62
