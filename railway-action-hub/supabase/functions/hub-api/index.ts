@@ -122,7 +122,7 @@ function toPublic(row,hash,ownerName,isAdmin=false){
     completedAt:row.completed_at?new Date(row.completed_at).toISOString():null,
     canceledAt:row.canceled_at?new Date(row.canceled_at).toISOString():null,
     canEdit:isAdmin||ownsSchedule(row,hash),
-    isOwner:ownsSchedule(row,hash)
+    isOwner:isAdmin||ownsSchedule(row,hash)
   };
 }
 async function init(){
