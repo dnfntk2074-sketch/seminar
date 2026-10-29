@@ -475,7 +475,7 @@ async function load(){
   settings=await (await api("/api/admin/settings")).json();
   mode.value=settings.marquee_mode;marquee.value=settings.marquee_text||"";mvp.checked=!!settings.mvp_enabled;mvpTitle.value=settings.mvp_title||"";title.value=settings.app_title||"";sub.value=settings.app_subtitle||"";
   noticeEnabled.checked=settings.notice_enabled!==false;noticeNew.checked=settings.notice_new!==false;noticeTitleInput.value=settings.notice_title||"";noticeContentInput.value=settings.notice_content||"";noticeUrlInput.value=settings.notice_url||"";renderAdminNoticeHistory();
-  let j=await (await api("/api/admin/schedules")).json();schedules=j.schedules||[];
+  let j=await (await api("/api/admin/schedules?includeCanceled=1")).json();schedules=j.schedules||[];
   renderStats();renderList();await Promise.all([loadLibraryAdmin(),loadApprovalSummary()])
 }
 document.getElementById('hallMonth').value=seoulDate().slice(0,7);
