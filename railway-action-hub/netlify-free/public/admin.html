@@ -157,7 +157,7 @@ textarea{width:100%;min-height:86px;border:1px solid #dfe5ee;border-radius:12px;
           <input id="search" placeholder="TFA명 · 지역/장소 검색">
           <select id="typeFilter"><option value="all">전체 유형</option><option value="visit">신규상담</option><option value="study">후속상담</option><option value="call">고객관리</option></select>
         </div>
-<div class="filters"><select id="periodFilter"><option value="all">전체 기간</option><option value="today">오늘</option><option value="week">현재 주차</option><option value="month">이번 달</option></select><select id="statusFilter"><option value="all">전체 상태</option><option value="pending">예정</option><option value="done">완료</option></select></div><div id="list"></div>
+<div class="filters"><select id="periodFilter"><option value="all">전체 기간</option><option value="today">오늘</option><option value="week">현재 주차</option><option value="month">이번 달</option></select><select id="statusFilter"><option value="all">전체 상태</option><option value="pending">예정</option><option value="done">완료</option><option value="canceled">취소</option></select></div><div id="list"></div>
       </div>
     </section>
 
@@ -248,6 +248,7 @@ function placeOf(x){return String(x.customerName||"").replace(/^\[(후속상담|
 function typeName(t){return t==="study"?"후속상담":t==="call"?"고객관리":"신규상담"}
 function badgeClass(t){return t==="study"?"study":t==="call"?"call":"visit"}
 function fmt(iso){return new Intl.DateTimeFormat("ko-KR",{timeZone:"Asia/Seoul",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(iso))}
+function activeSchedules(){return schedules.filter(x=>!x.canceledAt)}
 function monthActivityWeeks(month=seoulDate(new Date()).slice(0,7)){
  const [year,monthNumber]=month.split('-').map(Number);
  const lastDay=new Date(Date.UTC(year,monthNumber,0)).getUTCDate();
@@ -269,13 +270,13 @@ function activityWeek(now=new Date()){
 }
 function weekRange(){const w=activityWeek();return [new Date(w.start),new Date(w.end)]}
 function renderActivitySummary(){
- const w=activityWeek(),rows=schedules.filter(x=>Date.parse(x.scheduledAt)>=w.start&&Date.parse(x.scheduledAt)<w.end);
+ const w=activityWeek(),rows=activeSchedules().filter(x=>Date.parse(x.scheduledAt)>=w.start&&Date.parse(x.scheduledAt)<w.end);
  document.getElementById('periodLabel').textContent=Number(w.month.slice(5))+'월 '+w.index+'주차 · '+w.startDay+'~'+w.endDay+'일';
  for(const [type,id] of [['visit','stVisit'],['study','stStudy'],['call','stCall']])document.getElementById(id).textContent=rows.filter(x=>typeOf(x)===type).length;
  document.getElementById('stDone').textContent=rows.filter(x=>x.completed).length;
  const month=document.getElementById('hallMonth').value||seoulDate().slice(0,7);
  document.getElementById('hallCards').innerHTML=monthActivityWeeks(month).map(p=>{
- const counts=new Map();schedules.filter(x=>x.completed&&Date.parse(x.scheduledAt)>=p.start&&Date.parse(x.scheduledAt)<p.end).forEach(x=>counts.set(x.ownerName,(counts.get(x.ownerName)||0)+1));
+ const counts=new Map();activeSchedules().filter(x=>x.completed&&Date.parse(x.scheduledAt)>=p.start&&Date.parse(x.scheduledAt)<p.end).forEach(x=>counts.set(x.ownerName,(counts.get(x.ownerName)||0)+1));
  const max=Math.max(0,...counts.values()),names=[...counts].filter(x=>x[1]===max).map(x=>x[0]),now=Date.now(),state=now<p.start?'집계 예정':now<p.end?'집계 중':'집계 종료';
  const titled=names.map(name=>{const base=String(name).trim().replace(/\s*(?:TFA|이사)\s*$/i,'').trim();return base==='박효선'?'박효선 이사':base+' TFA'});
  return '<article class="hall-card"><span>'+p.index+'주차 · '+p.startDay+'~'+p.endDay+'일</span><strong style="font-size:'+(names.length>1?'14':'17')+'px;line-height:1.4">'+(titled.length?titled.map(esc).join('<br>'):esc(now<p.start?'집계 예정':'완료 활동 없음'))+'</strong><div class="'+(state==='집계 중'?'hall-counting':'')+'">'+(max?'완료 '+max+'건 · ':'')+state+'</div></article>';
@@ -283,11 +284,11 @@ function renderActivitySummary(){
 }
 function renderStats(){
   const today=seoulDate(), [mon,sun]=weekRange();
-  stToday.textContent=schedules.filter(x=>seoulDate(new Date(x.scheduledAt))===today).length;
-  stWeek.textContent=schedules.filter(x=>{let d=new Date(x.scheduledAt);return d>=mon&&d<sun}).length;
+  stToday.textContent=activeSchedules().filter(x=>seoulDate(new Date(x.scheduledAt))===today).length;
+  stWeek.textContent=activeSchedules().filter(x=>{let d=new Date(x.scheduledAt);return d>=mon&&d<sun}).length;
 
   renderActivitySummary();
-  const n=schedules.filter(x=>new Date(x.scheduledAt)>=new Date()).sort((a,b)=>new Date(a.scheduledAt)-new Date(b.scheduledAt))[0];
+  const n=activeSchedules().filter(x=>!x.completed&&new Date(x.scheduledAt)>=new Date()).sort((a,b)=>new Date(a.scheduledAt)-new Date(b.scheduledAt))[0];
   if(!n) nextSchedule.innerHTML='<div class="empty">등록된 다음 일정이 없습니다.</div>';
   else{let t=typeOf(n);nextSchedule.innerHTML='<div class="item"><div class="item-top"><div class="item-main"><div class="owner">'+esc(n.ownerName)+' TFA <span class="badge '+badgeClass(t)+'">'+typeName(t)+'</span></div><div class="item-meta">'+fmt(n.scheduledAt)+' · '+esc(placeOf(n))+'</div></div></div></div>'}
 }
@@ -295,29 +296,44 @@ function renderList(){
   const q=search.value.trim().toLowerCase(), tf=typeFilter.value;
   let rows=schedules.filter(x=>{
     let t=typeOf(x), hay=((x.ownerName||"")+" "+placeOf(x)).toLowerCase();
-    const date=seoulDate(new Date(x.scheduledAt)),w=activityWeek(),p=periodFilter.value,status=statusFilter.value;return(!q||hay.includes(q))&&(tf==="all"||t===tf)&&(status==="all"||(status==="done"?x.completed:!x.completed))&&(p==="all"||(p==="today"?date===seoulDate():p==="month"?date.startsWith(seoulDate().slice(0,7)):date>=w.from&&date<=w.through))
+    const date=seoulDate(new Date(x.scheduledAt)),w=activityWeek(),p=periodFilter.value,status=statusFilter.value;
+    const statusMatch=status==="all"||(status==="canceled"?!!x.canceledAt:status==="done"?(!x.canceledAt&&x.completed):(!x.canceledAt&&!x.completed));
+    return(!q||hay.includes(q))&&(tf==="all"||t===tf)&&statusMatch&&(p==="all"||(p==="today"?date===seoulDate():p==="month"?date.startsWith(seoulDate().slice(0,7)):date>=w.from&&date<=w.through))
   }).sort((a,b)=>new Date(b.scheduledAt)-new Date(a.scheduledAt));
   scheduleCount.textContent=rows.length+"건";
   list.innerHTML="";
   if(!rows.length){list.innerHTML='<div class="empty">조건에 맞는 일정이 없습니다.</div>';return}
   rows.forEach(x=>{
     let t=typeOf(x),d=document.createElement("div");d.className="item";
-    d.innerHTML='<div class="item-top"><div class="item-main"><div class="owner">'+esc(x.ownerName)+' TFA <span class="badge '+badgeClass(t)+'">'+typeName(t)+'</span></div><div class="item-meta">'+fmt(x.scheduledAt)+'<br>'+esc(placeOf(x))+'<br><strong>'+(x.completed?'✓ 완료':'예정')+'</strong></div></div></div><div class="item-actions"></div>';
-    let complete=document.createElement("button");complete.className="btn "+(x.completed?"ghost":"primary");complete.textContent=x.completed?"완료 취소":"✓ 완료 처리";
-    complete.onclick=async()=>{
-      complete.disabled=true;complete.textContent="처리 중...";
-      try{
-        let r=await api("/api/admin/schedules/"+encodeURIComponent(x.id)+"/complete",{method:"PATCH",body:JSON.stringify({completed:!x.completed})});
-        if(!r.ok){alert(r.status===404?"이미 삭제된 일정입니다.":"완료 상태를 변경하지 못했습니다.");return}
-        await load();
-      }catch(e){if(e.message!=="unauthorized")alert("연결을 확인하고 다시 시도해 주세요.");}
-      finally{complete.disabled=false;complete.textContent=x.completed?"완료 취소":"✓ 완료 처리";}
-    };
-    d.querySelector(".item-actions").appendChild(complete);
-    let edit=document.createElement("button");edit.className="btn primary";edit.textContent="일정 수정";edit.onclick=()=>openScheduleEditor(x);d.querySelector(".item-actions").appendChild(edit);
+    const state=x.canceledAt?"취소":x.completed?"✓ 완료":"예정";
+    d.innerHTML='<div class="item-top"><div class="item-main"><div class="owner">'+esc(x.ownerName)+' TFA <span class="badge '+badgeClass(t)+'">'+typeName(t)+'</span></div><div class="item-meta">'+fmt(x.scheduledAt)+'<br>'+esc(placeOf(x))+'<br><strong>'+state+'</strong>'+(x.canceledAt?'<br><span class="muted">취소 '+fmt(x.canceledAt)+'</span>':'')+'</div></div></div><div class="item-actions"></div>';
+    const actions=d.querySelector(".item-actions");
+    if(x.canceledAt){
+      let restore=document.createElement("button");restore.className="btn primary";restore.textContent="예약 복구";
+      restore.onclick=async()=>{restore.disabled=true;try{let r=await api("/api/admin/schedules/"+encodeURIComponent(x.id)+"/restore",{method:"PATCH",body:"{}"});if(!r.ok){alert("예약을 복구하지 못했습니다.");return}await load()}finally{restore.disabled=false}};
+      actions.appendChild(restore);
+    }else{
+      let complete=document.createElement("button");complete.className="btn "+(x.completed?"ghost":"primary");complete.textContent=x.completed?"완료 취소":"✓ 완료 처리";
+      complete.onclick=async()=>{
+        complete.disabled=true;complete.textContent="처리 중...";
+        try{
+          let r=await api("/api/admin/schedules/"+encodeURIComponent(x.id)+"/complete",{method:"PATCH",body:JSON.stringify({completed:!x.completed})});
+          if(!r.ok){alert(r.status===404?"이미 삭제된 일정입니다.":"완료 상태를 변경하지 못했습니다.");return}
+          await load();
+        }catch(e){if(e.message!=="unauthorized")alert("연결을 확인하고 다시 시도해 주세요.");}
+        finally{complete.disabled=false;complete.textContent=x.completed?"완료 취소":"✓ 완료 처리";}
+      };
+      actions.appendChild(complete);
+      if(!x.completed){
+        let cancel=document.createElement("button");cancel.className="btn ghost";cancel.textContent="예약 취소";
+        cancel.onclick=async()=>{if(!confirm("이 예약을 취소할까요?\n사용자 달력과 활동 집계에서 즉시 제외됩니다."))return;cancel.disabled=true;try{let r=await api("/api/admin/schedules/"+encodeURIComponent(x.id)+"/cancel",{method:"PATCH",body:"{}"});if(!r.ok){alert("예약을 취소하지 못했습니다.");return}await load()}finally{cancel.disabled=false}};
+        actions.appendChild(cancel);
+      }
+      let edit=document.createElement("button");edit.className="btn primary";edit.textContent="일정 수정";edit.onclick=()=>openScheduleEditor(x);actions.appendChild(edit);
+    }
     let b=document.createElement("button");b.className="btn danger";b.textContent="완전 삭제";
     b.onclick=async()=>{if(!confirm("이 일정은 복구할 수 없습니다. 완전히 삭제하시겠습니까?"))return;let r=await api("/api/admin/schedules/"+encodeURIComponent(x.id),{method:"DELETE"});if(r.ok)await load()};
-    d.querySelector(".item-actions").appendChild(b);list.appendChild(d)
+    actions.appendChild(b);list.appendChild(d)
   })
 }
 function bytes(n){n=Number(n||0);if(n<1024)return n+"B";if(n<1024*1024)return (n/1024).toFixed(1)+"KB";return (n/1024/1024).toFixed(1)+"MB"}
