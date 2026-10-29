@@ -289,11 +289,15 @@ app.patch("/api/schedules/:id/cancel",originGuard,async(req,res)=>{
 });
 app.delete("/api/schedules/:id",originGuard,async(req,res)=>{
   const ownerToken=req.get("x-owner-token")||req.body?.ownerToken||"";
-  const r=await pool.query("SELECT owner_name,owner_token_hash FROM schedules WHERE id=$1",[req.params.id]);
-  const ownerIdentity=requestOwnerName(req);
+  const r=await pool.query("SELECT owner_token_hash,completed,canceled_at FROM schedules WHERE id=$1",[req.params.id]);
   if(!r.rowCount||!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)) return res.status(403).json({error:"forbidden"});
-  await pool.query("DELETE FROM schedules WHERE id=$1",[req.params.id]);
-  res.json({ok:true});
+  const permanent=req.query?.permanent==="1";
+  if(permanent||r.rows[0].completed){
+    await pool.query("DELETE FROM schedules WHERE id=$1",[req.params.id]);
+    return res.json({ok:true,deleted:true});
+  }
+  await pool.query("UPDATE schedules SET canceled_at=COALESCE(canceled_at,now()),completed=false,completed_at=NULL,updated_at=now() WHERE id=$1",[req.params.id]);
+  res.json({ok:true,canceled:true});
 });
 
 app.get("/api/library",access.requireAccess("library"),async(req,res)=>{
@@ -340,8 +344,11 @@ app.get("/api/admin/me",auth,(req,res)=>{
   res.json({email:req.admin.email});
 });
 app.get("/api/admin/schedules",auth,async(req,res)=>{
-  try{const r=await pool.query("SELECT id,owner_name AS \"ownerName\",customer_name AS \"customerName\",scheduled_at AS \"scheduledAt\",completed,completed_at AS \"completedAt\",canceled_at AS \"canceledAt\",source FROM schedules ORDER BY scheduled_at DESC");res.json({schedules:r.rows});}
-  catch{res.status(500).json({error:"load_failed"});}
+  try{
+    const includeCanceled=req.query?.includeCanceled==="1";
+    const r=await pool.query(`SELECT id,owner_name AS "ownerName",customer_name AS "customerName",scheduled_at AS "scheduledAt",completed,completed_at AS "completedAt",canceled_at AS "canceledAt",source FROM schedules ${includeCanceled?"":"WHERE canceled_at IS NULL"} ORDER BY scheduled_at DESC`);
+    res.json({schedules:r.rows});
+  }catch{res.status(500).json({error:"load_failed"});}
 });
 app.patch("/api/admin/schedules/:id/complete",auth,async(req,res)=>{
   if(typeof req.body?.completed!=="boolean")return res.status(400).json({error:"invalid_completed"});
