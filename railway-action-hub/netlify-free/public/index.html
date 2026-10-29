@@ -1924,7 +1924,7 @@ scheduleDetailCancel.onclick=async()=>{
  }catch{alert("취소 결과를 확인하지 못했습니다. 새로고침 후 확인해 주세요.")}
  finally{scheduleDetailCancel.disabled=false}
 };
-scheduleDetailDelete.onclick=async()=>{let x=data.find(v=>v.id===detailId);if(!x||!x.isOwner)return;if(!confirm("정말 삭제할까요?"))return;let r=await fetch("/api/schedules/"+encodeURIComponent(x.id),{method:"DELETE",headers:{"x-owner-token":ownerToken,"x-owner-name":encodeURIComponent(ownerIdentity)}});if(r.ok){if(editingId===x.id)closeEdit();closeDetail();await load()}else alert("삭제하지 못했습니다.")};
+scheduleDetailDelete.onclick=async()=>{let x=data.find(v=>v.id===detailId);if(!x||!x.isOwner)return;if(!confirm("정말 삭제할까요?"))return;let r=await fetch("/api/schedules/"+encodeURIComponent(x.id)+"?permanent=1",{method:"DELETE",headers:{"x-owner-token":ownerToken,"x-owner-name":encodeURIComponent(ownerIdentity)}});if(r.ok){if(editingId===x.id)closeEdit();closeDetail();await load()}else alert("삭제하지 못했습니다.")};
 grid.onclick=e=>{let more=e.target.dataset.more;if(more){expandedDays.has(more)?expandedDays.delete(more):expandedDays.add(more);render();return}let id=e.target.dataset.detail;if(!id)return;let x=data.find(v=>v.id===id);if(x)openDetail(x)};
 function openEdit(x){editingId=x.id;editType.value=x.type;editOwner.value=x.owner;editPlace.value=x.place;editDate.value=x.date;editTime.value=x.time;editBox.hidden=false;editBox.scrollIntoView({behavior:"smooth",block:"center"})}
 function closeEdit(){editingId="";editBox.hidden=true}
