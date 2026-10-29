@@ -120,6 +120,7 @@ function toPublic(row,hash,ownerName,isAdmin=false){
     scheduledAt:new Date(row.scheduled_at).toISOString(),
     completed:!!row.completed,
     completedAt:row.completed_at?new Date(row.completed_at).toISOString():null,
+    canceledAt:row.canceled_at?new Date(row.canceled_at).toISOString():null,
     canEdit:isAdmin||ownsSchedule(row,hash),
     isOwner:ownsSchedule(row,hash)
   };
@@ -161,6 +162,7 @@ async function init(){
   )`);
   await pool.query(`ALTER TABLE schedules ADD COLUMN IF NOT EXISTS completed boolean NOT NULL DEFAULT false`);
   await pool.query("ALTER TABLE schedules ADD COLUMN IF NOT EXISTS completed_at timestamptz");
+  await pool.query("ALTER TABLE schedules ADD COLUMN IF NOT EXISTS canceled_at timestamptz");
   await pool.query("UPDATE schedules SET completed_at=scheduled_at WHERE completed=true AND completed_at IS NULL");
   await pool.query("UPDATE schedules SET customer_name=replace(replace(customer_name,$1,$2),$3,$4) WHERE customer_name LIKE $5 OR customer_name LIKE $6",["[DB학습회] ","[후속상담] ","[콜번개] ","[고객관리] ","[DB학습회] %","[콜번개] %"]);
   await pool.query("UPDATE app_settings SET app_subtitle=$1 WHERE id='main' AND app_subtitle=$2",["신규상담 · 후속상담 · 고객관리를 한눈에 공유합니다.","방문 · 학습 · 콜 활동을 한눈에 공유합니다."]);
@@ -231,7 +233,7 @@ function makeCustomer(type,place){
 
 app.get("/api/data", async(req,res)=>{
   try{
-    const [rows,settings]=await Promise.all([pool.query("SELECT * FROM schedules ORDER BY scheduled_at ASC"),getSettings()]);
+    const [rows,settings]=await Promise.all([pool.query("SELECT * FROM schedules WHERE canceled_at IS NULL ORDER BY scheduled_at ASC"),getSettings()]);
     const h=req.get("x-owner-token")?tokenHash(req.get("x-owner-token")):"";
     const ownerName=requestOwnerName(req);
     res.setHeader("Cache-Control","private, no-store");
@@ -269,12 +271,21 @@ app.patch("/api/schedules/:id/complete",originGuard,async(req,res)=>{
   const ownerToken=req.get("x-owner-token")||"";
   const ownerIdentity=requestOwnerName(req);
   const completed=req.body?.completed===true;
-  const r=await pool.query("SELECT id,owner_name,customer_name,scheduled_at,owner_token_hash,completed FROM schedules WHERE id=$1",[req.params.id]);
+  const r=await pool.query("SELECT id,owner_name,customer_name,scheduled_at,owner_token_hash,completed,canceled_at FROM schedules WHERE id=$1",[req.params.id]);
   if(!r.rowCount||(!isScheduleAdmin(req)&&(!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken)))) return res.status(403).json({error:"forbidden"});
+  if(r.rows[0].canceled_at)return res.status(409).json({error:"canceled"});
   const customer=String(r.rows[0].customer_name||"");
-  const changed=await pool.query("UPDATE schedules SET completed=$1,completed_at=CASE WHEN $1 THEN COALESCE(completed_at,now()) ELSE NULL END,updated_at=now() WHERE id=$2 AND completed IS DISTINCT FROM $1 RETURNING id,owner_name,customer_name,scheduled_at",[completed,req.params.id]);
+  const changed=await pool.query("UPDATE schedules SET completed=$1,completed_at=CASE WHEN $1 THEN COALESCE(completed_at,now()) ELSE NULL END,updated_at=now() WHERE id=$2 AND canceled_at IS NULL AND completed IS DISTINCT FROM $1 RETURNING id,owner_name,customer_name,scheduled_at",[completed,req.params.id]);
   if(completed&&changed.rowCount)await notifyActivity("completed",changed.rows[0]);
   res.json({ok:true,completed});
+});
+app.patch("/api/schedules/:id/cancel",originGuard,async(req,res)=>{
+  const ownerToken=req.get("x-owner-token")||req.body?.ownerToken||"";
+  const r=await pool.query("SELECT owner_token_hash,completed,canceled_at FROM schedules WHERE id=$1",[req.params.id]);
+  if(!r.rowCount||(!isScheduleAdmin(req)&&(!r.rows[0].owner_token_hash||r.rows[0].owner_token_hash!==tokenHash(ownerToken))))return res.status(403).json({error:"forbidden"});
+  if(r.rows[0].completed)return res.status(409).json({error:"already_completed"});
+  await pool.query("UPDATE schedules SET canceled_at=COALESCE(canceled_at,now()),completed=false,completed_at=NULL,updated_at=now() WHERE id=$1",[req.params.id]);
+  res.json({ok:true,canceled:true});
 });
 app.delete("/api/schedules/:id",originGuard,async(req,res)=>{
   const ownerToken=req.get("x-owner-token")||req.body?.ownerToken||"";
@@ -329,16 +340,34 @@ app.get("/api/admin/me",auth,(req,res)=>{
   res.json({email:req.admin.email});
 });
 app.get("/api/admin/schedules",auth,async(req,res)=>{
-  try{const r=await pool.query("SELECT id,owner_name AS \"ownerName\",customer_name AS \"customerName\",scheduled_at AS \"scheduledAt\",completed,completed_at AS \"completedAt\",source FROM schedules ORDER BY scheduled_at DESC");res.json({schedules:r.rows});}
+  try{const r=await pool.query("SELECT id,owner_name AS \"ownerName\",customer_name AS \"customerName\",scheduled_at AS \"scheduledAt\",completed,completed_at AS \"completedAt\",canceled_at AS \"canceledAt\",source FROM schedules ORDER BY scheduled_at DESC");res.json({schedules:r.rows});}
   catch{res.status(500).json({error:"load_failed"});}
 });
 app.patch("/api/admin/schedules/:id/complete",auth,async(req,res)=>{
   if(typeof req.body?.completed!=="boolean")return res.status(400).json({error:"invalid_completed"});
   try{
-    const r=await pool.query("UPDATE schedules SET completed=$1,completed_at=CASE WHEN $1 THEN COALESCE(completed_at,now()) ELSE NULL END,updated_at=now() WHERE id=$2 RETURNING id,completed,completed_at AS \"completedAt\"",[req.body.completed,req.params.id]);
-    if(!r.rowCount)return res.status(404).json({error:"not_found"});
+    const current=await pool.query("SELECT canceled_at FROM schedules WHERE id=$1",[req.params.id]);
+    if(!current.rowCount)return res.status(404).json({error:"not_found"});
+    if(current.rows[0].canceled_at)return res.status(409).json({error:"canceled"});
+    const r=await pool.query("UPDATE schedules SET completed=$1,completed_at=CASE WHEN $1 THEN COALESCE(completed_at,now()) ELSE NULL END,updated_at=now() WHERE id=$2 AND canceled_at IS NULL RETURNING id,completed,completed_at AS \"completedAt\"",[req.body.completed,req.params.id]);
     res.json({ok:true,...r.rows[0]});
   }catch(e){console.error(e);res.status(500).json({error:"complete_failed"});}
+});
+app.patch("/api/admin/schedules/:id/cancel",originGuard,auth,async(req,res)=>{
+  try{
+    const current=await pool.query("SELECT completed,canceled_at FROM schedules WHERE id=$1",[req.params.id]);
+    if(!current.rowCount)return res.status(404).json({error:"not_found"});
+    if(current.rows[0].completed)return res.status(409).json({error:"already_completed"});
+    const r=await pool.query("UPDATE schedules SET canceled_at=COALESCE(canceled_at,now()),completed=false,completed_at=NULL,updated_at=now() WHERE id=$1 RETURNING id,canceled_at AS \"canceledAt\"",[req.params.id]);
+    res.json({ok:true,...r.rows[0]});
+  }catch(e){console.error(e);res.status(500).json({error:"cancel_failed"});}
+});
+app.patch("/api/admin/schedules/:id/restore",originGuard,auth,async(req,res)=>{
+  try{
+    const r=await pool.query("UPDATE schedules SET canceled_at=NULL,updated_at=now() WHERE id=$1 RETURNING id",[req.params.id]);
+    if(!r.rowCount)return res.status(404).json({error:"not_found"});
+    res.json({ok:true,restored:true});
+  }catch(e){console.error(e);res.status(500).json({error:"restore_failed"});}
 });
 app.delete("/api/admin/schedules/:id",auth,async(req,res)=>{
   const r=await pool.query("SELECT source FROM schedules WHERE id=$1",[req.params.id]);
