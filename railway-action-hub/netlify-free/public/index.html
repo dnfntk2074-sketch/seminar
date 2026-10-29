@@ -1184,19 +1184,41 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 #upcomingVisitGrid>.hall-week.is-final .hall-week-winner::before{content:none!important}
 #upcomingVisitGrid>.hall-week.is-current .hall-week-winner{
   color:#236a51;
-  line-height:12px;
   max-height:25px;
   white-space:normal;
   overflow:visible;
   text-overflow:clip;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
 }
-#upcomingVisitGrid>.hall-week.is-current .hall-winner-name{display:block;line-height:12px;text-align:center}
-#upcomingVisitGrid>.hall-week.is-current .board-person{display:inline-block;line-height:12px;text-align:center}
-#upcomingVisitGrid>.hall-week.is-current .board-person-title{display:block;font-size:9px;line-height:11px;margin-top:0;text-align:center}
+#upcomingVisitGrid>.hall-week.is-current.has-joint-winners .hall-week-winner{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-auto-rows:12px;
+  gap:1px 3px;
+  align-content:center;
+  align-items:center;
+  justify-items:center;
+  width:100%;
+  max-width:100%;
+  line-height:12px;
+}
+#upcomingVisitGrid>.hall-week.is-current.has-joint-winners .hall-winner-name{
+  display:block;
+  min-width:0;
+  max-width:100%;
+  font-size:9px;
+  line-height:12px;
+  text-align:center;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:clip;
+}
+#upcomingVisitGrid>.hall-week.is-current.has-joint-winners .board-person,
+#upcomingVisitGrid>.hall-week.is-current.has-joint-winners .board-person-title{
+  display:inline;
+  font-size:inherit;
+  line-height:inherit;
+  white-space:nowrap;
+}
 #upcomingVisitGrid>.hall-week.is-future .hall-week-winner{color:#8794a5;font-weight:650}
 #upcomingVisitGrid .hall-week-line-bottom{gap:3px}
 #upcomingVisitGrid .hall-week-score{
