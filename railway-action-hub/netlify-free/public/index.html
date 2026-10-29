@@ -1182,7 +1182,21 @@ body{background:linear-gradient(135deg,#f8faff,#f1f5fb)}
 }
 #upcomingVisitGrid>.hall-week.is-final .hall-week-winner{color:#664e22;font-weight:900}
 #upcomingVisitGrid>.hall-week.is-final .hall-week-winner::before{content:none!important}
-#upcomingVisitGrid>.hall-week.is-current .hall-week-winner{color:#236a51}
+#upcomingVisitGrid>.hall-week.is-current .hall-week-winner{
+  color:#236a51;
+  line-height:12px;
+  max-height:25px;
+  white-space:normal;
+  overflow:visible;
+  text-overflow:clip;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+#upcomingVisitGrid>.hall-week.is-current .hall-winner-name{display:block;line-height:12px}
+#upcomingVisitGrid>.hall-week.is-current .board-person{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:12px}
+#upcomingVisitGrid>.hall-week.is-current .board-person-title{display:block;font-size:9px;line-height:11px;margin-top:0}
 #upcomingVisitGrid>.hall-week.is-future .hall-week-winner{color:#8794a5;font-weight:650}
 #upcomingVisitGrid .hall-week-line-bottom{gap:3px}
 #upcomingVisitGrid .hall-week-score{
